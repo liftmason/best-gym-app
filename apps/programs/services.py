@@ -1,22 +1,42 @@
-"""Everything that changes an athlete's program. Views stay thin and call these.
+"""Everything that changes an athlete's program. Views (and, from sub-project 2, the API)
+stay thin and call these.
 
 Weeks are back-to-back from the program's start date, so inserting or deleting a
-week shifts every later week (and its days) by seven days."""
+week shifts every later week (and its days) by seven days.
+
+Board edits take the acting coach as `by=`: passing it records an undo step for the
+week first (apps/programs/undo.py). Seeding, applying templates and tests leave it out."""
 
 import datetime
 
 from django.db import transaction
-from django.db.models import F, Max
+from django.db.models import F, Max, Q
 from django.utils import timezone
 
+from . import undo
 from .models import PrescribedSet, Prescription, Program, ProgramDay, ProgramSession, ProgramWeek
 from .prescriptions import default_dose, keep_warmups_first
+
+MAX_SESSIONS_PER_DAY = 3
 
 WEEK = datetime.timedelta(days=7)
 
 
 class HasLoggedSessions(Exception):
     """Logged sessions are history: their days can't be moved or deleted."""
+
+
+class TooManySessions(Exception):
+    """A day holds at most MAX_SESSIONS_PER_DAY sessions."""
+
+
+class NotAllowed(Exception):
+    """The change refers to something outside this athlete's program or gym (or archived)."""
+
+
+def _record(week, by, label):
+    if by is not None:
+        undo.record(week, by, label)
 
 
 def _has_logs(program, from_order):
@@ -145,11 +165,31 @@ def delete_week(week):
 
 
 @transaction.atomic
-def clear_week(week):
+def clear_week(week, by=None):
     """Remove every session from the week, except days with a completed session."""
+    _record(week, by, f"Clear {week.label}")
     locked = locked_day_ids(week)
     ProgramSession.objects.filter(day__week=week).exclude(day_id__in=locked).delete()
     return len(locked)
+
+
+def set_week_type(week, week_type, by=None):
+    """One of the gym's week types; an archived one only if the week already has it."""
+    if week_type.gym_id != week.program.athlete.gym_id or (
+        week_type.archived and week_type.pk != week.week_type_id
+    ):
+        raise NotAllowed("That week type isn't available.")
+    _record(week, by, f"Week type → {week_type.name}")
+    week.week_type = week_type
+    week.save(update_fields=["week_type"])
+    return week
+
+
+def set_focus_note(week, note, by=None):
+    _record(week, by, "Edit focus note")
+    week.focus_note = (note or "").strip()[:1000]
+    week.save(update_fields=["focus_note"])
+    return week
 
 
 def set_published(week, published):
@@ -174,9 +214,46 @@ def add_session(day, name=""):
 
 
 @transaction.atomic
-def add_prescription(day, exercise, athlete, session_id=None, index=None):
+def add_day_session(day, by=None):
+    """Another session on the day (up to three). A day's sessions are named "Session 1",
+    "Session 2"… once there's more than one; an unnamed first session gets its name then."""
+    if day.sessions.count() >= MAX_SESSIONS_PER_DAY:
+        raise TooManySessions(f"Up to {MAX_SESSIONS_PER_DAY} sessions a day")
+    _record(day.week, by, f"Add a session on {day.date:%a}")
+    if not day.sessions.exists():
+        add_session(day, "Session 1")
+    else:
+        first = day.sessions.first()
+        if not first.name:
+            first.name = "Session 1"
+            first.save(update_fields=["name"])
+    return add_session(day, f"Session {day.sessions.count() + 1}")
+
+
+def rename_session(session, name, by=None):
+    _record(session.day.week, by, "Rename a session")
+    session.name = " ".join((name or "").split())[:80]
+    session.save(update_fields=["name"])
+    return session
+
+
+@transaction.atomic
+def delete_session(session, by=None):
+    """Remove a session and its exercises. A session an athlete has logged stays."""
+    if session.logs.exists():
+        raise HasLoggedSessions("This session has been logged, so it stays.")
+    _record(session.day.week, by, f"Remove a session on {session.day.date:%a}")
+    session.delete()
+
+
+@transaction.atomic
+def add_prescription(day, exercise, athlete, session_id=None, index=None, by=None):
     """Add `exercise` to the day (its first session unless one is given), at the end or,
-    when dragged in from the library, at position `index`."""
+    when dragged in from the library, at position `index`. The exercise must be one of the
+    athlete's gym's, and not archived."""
+    if exercise.gym_id != athlete.gym_id or exercise.archived:
+        raise NotAllowed("That exercise isn't in this gym's library.")
+    _record(day.week, by, f"Add {exercise.name}")
     session = session_for(day, session_id)
     next_order = (session.prescriptions.aggregate(m=Max("order"))["m"] or 0) + 1
     rx = Prescription.objects.create(
@@ -189,8 +266,17 @@ def add_prescription(day, exercise, athlete, session_id=None, index=None):
     return rx
 
 
+def edit_prescription(rx, dose, by=None):
+    """Apply a dose checked by apps/programs/dose.validate."""
+    from . import dose as doses
+
+    _record(rx.session.day.week, by, f"Edit {rx.exercise.name}")
+    return doses.apply(rx, dose)
+
+
 @transaction.atomic
-def remove_prescription(rx):
+def remove_prescription(rx, by=None):
+    _record(rx.session.day.week, by, f"Remove {rx.exercise.name}")
     session = rx.session
     rx.delete()
     if _empty_and_unused(session):
@@ -198,8 +284,12 @@ def remove_prescription(rx):
 
 
 @transaction.atomic
-def move_prescription(rx, target_session, index):
-    """Put `rx` at position `index` in `target_session` (possibly another day)."""
+def move_prescription(rx, target_session, index, by=None):
+    """Put `rx` at position `index` in `target_session` (possibly another day of the same
+    program)."""
+    if target_session.day.week.program_id != rx.session.day.week.program_id:
+        raise NotAllowed("Exercises move within one program.")
+    _record(rx.session.day.week, by, f"Move {rx.exercise.name}")
     old_session = rx.session
     siblings = list(target_session.prescriptions.exclude(pk=rx.pk))
     index = max(0, min(index, len(siblings)))
@@ -222,8 +312,33 @@ def _renumber(session):
         Prescription.objects.filter(pk=pk).exclude(order=order).update(order=order)
 
 
-def swap_exercise(rx, exercise):
-    """Change the exercise, keeping the dose (sets, reps, load, notes, custom fields)."""
+def swap_candidates(rx):
+    """What `rx` can be swapped for: for a tag slot, exercises with every slot tag; otherwise
+    the same category or a shared tag. Never archived ones or the exercise itself."""
+    from apps.exercises.models import Exercise
+
+    gym_exercises = Exercise.objects.filter(gym=rx.exercise.gym, archived=False).exclude(pk=rx.exercise_id)
+    slot_tags = list(rx.tag_slot_tags.all())
+    if slot_tags:
+        for tag in slot_tags:
+            gym_exercises = gym_exercises.filter(tags=tag)
+        return gym_exercises.distinct().order_by("name")
+    tags = list(rx.exercise.tags.all())
+    return (
+        gym_exercises.filter(Q(category=rx.exercise.category) | Q(tags__in=tags))
+        .distinct()
+        .select_related("category")
+        .prefetch_related("tags")
+        .order_by("name")
+    )
+
+
+def swap_exercise(rx, exercise, by=None):
+    """Change the exercise, keeping the dose (sets, reps, load, notes, custom fields). With
+    `by` (a coach's edit), only a swap candidate is allowed."""
+    if by is not None and not swap_candidates(rx).filter(pk=exercise.pk).exists():
+        raise NotAllowed("That exercise isn't a swap for this one.")
+    _record(rx.session.day.week, by, f"Swap {rx.exercise.name} for {exercise.name}")
     rx.exercise = exercise
     rx.save(update_fields=["exercise"])
     return rx

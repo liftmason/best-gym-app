@@ -348,8 +348,7 @@ def week_delete(request, pk, week_id):
 def week_clear(request, pk, week_id):
     athlete = coach_athlete(request, pk)
     week = _week(athlete, week_id)
-    undo.record(week, request.user, f"Clear {week.label}")
-    kept = services.clear_week(week)
+    kept = services.clear_week(week, by=request.user)
     message = "Week cleared" + (f" — {kept} completed day{'s' if kept != 1 else ''} kept" if kept else "")
     return render_editor(request, athlete, week.pk, message)
 
@@ -377,15 +376,12 @@ def week_settings(request, pk, week_id):
     week = _week(athlete, week_id)
     if "week_type" in request.POST:
         week_type = get_object_or_404(WeekType, pk=request.POST["week_type"], gym=athlete.gym)
-        if week_type.archived and week_type.pk != week.week_type_id:
-            raise Http404
-        undo.record(week, request.user, f"Week type → {week_type.name}")
-        week.week_type = week_type
-        week.save(update_fields=["week_type"])
+        try:
+            services.set_week_type(week, week_type, by=request.user)
+        except services.NotAllowed as err:
+            raise Http404 from err
         return render_editor(request, athlete, week.pk, f"{week.label} is now {week_type.name}")
-    undo.record(week, request.user, "Edit focus note")
-    week.focus_note = request.POST.get("focus_note", "").strip()[:1000]
-    week.save(update_fields=["focus_note"])
+    services.set_focus_note(week, request.POST.get("focus_note", ""), by=request.user)
     return hx.toast(_undo_button_oob(request, athlete, week), "Focus note saved")
 
 
@@ -409,8 +405,7 @@ def day_add_exercise(request, pk):
         day, session_id = session.day, session.pk  # the session decides the day
     index = request.POST.get("index", "")
     index = int(index) if index.isdigit() else None  # set when dragged in from the library
-    undo.record(day.week, request.user, f"Add {exercise.name}")
-    services.add_prescription(day, exercise, athlete, session_id, index)
+    services.add_prescription(day, exercise, athlete, session_id, index, by=request.user)
     # No HX-Retarget: the + button already targets #programEditor, and a retarget is resolved
     # from the button, which may have been redrawn out of the page while this request ran.
     return render_editor(request, athlete, day.week_id, f"{exercise.name} → {day.date:%a %-d %b}", "good")
@@ -421,17 +416,10 @@ def day_add_exercise(request, pk):
 def day_add_session(request, pk, day_id):
     athlete = coach_athlete(request, pk)
     day = _day(athlete, day_id)
-    if day.sessions.count() >= 3:
+    try:
+        services.add_day_session(day, by=request.user)
+    except services.TooManySessions:
         return render_editor(request, athlete, day.week_id, "Up to three sessions a day", "bad")
-    undo.record(day.week, request.user, f"Add a session on {day.date:%a}")
-    if not day.sessions.exists():
-        services.add_session(day, "Session 1")
-    else:
-        first = day.sessions.first()
-        if not first.name:
-            first.name = "Session 1"
-            first.save(update_fields=["name"])
-    services.add_session(day, f"Session {day.sessions.count() + 1}")
     return render_editor(request, athlete, day.week_id, f"Added a session on {day.date:%a}")
 
 
@@ -440,9 +428,7 @@ def day_add_session(request, pk, day_id):
 def session_rename(request, pk, session_id):
     athlete = coach_athlete(request, pk)
     session = _session(athlete, session_id)
-    undo.record(session.day.week, request.user, "Rename a session")
-    session.name = " ".join(request.POST.get(f"name_{session.pk}", "").split())[:80]
-    session.save(update_fields=["name"])
+    services.rename_session(session, request.POST.get(f"name_{session.pk}", ""), by=request.user)
     return hx.toast(_undo_button_oob(request, athlete, session.day.week), "Session renamed")
 
 
@@ -452,12 +438,12 @@ def session_delete(request, pk, session_id):
     athlete = coach_athlete(request, pk)
     session = _session(athlete, session_id)
     week_id, n = session.day.week_id, session.prescriptions.count()
-    if session.logs.exists():
+    try:
+        services.delete_session(session, by=request.user)
+    except services.HasLoggedSessions:
         name = athlete.user.get_short_name()
         message = f"{name} has logged this session, so it stays. You can still edit its exercises."
         return render_editor(request, athlete, week_id, message, "err")
-    undo.record(session.day.week, request.user, f"Remove a session on {session.day.date:%a}")
-    session.delete()
     extra = f" and its {n} exercise{'s' if n != 1 else ''}" if n else ""
     return render_editor(request, athlete, week_id, f"Removed the session{extra}")
 
@@ -503,8 +489,7 @@ def rx_edit(request, pk, rx_id):
     if request.method == "POST":
         form = PrescriptionForm(request.POST, unit=unit)
         if form.is_valid():
-            undo.record(rx.session.day.week, request.user, f"Edit {rx.exercise.name}")
-            form.save(rx)
+            services.edit_prescription(rx, form.dose, by=request.user)
             response = render_editor(
                 request, athlete, rx.session.day.week_id, f"{rx.exercise.name} updated", "good"
             )
@@ -530,29 +515,10 @@ def rx_remove(request, pk, rx_id):
     athlete = coach_athlete(request, pk)
     rx = _rx(athlete, rx_id)
     week_id, name, date = rx.session.day.week_id, rx.exercise.name, rx.session.day.date
-    undo.record(rx.session.day.week, request.user, f"Remove {name}")
-    services.remove_prescription(rx)
+    services.remove_prescription(rx, by=request.user)
     response = render_editor(request, athlete, week_id, f"Removed {name} from {date:%a}")
     response = hx.retarget(response, "#programEditor", "outerHTML")
     return hx.trigger_after_swap(response, closeModal=True)
-
-
-def swap_candidates(rx):
-    """Same category or a shared tag (or, for a tag slot, every slot tag); archived ones excluded."""
-    gym_exercises = Exercise.objects.filter(gym=rx.exercise.gym, archived=False).exclude(pk=rx.exercise_id)
-    slot_tags = list(rx.tag_slot_tags.all())
-    if slot_tags:
-        for tag in slot_tags:
-            gym_exercises = gym_exercises.filter(tags=tag)
-        return gym_exercises.distinct().order_by("name")
-    tags = list(rx.exercise.tags.all())
-    return (
-        gym_exercises.filter(Q(category=rx.exercise.category) | Q(tags__in=tags))
-        .distinct()
-        .select_related("category")
-        .prefetch_related("tags")
-        .order_by("name")
-    )
 
 
 @coach_required
@@ -560,10 +526,9 @@ def rx_swap(request, pk, rx_id):
     athlete = coach_athlete(request, pk)
     rx = _rx(athlete, rx_id)
     if request.method == "POST":
-        exercise = get_object_or_404(swap_candidates(rx), pk=request.POST.get("exercise"))
+        exercise = get_object_or_404(services.swap_candidates(rx), pk=request.POST.get("exercise"))
         old = rx.exercise.name
-        undo.record(rx.session.day.week, request.user, f"Swap {old} for {exercise.name}")
-        services.swap_exercise(rx, exercise)
+        services.swap_exercise(rx, exercise, by=request.user)
         response = render_editor(
             request,
             athlete,
@@ -573,7 +538,9 @@ def rx_swap(request, pk, rx_id):
         )
         response = hx.retarget(response, "#programEditor", "outerHTML")
         return hx.trigger_after_swap(response, closeModal=True)
-    candidates = _by_last_done(_with_history(list(swap_candidates(rx)), athlete, request.coach.gym.units))
+    candidates = _by_last_done(
+        _with_history(list(services.swap_candidates(rx)), athlete, request.coach.gym.units)
+    )
     return TemplateResponse(
         request, "programs/_swap_list.html", {"athlete": athlete, "rx": rx, "candidates": candidates}
     )
@@ -585,18 +552,18 @@ def rx_move(request, pk, rx_id):
     """Drag and drop: move to position `index` in a session, or onto a day (its first session)."""
     athlete = coach_athlete(request, pk)
     rx = _rx(athlete, rx_id)
-    undo.record(rx.session.day.week, request.user, f"Move {rx.exercise.name}")
     if request.POST.get("session"):
         target = _session(athlete, request.POST["session"])
     else:
         target = services.session_for(_day(athlete, request.POST.get("day", "0")))
-    if target.day.week.program_id != rx.session.day.week.program_id:
-        raise Http404
     try:
         index = int(request.POST.get("index", "0"))
     except ValueError:
         index = 0
-    services.move_prescription(rx, target, index)
+    try:
+        services.move_prescription(rx, target, index, by=request.user)
+    except services.NotAllowed as err:
+        raise Http404 from err
     return render_editor(request, athlete, target.day.week_id)
 
 
