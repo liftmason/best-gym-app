@@ -79,7 +79,7 @@ def save_pending_names(model, gym, post, max_length):
         obj.save(update_fields=["name"])
 
 
-def _move(rows, pk, direction):
+def move_in_order(rows, pk, direction):
     """Swap one row of an ordered list with its neighbour and renumber. ValueError if the row
     isn't in the list or the direction isn't up/down."""
     if direction not in ("up", "down"):
@@ -232,7 +232,7 @@ def rename_category(category, name):
 
 @transaction.atomic
 def move_category(gym, pk, direction):
-    _move(list(Category.objects.select_for_update().filter(gym=gym)), pk, direction)
+    move_in_order(list(Category.objects.select_for_update().filter(gym=gym)), pk, direction)
 
 
 @transaction.atomic
@@ -302,4 +302,4 @@ def untrack(tracked):
 
 @transaction.atomic
 def move_tracked(gym, pk, direction):
-    _move(list(TrackedLift.objects.select_for_update().filter(gym=gym)), pk, direction)
+    move_in_order(list(TrackedLift.objects.select_for_update().filter(gym=gym)), pk, direction)

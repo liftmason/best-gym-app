@@ -131,8 +131,28 @@ def toggle(habit, date):
     return True
 
 
-def prescribe(athlete, name, emoji, cadence, note, source_template=None):
-    """Add a habit unless the athlete already has an active one with that name."""
+EMOJI = ["🍎", "😴", "💧", "🧘", "🚶", "🥩", "🥗", "⚖️", "💪", "📓"]
+MAX_NAME, MAX_NOTE = 80, 120
+
+
+class InvalidHabit(Exception):
+    """With the message to show."""
+
+
+def prescribe(athlete, name, emoji, cadence, note="", source_template=None):
+    """Add a habit unless the athlete already has an active one with that name (returns None
+    then). The name is tidied and required; the note is optional."""
+    name = " ".join((name or "").split())
+    note = (note or "").strip()
+    if not name:
+        raise InvalidHabit("Give the habit a name")
+    if len(name) > MAX_NAME or len(note) > MAX_NOTE:
+        raise InvalidHabit(f"Keep the name to {MAX_NAME} characters and the note to {MAX_NOTE}.")
+    if cadence not in Habit.Cadence.values:
+        raise InvalidHabit("Pick how often")
+    emoji = emoji or EMOJI[0]
+    if len(emoji) > 8:
+        raise InvalidHabit("Pick an icon")
     if active(athlete).filter(name__iexact=name).exists():
         return None
     return Habit.objects.create(

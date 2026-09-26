@@ -7,7 +7,7 @@ import pytest
 from apps.accounts.models import Coach, Gym
 from apps.exercises.models import Category, Exercise, Tag, tracked_exercises
 from apps.exercises.starter import install_pack
-from apps.programs import views as week_type_views
+from apps.programs import week_types
 from apps.programs.models import WeekType
 from apps.workouts.models import CheckinQuestion
 
@@ -286,7 +286,7 @@ def test_unused_week_type_is_deleted(coach_client, gym):
 
 def test_week_type_in_use_is_archived_not_deleted(coach_client, gym, monkeypatch):
     # Nothing points at week types until phase 3; simulate a program week using it.
-    monkeypatch.setattr(week_type_views, "usage_count", lambda wt: 3 if wt.name == "Cutting" else 0)
+    monkeypatch.setattr(week_types, "usage_count", lambda wt: 3 if wt.name == "Cutting" else 0)
     wt = gym.week_types.get(name="Cutting")
     assert "used by 3 weeks, so it was archived" in toast(coach_client.post(f"{WT}{wt.pk}/remove/", **HX))
     wt.refresh_from_db()
@@ -299,7 +299,7 @@ def test_week_type_in_use_is_archived_not_deleted(coach_client, gym, monkeypatch
 def test_usage_count_sees_every_model_pointing_at_week_types(gym):
     """Guard for phase 3: usage_count() discovers users of WeekType itself, so new
     foreign keys (program weeks, template weeks, session logs) are counted without code changes."""
-    assert week_type_views.usage_count(gym.week_types.first()) == 0
+    assert week_types.usage_count(gym.week_types.first()) == 0
 
 
 def test_other_gyms_week_types_are_404(coach_client):

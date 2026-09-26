@@ -16,7 +16,7 @@ from apps.accounts.coach_views import coach_athlete
 from . import habits
 from .models import Habit
 
-EMOJI = ["🍎", "😴", "💧", "🧘", "🚶", "🥩", "🥗", "⚖️", "💪", "📓"]
+EMOJI = habits.EMOJI
 
 
 class HabitForm(forms.ModelForm):
@@ -55,7 +55,10 @@ def add(request, pk):
     if not form.is_valid():
         return _coach_card(request, athlete, "Give the habit a name", "err")
     d = form.cleaned_data
-    habit = habits.prescribe(athlete, d["name"].strip(), d["emoji"], d["cadence"], d["note"].strip())
+    try:
+        habit = habits.prescribe(athlete, d["name"], d["emoji"], d["cadence"], d["note"])
+    except habits.InvalidHabit as err:
+        return _coach_card(request, athlete, str(err), "err")
     if habit is None:
         return _coach_card(
             request, athlete, f"{athlete.user.get_short_name()} already has “{d['name']}”", "err"
