@@ -59,7 +59,94 @@ def locked_day_ids(week):
     )
 
 
+# ---------------------------------------------------------------- finding things (scoped to the athlete)
+
+
+def active_program(athlete):
+    return athlete.programs.active().first()
+
+
+def athlete_week(athlete, week_id):
+    """A week of the athlete's active program (ProgramWeek.DoesNotExist for anyone else's)."""
+    return ProgramWeek.objects.select_related("program", "week_type").get(
+        pk=week_id, program__athlete=athlete, program__active=True
+    )
+
+
+def athlete_day(athlete, day_id):
+    return ProgramDay.objects.select_related("week__program").get(
+        pk=day_id, week__program__athlete=athlete, week__program__active=True
+    )
+
+
+def athlete_session(athlete, session_id):
+    return ProgramSession.objects.select_related("day__week").get(
+        pk=session_id, day__week__program__athlete=athlete, day__week__program__active=True
+    )
+
+
+def athlete_prescription(athlete, rx_id):
+    return Prescription.objects.select_related("exercise__percent_of", "session__day__week__week_type").get(
+        pk=rx_id, session__day__week__program__athlete=athlete, session__day__week__program__active=True
+    )
+
+
+def board_week(program, today, week_id=None):
+    """(weeks, week): the program's weeks and the one the board opens on: the one asked for,
+    else the week containing today, else the last (after the program) or the first."""
+    weeks = list(program.weeks.select_related("week_type"))
+    if not weeks:
+        return weeks, None
+    if week_id:
+        for w in weeks:
+            if str(w.pk) == str(week_id):
+                return weeks, w
+    for w in weeks:
+        if w.start_date <= today <= w.end_date:
+            return weeks, w
+    return weeks, (weeks[-1] if today > weeks[-1].end_date else weeks[0])
+
+
 # ---------------------------------------------------------------- programs and weeks
+
+
+class InvalidProgram(Exception):
+    """With the message to show."""
+
+
+MAX_PROGRAM_WEEKS = 52
+MAX_NOTE = 2000
+
+
+def start_new_program(athlete, name, first_day, weeks, week_type, by):
+    """What a coach starts from the board: a name (up to 80 characters), 1 to 52 weeks, one
+    of the gym's active week types. The athlete's current program ends and is kept."""
+    name = " ".join((name or "").split())
+    if not name or len(name) > 80:
+        raise InvalidProgram("Give the block a name of up to 80 characters.")
+    if not 1 <= int(weeks) <= MAX_PROGRAM_WEEKS:
+        raise InvalidProgram(f"Between 1 and {MAX_PROGRAM_WEEKS} weeks.")
+    if week_type.gym_id != athlete.gym_id or week_type.archived:
+        raise InvalidProgram("Pick one of your week types.")
+    return start_program(athlete, name, first_day, int(weeks), week_type, by=by)
+
+
+def set_program_note(program, note):
+    """The program's note (goal, rest, nutrition) the athlete sees with it."""
+    program.note = (note or "").strip()[:MAX_NOTE]
+    program.save(update_fields=["note"])
+    return program
+
+
+def add_week_at_end(program):
+    """A new last week of the same type as the last one (or the gym's first active type)."""
+    from .models import WeekType
+
+    last = program.weeks.order_by("-order").first()
+    week_type = last.week_type if last else WeekType.objects.active().filter(gym=program.athlete.gym).first()
+    if week_type is None:
+        raise InvalidProgram("Add a week type in Settings first")
+    return add_week(program, week_type)
 
 
 def _create_week(program, order, week_type):

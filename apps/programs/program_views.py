@@ -3,6 +3,7 @@ prescription modal and library rail. Every change goes through services.py and
 returns the redrawn editor (#programEditor) with a toast."""
 
 from django.contrib import messages
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
@@ -15,71 +16,47 @@ from apps.accounts.access import coach_required
 from apps.accounts.coach_views import _header_context, coach_athlete
 from apps.exercises.models import Exercise, Tag
 
-from . import services, undo
+from . import rail, services, undo
 from .dose import MAX_CUSTOM_FIELDS, MAX_SETS
 from .forms import PrescriptionForm, StartProgramForm, set_rows_initial
-from .models import LoadBasis, Prescription, ProgramDay, ProgramSession, ProgramWeek, WeekType
+from .models import LoadBasis, WeekType
 from .prescriptions import board_items, load_text, suggested_weight, summary
 
 # ------------------------------------------------------ lookups (always scoped to the coach's athlete)
 
 
 def _program(athlete):
-    return athlete.programs.active().first()
+    return services.active_program(athlete)
+
+
+def _scoped(lookup, athlete, pk):
+    try:
+        return lookup(athlete, pk)
+    except ObjectDoesNotExist as err:
+        raise Http404 from err
 
 
 def _week(athlete, week_id):
-    return get_object_or_404(
-        ProgramWeek.objects.select_related("program", "week_type"),
-        pk=week_id,
-        program__athlete=athlete,
-        program__active=True,
-    )
+    return _scoped(services.athlete_week, athlete, week_id)
 
 
 def _day(athlete, day_id):
-    return get_object_or_404(
-        ProgramDay.objects.select_related("week__program"),
-        pk=day_id,
-        week__program__athlete=athlete,
-        week__program__active=True,
-    )
+    return _scoped(services.athlete_day, athlete, day_id)
 
 
 def _session(athlete, session_id):
-    return get_object_or_404(
-        ProgramSession.objects.select_related("day__week"),
-        pk=session_id,
-        day__week__program__athlete=athlete,
-        day__week__program__active=True,
-    )
+    return _scoped(services.athlete_session, athlete, session_id)
 
 
 def _rx(athlete, rx_id):
-    return get_object_or_404(
-        Prescription.objects.select_related("exercise__percent_of", "session__day__week__week_type"),
-        pk=rx_id,
-        session__day__week__program__athlete=athlete,
-        session__day__week__program__active=True,
-    )
+    return _scoped(services.athlete_prescription, athlete, rx_id)
 
 
 # ---------------------------------------------------------------- rendering
 
 
 def _current_week(program, athlete, week_id=None):
-    weeks = list(program.weeks.select_related("week_type"))
-    if not weeks:
-        return weeks, None
-    if week_id:
-        for w in weeks:
-            if str(w.pk) == str(week_id):
-                return weeks, w
-    today = athlete.today()
-    for w in weeks:
-        if w.start_date <= today <= w.end_date:
-            return weeks, w
-    return weeks, (weeks[-1] if today > weeks[-1].end_date else weeks[0])
+    return services.board_week(program, athlete.today(), week_id)
 
 
 def editor_context(request, athlete, week_id=None):
@@ -140,64 +117,14 @@ def render_editor(request, athlete, week_id=None, message=None, kind=""):
     return hx.toast(response, message, kind) if message else response
 
 
-def _with_history(exercises, athlete, unit):
-    """Attach the athlete's history to each exercise: `hist` is None if never logged,
-    else {"line": "78 kg ×1 · 2 days ago", "trend": "up", "log": [(date, top set), ...], "date": ...}."""
-    from apps.workouts import history
-    from apps.workouts.charts import rail_spark
-
-    logs = history.exercise_history(athlete, [e.pk for e in exercises])
-    today = athlete.today()
-    for ex in exercises:
-        entries = logs.get(ex.pk)
-        trend = history.trend(entries) if entries else None
-        ex.hist = (
-            {
-                "line": history.last_line(entries[0], unit, today),
-                "trend": trend,
-                "spark": rail_spark(entries, trend),
-                "date": entries[0].date,
-                "log": [(e.date, history.set_text(e.top, unit)) for e in entries],
-            }
-            if entries
-            else None
-        )
-    return exercises
-
-
-def _by_last_done(exercises):
-    """Most recently done first; never-done ones after, A–Z."""
-    done = sorted(
-        (e for e in exercises if e.hist), key=lambda e: (-e.hist["date"].toordinal(), e.name.lower())
-    )
-    return done + [e for e in exercises if not e.hist]
-
-
 def rail_context(request, athlete=None, template=None):
     """The exercise library rail. On an athlete's board it shows their history and adds
     to the selected day; in the template editor (`template`) it adds to the selected
     session and can add tag slots from the active tag filter."""
     gym = request.coach.gym
     q = request.GET.get("q", "").strip()
-    sort = "az" if request.GET.get("sort") == "az" or athlete is None else "recent"
     tag_ids = {t for t in request.GET.getlist("tag") if t.isdigit()}
-    exercises = (
-        Exercise.objects.filter(gym=gym, archived=False)
-        .select_related("category")
-        .prefetch_related("tags")
-        .order_by("name")
-    )
-    if q:
-        exercises = exercises.filter(
-            Q(name__icontains=q) | Q(tags__name__icontains=q) | Q(category__name__icontains=q)
-        ).distinct()
-    for tag_id in tag_ids:
-        exercises = exercises.filter(tags__pk=tag_id)
-    exercises = list(exercises)
-    if athlete is not None:
-        exercises = _with_history(exercises, athlete, gym.units)
-    if sort == "recent":
-        exercises = _by_last_done(exercises)
+    exercises, sort = rail.search(gym, q, tag_ids, athlete, request.GET.get("sort", "recent"))
     if template is not None:
         where = {
             "rail_search_url": reverse("coach:template_library", args=[template.pk]),
@@ -267,9 +194,13 @@ def start(request, pk):
         return TemplateResponse(request, "programs/_start_form.html", context)
     data = form.cleaned_data
     had_program = _program(athlete) is not None
-    services.start_program(
-        athlete, data["name"], data["first_day"], data["weeks"], data["week_type"], by=request.user
-    )
+    try:
+        services.start_new_program(
+            athlete, data["name"], data["first_day"], data["weeks"], data["week_type"], by=request.user
+        )
+    except services.InvalidProgram as err:
+        form.add_error(None, str(err))
+        return TemplateResponse(request, "programs/_start_form.html", context)
     note = " The previous program was ended and kept." if had_program else ""
     messages.success(
         request,
@@ -291,8 +222,7 @@ def program_note(request, pk):
     program = _program(athlete)
     if program is None:
         raise Http404
-    program.note = request.POST.get("note", "").strip()[:2000]
-    program.save(update_fields=["note"])
+    services.set_program_note(program, request.POST.get("note", ""))
     return hx.toast(HttpResponse(""), "Program note saved")
 
 
@@ -303,11 +233,10 @@ def week_add(request, pk):
     program = _program(athlete)
     if program is None:
         raise Http404
-    last = program.weeks.order_by("-order").first()
-    week_type = last.week_type if last else WeekType.objects.active().filter(gym=athlete.gym).first()
-    if week_type is None:
-        return render_editor(request, athlete, message="Add a week type in Settings first", kind="bad")
-    week = services.add_week(program, week_type)
+    try:
+        week = services.add_week_at_end(program)
+    except services.InvalidProgram as err:
+        return render_editor(request, athlete, message=str(err), kind="bad")
     return render_editor(
         request, athlete, week.pk, f"{week.label} added at the end ({week.start_date:%-d %b})"
     )
@@ -538,8 +467,8 @@ def rx_swap(request, pk, rx_id):
         )
         response = hx.retarget(response, "#programEditor", "outerHTML")
         return hx.trigger_after_swap(response, closeModal=True)
-    candidates = _by_last_done(
-        _with_history(list(services.swap_candidates(rx)), athlete, request.coach.gym.units)
+    candidates = rail.by_last_done(
+        rail.with_history(list(services.swap_candidates(rx)), athlete, request.coach.gym.units)
     )
     return TemplateResponse(
         request, "programs/_swap_list.html", {"athlete": athlete, "rx": rx, "candidates": candidates}
