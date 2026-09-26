@@ -54,3 +54,12 @@ def recent(thread, limit=SHOWN):
 
 def thread_for(athlete):
     return Thread.for_athlete(athlete)
+
+
+def unread_count(athlete):
+    """Messages from the athlete's current coach they haven't read yet."""
+    return (
+        Message.objects.filter(thread__athlete=athlete, thread__coach=athlete.coach, read_at__isnull=True)
+        .exclude(sender=athlete.user)
+        .count()
+    )

@@ -49,3 +49,12 @@ def test_recent_is_the_last_messages_oldest_first(thread, coach):
     for i in range(5):
         services.send(thread, coach.user, f"m{i}")
     assert [m.body for m in services.recent(thread, limit=3)] == ["m2", "m3", "m4"]
+
+
+def test_unread_count_is_the_coachs_unread_messages(thread, athlete, coach):
+    services.send(thread, coach.user, "one")
+    services.send(thread, coach.user, "two")
+    services.send(thread, athlete.user, "mine")  # the athlete's own don't count
+    assert services.unread_count(athlete) == 2
+    services.mark_read(thread, athlete.user)
+    assert services.unread_count(athlete) == 0

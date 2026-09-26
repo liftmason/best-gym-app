@@ -11,7 +11,7 @@ from apps.accounts.coach_views import _header_context, coach_athlete
 from apps.ratelimit import by_user, rate_limit
 
 from . import services
-from .models import Message, Thread
+from .models import Thread
 
 
 class MessageForm(forms.Form):
@@ -126,10 +126,4 @@ def athlete_send(request):
 
 def unread_for_athlete(user):
     athlete = getattr(user, "athlete_profile", None)
-    if athlete is None:
-        return 0
-    return (
-        Message.objects.filter(thread__athlete=athlete, thread__coach=athlete.coach, read_at__isnull=True)
-        .exclude(sender=user)
-        .count()
-    )
+    return services.unread_count(athlete) if athlete is not None else 0
