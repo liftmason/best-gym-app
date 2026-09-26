@@ -20,7 +20,6 @@ from apps.accounts import services as account_services
 from apps.accounts import units
 from apps.accounts.access import athlete_required
 from apps.accounts.metrics import current_metrics, metric_specs, missing_metrics
-from apps.exercises.models import Measure
 from apps.programs.models import ProgramSession
 
 from . import charts, checkins, history, issues, sessions
@@ -185,13 +184,9 @@ def _block(se, athlete, log, unit, editable, label=""):
     history line and form videos."""
     p = sessions.prescribed(se)
     exercise = se.exercise
-    measure = exercise.measure if exercise else (Measure.TIME if p and p.duration_seconds else Measure.REPS)
+    measure = screens.measure_for(se, p)
     rows, time_unit = screens.set_rows(se, p, unit)
-    last = None
-    if exercise:
-        entries = history.exercise_history(athlete, [exercise.pk], exclude_log=log, limit=1).get(exercise.pk)
-        if entries:
-            last = history.last_line(entries[0], unit, athlete.today())
+    last = screens.last_time(athlete, se, log, unit)
     return {
         "se": se,
         "p": p,
@@ -421,7 +416,7 @@ def progress(request):
         }
         for pr in history.lifetime_prs(athlete)
     ]
-    recent = list(athlete.session_logs.finished().order_by("-date", "-finished_at")[:5])
+    recent = history.recent_finished(athlete)
     now = timezone.now()
     lifts = charts.progress_lifts(athlete)
     lift = next((e for e in lifts if str(e.pk) == request.GET.get("lift")), lifts[0] if lifts else None)

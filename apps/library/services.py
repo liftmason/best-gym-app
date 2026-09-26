@@ -197,7 +197,10 @@ def remove_session(session):
 
 @transaction.atomic
 def add_slot(session, exercise, index=None, tags=None):
-    """A fixed slot (or a tag slot when `tags` is given) at the end, or at `index`."""
+    """A fixed slot (or a tag slot when `tags` is given) at the end, or at `index`. The
+    exercise must be one of the template's gym's, and not archived."""
+    if exercise.gym_id != session.week.template.gym_id or exercise.archived:
+        raise InvalidTemplate("That exercise isn't in this gym's library.")
     slot = TemplateSlot.objects.create(
         session=session,
         order=session.slots.count(),
@@ -237,7 +240,11 @@ def remove_slot(slot):
     _renumber(session.slots.all())
 
 
-def add_habit(template, name, emoji, cadence, note):
+def add_habit(template, name, emoji, cadence, note=""):
+    """A habit prescribed with the template (same rules as an athlete's; habits.InvalidHabit)."""
+    from apps.programs import habits
+
+    name, emoji, cadence, note = habits.clean(name, emoji, cadence, note)
     return TemplateHabit.objects.create(
         template=template, order=template.habits.count(), name=name, emoji=emoji, cadence=cadence, note=note
     )
@@ -273,6 +280,7 @@ def save_week(gym, by, program_week, name, description=""):
     sessions = board_sessions(program_week)
     if not sessions:
         raise InvalidTemplate("This week has no sessions to save")
+    name, description = check_save_names(name, description)
     template = Template.objects.create(
         gym=gym,
         kind=TemplateKind.WEEK,
@@ -292,6 +300,7 @@ def save_week(gym, by, program_week, name, description=""):
 @transaction.atomic
 def save_session(gym, by, source, name, description=""):
     """Save a template session or a program session as a saved session."""
+    name, description = check_save_names(name, description)
     template = Template.objects.create(
         gym=gym,
         kind=TemplateKind.SESSION,
@@ -308,6 +317,7 @@ def save_session(gym, by, source, name, description=""):
 
 @transaction.atomic
 def save_template_week(gym, by, template_week, name, description=""):
+    name, description = check_save_names(name, description)
     template = Template.objects.create(
         gym=gym,
         kind=TemplateKind.WEEK,
@@ -325,6 +335,7 @@ def save_program(gym, by, program, name, description=""):
     """An athlete's program as a template: every week with work, its sessions in day order."""
     if not any(board_sessions(w) for w in program.weeks.all()):
         raise InvalidTemplate("Nothing to save — this program has no sessions yet")
+    name, description = check_save_names(name, description)
     template = Template.objects.create(
         gym=gym,
         kind=TemplateKind.PROGRAM,
@@ -442,7 +453,8 @@ def check_points(points):
 
 
 def set_week_type(week, week_type):
-    if week_type.gym_id != week.template.gym_id:
+    """One of the gym's week types; an archived one only if the week already has it."""
+    if week_type.gym_id != week.template.gym_id or (week_type.archived and week_type.pk != week.week_type_id):
         raise InvalidTemplate("Pick one of your week types.")
     week.week_type = week_type
     week.save(update_fields=["week_type"])
@@ -555,3 +567,36 @@ def check_save_names(name, description=""):
     if len(name) > MAX_NAME or len(description) > MAX_DESCRIPTION:
         raise InvalidTemplate(f"Names are up to {MAX_NAME} characters, descriptions {MAX_DESCRIPTION}.")
     return name, description
+
+
+def card_names(template):
+    """For a saved session's library card: its exercises' names, a tag slot as "[tag]"."""
+    first = template.weeks.all()[0] if template.weeks.all() else None
+    session = first.sessions.all()[0] if first and first.sessions.all() else None
+    if session is None:
+        return []
+    return [
+        f"[{sl.tags.all()[0].name}]" if sl.is_tag and sl.tags.all() else sl.exercise.name
+        for sl in session.slots.all()
+    ]
+
+
+def part_summary(what, part):
+    """What saving a template week ("week") or session to the library would save."""
+
+    def plural(n, word):
+        return f"{n} {word}{'s' if n != 1 else ''}"
+
+    if what == "week":
+        sessions = list(part.sessions.all())
+        slots = sum(s.slots.count() for s in sessions)
+        return {
+            "week_type": part.week_type,
+            "text": f"{plural(len(sessions), 'session')} · {plural(slots, 'exercise slot')}",
+        }
+    return {"week_type": None, "text": plural(part.slots.count(), "exercise slot")}
+
+
+def weeks_with_sessions(program):
+    """How many of a program's weeks have sessions (what saving it as a template keeps)."""
+    return sum(1 for w in program.weeks.all() if board_sessions(w))

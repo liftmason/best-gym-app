@@ -205,6 +205,8 @@ def step_done(step):
 
 def check_warmup(se, checked):
     """Tick or untick a warm-up drill while the session can still change."""
+    if not se.warmup:
+        raise ValueError("Only warm-up drills are ticked off; lifts log sets.")
     _open(se.session_log)
     se.checked_at = timezone.now() if checked else None
     se.save(update_fields=["checked_at"])

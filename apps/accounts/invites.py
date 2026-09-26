@@ -8,7 +8,7 @@ from django.utils import timezone
 from apps.workouts.models import copy_defaults_to
 
 from .models import Athlete, Invite, InviteStatus, User
-from .services import AccountExists, email_taken, valid_timezone
+from .services import AccountExists, check_new_account, email_taken, valid_timezone
 
 
 class InviteUnusable(Exception):
@@ -17,6 +17,10 @@ class InviteUnusable(Exception):
 
 class AlreadyAthlete(Exception):
     """This account already has an active athlete profile."""
+
+
+class InvalidInvite(Exception):
+    """With the message to show."""
 
 
 class ArchivedAthlete(Exception):
@@ -32,17 +36,33 @@ def template_choices(gym):
     )
 
 
-def create(coach, email="", starting_template=None):
+def create(coach, email="", starting_template=None, base_url=None):
     """A pending invite. `starting_template` must be one of the coach's gym's program
-    templates or saved weeks."""
+    templates or saved weeks. With an email address and the site's `base_url`, the join link
+    is emailed; with no address the coach shares the link themselves."""
+    from django.core.exceptions import ValidationError
+    from django.core.validators import validate_email
+
     from apps.library.models import TemplateKind
+
+    email = (email or "").strip()
+    if email:
+        try:
+            validate_email(email)
+        except ValidationError:
+            raise InvalidInvite("Enter a valid email address.") from None
 
     if starting_template is not None and (
         starting_template.gym_id != coach.gym_id
         or starting_template.kind not in (TemplateKind.PROGRAM, TemplateKind.WEEK)
     ):
         raise ValueError("That template isn't one of this gym's programs or saved weeks.")
-    return Invite.objects.create(coach=coach, email=email or "", starting_template=starting_template)
+    invite = Invite.objects.create(coach=coach, email=email, starting_template=starting_template)
+    if email and base_url:
+        from .emails import send_invite_email
+
+        send_invite_email(base_url, invite)
+    return invite
 
 
 def revoke(coach, invite_id):
@@ -78,6 +98,7 @@ def accept(invite_id, *, user=None, name="", email="", password=None, timezone_n
     if user is not None:
         check_can_join(user)
     else:
+        name = check_new_account(name, email, password)
         if email_taken(email):
             raise AccountExists(email)
         user = User.objects.create_user(

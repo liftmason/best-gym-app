@@ -139,9 +139,9 @@ class InvalidHabit(Exception):
     """With the message to show."""
 
 
-def prescribe(athlete, name, emoji, cadence, note="", source_template=None):
-    """Add a habit unless the athlete already has an active one with that name (returns None
-    then). The name is tidied and required; the note is optional."""
+def clean(name, emoji, cadence, note=""):
+    """(name, emoji, cadence, note) for a habit, athlete's or template's: the name tidied and
+    required, the note optional."""
     name = " ".join((name or "").split())
     note = (note or "").strip()
     if not name:
@@ -153,6 +153,13 @@ def prescribe(athlete, name, emoji, cadence, note="", source_template=None):
     emoji = emoji or EMOJI[0]
     if len(emoji) > 8:
         raise InvalidHabit("Pick an icon")
+    return name, emoji, cadence, note
+
+
+def prescribe(athlete, name, emoji, cadence, note="", source_template=None):
+    """Add a habit unless the athlete already has an active one with that name (returns None
+    then)."""
+    name, emoji, cadence, note = clean(name, emoji, cadence, note)
     if active(athlete).filter(name__iexact=name).exists():
         return None
     return Habit.objects.create(
@@ -169,3 +176,8 @@ def prescribe(athlete, name, emoji, cadence, note="", source_template=None):
 def archive(habit):
     habit.archived_at = timezone.now()
     habit.save(update_fields=["archived_at"])
+
+
+def done_count(items):
+    """How many of a day's habit items are done (or already met for the week)."""
+    return sum(1 for i in items if i["done"] or i["met_for_week"])

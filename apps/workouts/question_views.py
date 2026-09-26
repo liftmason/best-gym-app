@@ -10,6 +10,7 @@ from django.views.decorators.http import require_POST
 from apps import hx
 from apps.accounts.access import coach_required
 from apps.accounts.coach_views import coach_athlete
+from apps.accounts.services import coach_athletes
 
 from . import questions
 from .models import CheckinQuestion, QuestionType
@@ -48,15 +49,7 @@ class Scope:
         """Every builder request carries the wording currently on screen (text_<id>,
         low_label_<id>, high_label_<id>, detail_label_<id>). Save it before acting, so a quick
         edit-then-click can't lose the edit whatever order the requests arrive in."""
-        for q in questions.active(self.owner):
-            fields = {
-                name: post[f"{name}_{q.pk}"]
-                for name in ("text", "low_label", "high_label", "detail_label")
-                if f"{name}_{q.pk}" in post
-            }
-            if not (fields.get("text") or "").strip():
-                fields.pop("text", None)  # a cleared wording is refused on its own save
-            questions.update(q, **fields)
+        questions.save_pending_edits(self.owner, post)
 
     def render(self, message=None, kind=""):
         response = TemplateResponse(
@@ -195,6 +188,6 @@ def defaults_page(request):
             "questions": questions.active(scope.owner),
             "builder_prefix": scope.prefix,
             "builder_id": scope.builder_id,
-            "athlete_count": request.coach.athletes.filter(archived_at__isnull=True).count(),
+            "athlete_count": coach_athletes(request.coach).count(),
         },
     )

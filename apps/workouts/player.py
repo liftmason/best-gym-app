@@ -116,3 +116,26 @@ def top_sets(log):
     return sum(
         1 for se in log.exercises.prefetch_related("sets") if any(s.done and s.load_kg for s in se.sets.all())
     )
+
+
+def last_time(athlete, se, log, unit):
+    """ "78 kg ×1 · 7 days ago" for the exercise's last logged top set before this session,
+    or None the first time (or if the exercise was deleted)."""
+    from . import history
+
+    if se.exercise is None:
+        return None
+    entries = history.exercise_history(athlete, [se.exercise_id], exclude_log=log, limit=1).get(
+        se.exercise_id
+    )
+    return history.last_line(entries[0], unit, athlete.today()) if entries else None
+
+
+def measure_for(se, p):
+    """How the exercise is logged: its own measure, or (deleted from the library) time if it
+    was prescribed as time, else reps."""
+    from apps.exercises.models import Measure
+
+    if se.exercise is not None:
+        return se.exercise.measure
+    return Measure.TIME if p and p.duration_seconds else Measure.REPS

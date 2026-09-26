@@ -189,3 +189,21 @@ def remind(athlete, base_url):
     if missing:
         send_metrics_reminder(base_url, athlete, missing)
     return missing
+
+
+def save_missing(athlete, data, source=MeasurementSource.ATHLETE):
+    """The athlete fills in only what's still missing (where the coach's reminder points).
+    Values for metrics they already have are ignored. Returns the keys filled in."""
+    missing = missing_metrics(athlete)
+    cleaned = validate(athlete.gym, {k: v for k, v in data.items() if k in missing})
+    filled = [k for k, v in cleaned.items() if v not in (None, "")]
+    save_metrics(athlete, cleaned, source=source)
+    return filled
+
+
+def recent_history(athlete, limit=10):
+    """[(what, entry)]: the latest bodyweight and max entries together, newest first."""
+    rows = [("Bodyweight", e) for e in athlete.bodyweights.all()[:limit]] + [
+        (e.exercise.name, e) for e in athlete.maxes.select_related("exercise")[:limit]
+    ]
+    return sorted(rows, key=lambda pair: (pair[1].date, pair[1].created_at), reverse=True)[:limit]

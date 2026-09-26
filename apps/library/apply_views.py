@@ -20,6 +20,7 @@ from apps import hx
 from apps.accounts.access import coach_required
 from apps.accounts.coach_views import coach_athlete
 from apps.accounts.models import Athlete
+from apps.accounts.services import coach_athletes
 from apps.programs.prescriptions import board_items, summary
 from apps.programs.program_views import _program, _week, render_editor
 
@@ -114,9 +115,7 @@ class StartForm(forms.Form):
     def __init__(self, *args, coach, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["template"].queryset = apply.sources(coach.gym)
-        self.fields["athlete"].queryset = coach.athletes.filter(archived_at__isnull=True).select_related(
-            "user"
-        )
+        self.fields["athlete"].queryset = coach_athletes(coach).select_related("user")
 
 
 @coach_required
@@ -136,8 +135,7 @@ def apply_modal(request):
         )
         return response
     athletes = [
-        {"athlete": a, "program": _program(a)}
-        for a in request.coach.athletes.filter(archived_at__isnull=True).select_related("user")
+        {"athlete": a, "program": _program(a)} for a in coach_athletes(request.coach).select_related("user")
     ]
     return TemplateResponse(
         request,
@@ -298,7 +296,7 @@ def save_program(request, pk):
             "good",
         )
         return hx.trigger_after_swap(response, closeModal=True)
-    weeks = sum(1 for w in program.weeks.all() if services.board_sessions(w))
+    weeks = services.weeks_with_sessions(program)
     return TemplateResponse(
         request,
         "library/_save_modal.html",

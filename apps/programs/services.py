@@ -340,8 +340,15 @@ def add_prescription(day, exercise, athlete, session_id=None, index=None, by=Non
     athlete's gym's, and not archived."""
     if exercise.gym_id != athlete.gym_id or exercise.archived:
         raise NotAllowed("That exercise isn't in this gym's library.")
+    if session_id:
+        # Dropped onto a session: that session decides the day, anywhere in the same program.
+        session = ProgramSession.objects.filter(pk=session_id, day__week__program=day.week.program_id).first()
+        if session is None:
+            raise NotAllowed("That session isn't in this program.")
+        day = session.day
+    else:
+        session = session_for(day)
     _record(day.week, by, f"Add {exercise.name}")
-    session = session_for(day, session_id)
     next_order = (session.prescriptions.aggregate(m=Max("order"))["m"] or 0) + 1
     rx = Prescription.objects.create(
         session=session, order=next_order, exercise=exercise, **default_dose(exercise, athlete)
@@ -429,3 +436,47 @@ def swap_exercise(rx, exercise, by=None):
     rx.exercise = exercise
     rx.save(update_fields=["exercise"])
     return rx
+
+
+def board_days(week, unit):
+    """The week as the board shows it: each day with its sessions, each session's items in
+    board order (warm-ups, sections, supersets) with their dose summary in `unit`, how many
+    items the day has, and whether a session on it is done."""
+    from apps.workouts.history import finished_session_ids
+
+    from .prescriptions import board_items, summary
+
+    done_ids = finished_session_ids(week.program.athlete)
+    days = []
+    for day in week.days.prefetch_related(
+        "sessions__prescriptions__exercise", "sessions__prescriptions__set_overrides"
+    ):
+        day_sessions = []
+        for session in day.sessions.all():
+            items = board_items(
+                session.prescriptions.all(),
+                lambda rx: {"rx": rx, "summary": summary(rx, unit, list(rx.set_overrides.all()))},
+            )
+            day_sessions.append({"session": session, "items": items})
+        days.append(
+            {
+                "day": day,
+                "sessions": day_sessions,
+                "count": sum(len(s["items"]) for s in day_sessions),
+                "done": any(s["session"].pk in done_ids for s in day_sessions),
+            }
+        )
+    return days
+
+
+def week_type_choices(week):
+    """The gym's active week types, plus the week's own if it has been archived since."""
+    from django.db.models import Q
+
+    from .models import WeekType
+
+    return list(
+        WeekType.objects.filter(gym=week.program.athlete.gym).filter(
+            Q(archived=False) | Q(pk=week.week_type_id)
+        )
+    )

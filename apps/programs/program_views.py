@@ -4,7 +4,6 @@ returns the redrawn editor (#programEditor) with a toast."""
 
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
@@ -20,7 +19,7 @@ from . import rail, services, undo
 from .dose import MAX_CUSTOM_FIELDS, MAX_SETS
 from .forms import PrescriptionForm, StartProgramForm, set_rows_initial
 from .models import LoadBasis, WeekType
-from .prescriptions import board_items, load_text, suggested_weight, summary
+from .prescriptions import load_text, suggested_weight, summary
 
 # ------------------------------------------------------ lookups (always scoped to the coach's athlete)
 
@@ -60,7 +59,6 @@ def _current_week(program, athlete, week_id=None):
 
 
 def editor_context(request, athlete, week_id=None):
-    gym = athlete.gym
     unit = request.coach.gym.units
     program = _program(athlete)
     context = {
@@ -76,29 +74,8 @@ def editor_context(request, athlete, week_id=None):
     context.update({"weeks": weeks, "week": week})
     if week is None:
         return context
-    from apps.workouts.history import finished_session_ids
-
-    done_ids = finished_session_ids(athlete)
-    days = []
-    for day in week.days.prefetch_related(
-        "sessions__prescriptions__exercise", "sessions__prescriptions__set_overrides"
-    ):
-        sessions = []
-        for session in day.sessions.all():
-            items = board_items(
-                session.prescriptions.all(),
-                lambda rx: {"rx": rx, "summary": summary(rx, unit, list(rx.set_overrides.all()))},
-            )
-            sessions.append({"session": session, "items": items})
-        days.append(
-            {
-                "day": day,
-                "sessions": sessions,
-                "count": sum(len(s["items"]) for s in sessions),
-                "done": any(s["session"].pk in done_ids for s in sessions),
-            }
-        )
-    week_types = list(WeekType.objects.filter(gym=gym).filter(Q(archived=False) | Q(pk=week.week_type_id)))
+    days = services.board_days(week, unit)
+    week_types = services.week_type_choices(week)
     context.update({"days": days, "week_types": week_types, "undo_entry": undo.latest(week)})
     return context
 

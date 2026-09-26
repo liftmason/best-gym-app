@@ -13,9 +13,9 @@ from apps.exercises.services import trackable
 from apps.programs.views import card_context as week_type_card_context
 from apps.ratelimit import by_ip, by_user, client_ip, rate_limit, too_many
 
-from . import invites, services
+from . import invites, metrics, services
 from .access import athlete_required, coach_required, home_url_for
-from .emails import invite_url, send_invite_email
+from .emails import invite_url
 from .forms import (
     CoachSignupForm,
     GymSettingsForm,
@@ -99,6 +99,9 @@ def signup(request):
         except services.AccountExists:  # taken since the form checked
             form.add_error("email", "An account with this email already exists. Log in instead.")
             return TemplateResponse(request, "accounts/signup.html", {"form": form})
+        except services.InvalidAccount as err:
+            form.add_error(None, str(err))
+            return TemplateResponse(request, "accounts/signup.html", {"form": form})
         user = coach.user
         login(request, user, backend="django.contrib.auth.backends.ModelBackend")
         messages.success(request, f"Welcome to Platform, {user.get_short_name()}")
@@ -124,10 +127,9 @@ def invite_create(request):
     if not form.is_valid():
         return TemplateResponse(request, "partials/invite_modal.html", {"form": form})
     email = form.cleaned_data["email"]
-    invite = invites.create(request.coach, email, form.cleaned_data["starting_template"])
+    invite = invites.create(request.coach, email, form.cleaned_data["starting_template"], _base_url(request))
     join_url = invite_url(_base_url(request), invite)
     if email:
-        send_invite_email(_base_url(request), invite)
         toast = f"Invite sent to {email}"
     else:
         toast = "Invite link created — share it with your athlete"
@@ -199,6 +201,11 @@ def join(request, token):
             return TemplateResponse(request, "accounts/join_invalid.html", {"invite": invite}, status=410)
         except AccountExists:  # taken since the form checked
             form.add_error("email", "An account with this email already exists. Log in instead.")
+            return TemplateResponse(
+                request, "accounts/join.html", {"invite": invite, "form": form, "step": 1}
+            )
+        except services.InvalidAccount as err:
+            form.add_error(None, str(err))
             return TemplateResponse(
                 request, "accounts/join.html", {"invite": invite, "form": form, "step": 1}
             )
@@ -292,8 +299,7 @@ def update_numbers(request):
         return redirect("app:profile")
     form = MetricsForm(request.POST or None, gym=athlete.gym, units=athlete.units, only=missing)
     if request.method == "POST" and form.is_valid():
-        filled = [k for k in missing if form.cleaned_data.get(k) not in (None, "")]
-        save_metrics(athlete, form.cleaned_data, source=MeasurementSource.ATHLETE)
+        filled = metrics.save_missing(athlete, form.cleaned_data)
         coach = athlete.coach.user.get_short_name()
         if filled:
             messages.success(request, f"Thanks — {coach} can see your numbers")

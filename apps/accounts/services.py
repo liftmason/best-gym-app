@@ -17,6 +17,30 @@ class AccountExists(Exception):
     """Someone already has an account with this email (emails match regardless of case)."""
 
 
+class InvalidAccount(Exception):
+    """With the message to show (a weak password, a missing or overlong name)."""
+
+
+MAX_NAME, MAX_GYM_NAME = 150, 120
+
+
+def check_new_account(name, email, password=None):
+    """A person's name (required, up to 150 characters) and, when given, a password that
+    passes Django's password validators. Returns the tidied name."""
+    from django.contrib.auth import password_validation
+    from django.core.exceptions import ValidationError
+
+    name = " ".join((name or "").split())
+    if not name or len(name) > MAX_NAME:
+        raise InvalidAccount(f"Enter a name of up to {MAX_NAME} characters.")
+    if password:
+        try:
+            password_validation.validate_password(password, User(email=email or "", name=name))
+        except ValidationError as err:
+            raise InvalidAccount(" ".join(err.messages)) from None
+    return name
+
+
 def valid_timezone(value, fallback):
     """A browser- or phone-reported IANA zone if it's real, else `fallback`."""
     return value if value in zoneinfo.available_timezones() else fallback
@@ -32,6 +56,10 @@ def sign_up_coach(*, name, email, gym_name, units, starter, timezone, password=N
     questions, and the gym's zone from the coach's device (UTC if it isn't a real zone)."""
     if units not in Units.values:
         raise ValueError(f"Unknown units: {units!r}")
+    name = check_new_account(name, email, password)
+    gym_name = " ".join((gym_name or "").split())
+    if not gym_name or len(gym_name) > MAX_GYM_NAME:
+        raise InvalidAccount(f"Enter a gym name of up to {MAX_GYM_NAME} characters.")
     if starter not in PACKS:
         raise ValueError(f"Unknown starter pack: {starter!r}")
     if email_taken(email):

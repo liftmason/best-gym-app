@@ -91,7 +91,7 @@ def athlete_card_context(athlete, which="today"):
         "habit_items": items,
         "habit_day": which,
         "habit_date": date,
-        "habits_done": sum(1 for i in items if i["done"] or i["met_for_week"]),
+        "habits_done": habits.done_count(items),
         "has_habits": habits.active(athlete).exists(),
     }
 

@@ -298,3 +298,8 @@ def next_session_date(athlete, after):
 
 def logged_exercises(log):
     return SessionExercise.objects.filter(session_log=log).prefetch_related("sets")
+
+
+def recent_finished(athlete, limit=5):
+    """The athlete's latest finished sessions, newest first."""
+    return list(athlete.session_logs.finished().order_by("-date", "-finished_at")[:limit])

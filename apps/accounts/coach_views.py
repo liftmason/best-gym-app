@@ -117,12 +117,7 @@ def _metric_cards(request, athlete):
 
 
 def _metrics_context(request, athlete):
-    recent = sorted(
-        [("Bodyweight", e) for e in athlete.bodyweights.all()[:10]]
-        + [(e.exercise.name, e) for e in athlete.maxes.select_related("exercise")[:10]],
-        key=lambda pair: (pair[1].date, pair[1].created_at),
-        reverse=True,
-    )[:10]
+    recent = metrics.recent_history(athlete)
     gym_units = request.coach.gym.units
     history = [
         {

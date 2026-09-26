@@ -135,7 +135,25 @@ def reset_to_defaults(athlete):
 def push_defaults(coach):
     """Every one of the coach's active athletes gets fresh copies of the defaults. Returns
     how many athletes were updated."""
-    athletes = list(coach.athletes.filter(archived_at__isnull=True))
+    from apps.accounts.services import coach_athletes
+
+    athletes = list(coach_athletes(coach))
     for athlete in athletes:
         copy_defaults_to(athlete)
     return len(athletes)
+
+
+def save_pending_edits(owner, post):
+    """The builder sends every question's on-screen wording (text_<id>, low_label_<id>,
+    high_label_<id>, detail_label_<id>) with each request. Save it before acting, so a quick
+    edit-then-click can't lose the edit whatever order the requests arrive in. A cleared
+    wording is left alone here (its own save reports it)."""
+    for q in active(owner):
+        fields = {
+            name: post[f"{name}_{q.pk}"]
+            for name in ("text", "low_label", "high_label", "detail_label")
+            if f"{name}_{q.pk}" in post
+        }
+        if not (fields.get("text") or "").strip():
+            fields.pop("text", None)
+        update(q, **fields)

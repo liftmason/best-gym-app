@@ -93,13 +93,7 @@ def library_page(request, ptab):
     for t in templates:
         st = services.stats(t)
         first = t.weeks.all()[0] if st["weeks"] else None
-        names = []
-        if kind == TemplateKind.SESSION and first:
-            for s in first.sessions.all()[:1]:
-                names = [
-                    f"[{sl.tags.all()[0].name}]" if sl.is_tag and sl.tags.all() else sl.exercise.name
-                    for sl in s.slots.all()
-                ]
+        names = services.card_names(t) if kind == TemplateKind.SESSION else []
         cards.append({"template": t, "stats": st, "first": first, "names": names})
     context = {"panel": "programming", "title": "Programming", "ptab": ptab, "kind": kind, "cards": cards}
     return TemplateResponse(request, "library/list.html", context)
@@ -508,7 +502,12 @@ def habit_add(request, pk):
     if not form.is_valid():
         return hx.toast(HttpResponse(status=204), "Give the habit a name", "err")
     d = form.cleaned_data
-    services.add_habit(template, d["name"], d["emoji"], d["cadence"], d["note"])
+    from apps.programs.habits import InvalidHabit
+
+    try:
+        services.add_habit(template, d["name"], d["emoji"], d["cadence"], d["note"])
+    except InvalidHabit as err:
+        return hx.toast(HttpResponse(status=204), str(err), "err")
     return render_editor(request, template, "Habit added to the template", "good")
 
 
@@ -591,20 +590,6 @@ def save_part(request, pk, what, part_id):
         "form": form,
         "what": what,
         "action": reverse("coach:template_save_part", args=[template.pk, what, part.pk]),
-        "summary": _part_summary(what, part),
+        "summary": services.part_summary(what, part),
     }
     return TemplateResponse(request, "library/_save_modal.html", context)
-
-
-def _part_summary(what, part):
-    def plural(n, word):
-        return f"{n} {word}{'s' if n != 1 else ''}"
-
-    if what == "week":
-        sessions = list(part.sessions.all())
-        slots = sum(s.slots.count() for s in sessions)
-        return {
-            "week_type": part.week_type,
-            "text": f"{plural(len(sessions), 'session')} · {plural(slots, 'exercise slot')}",
-        }
-    return {"week_type": None, "text": plural(part.slots.count(), "exercise slot")}
