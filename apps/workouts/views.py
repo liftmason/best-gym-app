@@ -21,10 +21,11 @@ from apps.accounts import units
 from apps.accounts.access import athlete_required
 from apps.accounts.metrics import current_metrics, metric_specs, missing_metrics
 from apps.exercises.models import Measure
-from apps.programs.models import LoadBasis, ProgramSession
-from apps.programs.prescriptions import layout, load_text, rir_text, summary
+from apps.programs.models import ProgramSession
 
 from . import charts, checkins, history, issues, sessions
+from . import player as screens
+from . import week as week_screen
 from .forms import RIR_CHOICES, FinishForm, IssueForm
 from .models import EDIT_WINDOW, OTHER_OPTION, SessionLog
 from .video_views import video_context
@@ -45,24 +46,6 @@ def _coach_first_name(athlete):
 # ---------------------------------------------------------------- home / week
 
 
-def _published_weeks(program):
-    return list(program.weeks.filter(published=True).select_related("week_type")) if program else []
-
-
-def _pick_week(weeks, today, wanted):
-    if not weeks:
-        return None
-    if wanted:
-        for w in weeks:
-            if w.start_date <= wanted <= w.end_date:
-                return w
-    for w in weeks:
-        if w.start_date <= today <= w.end_date:
-            return w
-    # Before the first published week, show it; after the last, show the last.
-    return weeks[0] if today < weeks[0].start_date else weeks[-1]
-
-
 def _parse_date(value):
     try:
         return datetime.date.fromisoformat(value) if value else None
@@ -70,99 +53,20 @@ def _parse_date(value):
         return None
 
 
-def _session_card(athlete, session, log, day_date, today, unit):
-    warmups, entries = layout(session.prescriptions.all())
-    items = []
-    if warmups:
-        n = len(warmups)
-        items.append({"name": "Warm-up", "dose": f"{n} drill{'s' if n != 1 else ''}"})
-    for e in entries:
-        rx = e["item"]
-        dose = summary(rx, unit, list(rx.set_overrides.all()), custom=False)
-        items.append({"name": f"{e['label']} {rx.exercise.name}".strip(), "dose": dose})
-    card = {
-        "session": session,
-        "log": log,
-        "items": items,
-        "count": len(entries),
-    }
-    if log and log.finished:
-        card["state"] = "done"
-        card["editable"] = log.editable()
-    elif log:
-        card["state"] = "paused"
-    elif day_date == today:
-        card["state"] = "start"
-    elif day_date < today:
-        card["state"] = "backfill"
-    else:
-        card["state"] = "locked"
-    return card
-
-
 @athlete_required
 def home(request):
     athlete = request.athlete
-    today = athlete.today()
-    unit = athlete.units
-    program = athlete.programs.active().first()
-    weeks = _published_weeks(program)
-    week = _pick_week(weeks, today, _parse_date(request.GET.get("week")))
     from apps.programs.habit_views import athlete_card_context
 
+    view = week_screen.week_view(
+        athlete, _parse_date(request.GET.get("week")), _parse_date(request.GET.get("day"))
+    )
     context = {
         "tab": "week",
-        "program": program,
-        "week": week,
-        "today": today,
         "coach_name": _coach_first_name(athlete),
         **athlete_card_context(athlete),
+        **view,
     }
-    paused = list(athlete.session_logs.unfinished().order_by("-started_at"))
-    if week is None:
-        context["paused"] = paused
-        return TemplateResponse(request, "app/home.html", context)
-
-    days = list(
-        week.days.prefetch_related(
-            "sessions__prescriptions__exercise", "sessions__prescriptions__set_overrides", "sessions__logs"
-        )
-    )
-    done_ids = history.finished_session_ids(athlete)
-    selected_date = _parse_date(request.GET.get("day"))
-    if not selected_date or not week.start_date <= selected_date <= week.end_date:
-        selected_date = today if week.start_date <= today <= week.end_date else week.start_date
-    strip = []
-    selected = None
-    for day in days:
-        status = history.day_status(day, today, done_ids)
-        sessions_ = list(day.sessions.all())
-        entry = {
-            "day": day,
-            "status": status,
-            "count": sum(1 for s in sessions_ for rx in s.prescriptions.all() if not rx.warmup),
-            "is_today": day.date == today,
-            "selected": day.date == selected_date,
-        }
-        strip.append(entry)
-        if entry["selected"]:
-            selected = entry
-            entry["cards"] = [
-                _session_card(athlete, s, next(iter(s.logs.all()), None), day.date, today, unit)
-                for s in sessions_
-            ]
-    index = weeks.index(week)
-    week_number = week.order + 1
-    context.update(
-        {
-            "strip": strip,
-            "selected": selected,
-            "week_number": week_number,
-            "prev_week": weeks[index - 1] if index > 0 else None,
-            "next_week": weeks[index + 1] if index + 1 < len(weeks) else None,
-            "paused": [p for p in paused if p.date != selected_date],
-        }
-    )
     return TemplateResponse(request, "app/home.html", context)
 
 
@@ -190,26 +94,14 @@ def _questions(athlete):
 
 
 def _resume_url(log):
-    """Where to pick a session up: the next unanswered check-in question, else the first
-    exercise that still has sets to do."""
-    if not log.finished and not log.checkin_skipped:
-        answered = set(log.answers.values_list("question_id", flat=True))
-        questions = _questions(log.athlete)
-        if questions and not log.exercises.filter(sets__isnull=False).exists():
-            for n, q in enumerate(questions, start=1):
-                if q.pk not in answered:
-                    return reverse("app:checkin", args=[log.pk, n])
-            return reverse("app:checkin_summary", args=[log.pk])
-    steps = sessions.steps(log.exercises.prefetch_related("sets"))
-    # Once any set is logged the warm-up is behind them, ticked or not.
-    lifting = any(s.done for step in steps for se in step["items"] for s in se.sets.all())
-    for n, step in enumerate(steps, start=1):
-        if step["warmup"] and lifting:
-            continue
-        if not sessions.step_done(step):
-            return reverse("app:player", args=[log.pk, n])
-    if log.finished and steps:
-        return reverse("app:player", args=[log.pk, 1])
+    """The page for sessions' resume point (apps/workouts/player.py)."""
+    where, n = screens.resume_point(log)
+    if where == "checkin":
+        return reverse("app:checkin", args=[log.pk, n])
+    if where == "checkin_summary":
+        return reverse("app:checkin_summary", args=[log.pk])
+    if where == "player":
+        return reverse("app:player", args=[log.pk, n])
     return reverse("app:finish", args=[log.pk])
 
 
@@ -288,83 +180,13 @@ def checkin_summary(request, log_id):
 # ---------------------------------------------------------------- session player
 
 
-def _time_unit(p):
-    """Timed work is entered in minutes when it's prescribed in whole minutes of 2 or more."""
-    seconds = p.duration_seconds if p else None
-    return "min" if seconds and seconds >= 120 and seconds % 60 == 0 else "s"
-
-
-def _set_rows(se, p, unit):
-    logged = {s.set_number: s for s in se.sets.all()}
-    planned = (len(p.overrides) or p.sets) if p else 0
-    count = max([planned, *logged.keys(), 1])
-    overrides = {o.set_number: o for o in p.overrides} if p else {}
-    time_unit = _time_unit(p)
-    rows = []
-    for number in range(1, count + 1):
-        s = logged.get(number)
-        o = overrides.get(number)
-        if s is not None:
-            load = units.from_kg(s.load_kg, unit).normalize() if s.load_kg is not None else ""
-            reps = s.reps if s.reps is not None else ""
-            seconds = s.duration_seconds
-            rir = "" if s.rir is None else str(s.rir)
-            done = s.done
-        else:
-            load, reps, rir, done = "", "", "", False
-            seconds = p.duration_seconds if p else None
-            if p:
-                load_value = o.load_value if o and o.load_value is not None else p.load_value
-                kg = sessions.target_kg(p, load_value)
-                load = sessions.plate_round(kg, unit) if kg else ""
-                reps = (o.reps if o and o.reps is not None else p.reps) or ""
-        if seconds is None:
-            time = ""
-        elif time_unit == "min":
-            time = format((seconds / 60), "g")
-        else:
-            time = seconds
-        rows.append(
-            {
-                "number": number,
-                "load": format(load, "f") if load != "" else "",
-                "reps": reps,
-                "time": time,
-                "rir": rir,
-                "done": done,
-                "placeholder": (o.rep_scheme if o and o.rep_scheme else p.rep_scheme) if p else "",
-            }
-        )
-    return rows, time_unit
-
-
-def _banner(p, unit):
-    if p is None:
-        return None
-    reps = p.rep_scheme or ("—" if not p.sets else "")
-    load = load_text(p.load_basis, p.load_value, unit)
-    hint = "prescribed load" if load else ""
-    if p.overrides:
-        hint = "loads vary by set"
-    if p.load_basis == LoadBasis.PERCENT:
-        kg = sessions.target_kg(p, p.load_value)
-        if kg:
-            hint = f"≈ {sessions.plate_round(kg, unit)} {unit} from your {p.max_exercise} max"
-            if p.overrides:
-                hint = f"loads vary by set · {p.max_exercise} max {units.display(p.max_kg, unit)}"
-        else:
-            hint = "no max on file — go by feel"
-    rir = rir_text(p.rir, p.rir_max)
-    return {"sets": len(p.overrides) or p.sets, "reps": reps, "load": load, "rir": rir, "hint": hint}
-
-
 def _block(se, athlete, log, unit, editable, label=""):
     """Everything the player shows for one exercise: the rx banner, set rows, demo link,
     history line and form videos."""
     p = sessions.prescribed(se)
     exercise = se.exercise
     measure = exercise.measure if exercise else (Measure.TIME if p and p.duration_seconds else Measure.REPS)
-    rows, time_unit = _set_rows(se, p, unit)
+    rows, time_unit = screens.set_rows(se, p, unit)
     last = None
     if exercise:
         entries = history.exercise_history(athlete, [exercise.pk], exclude_log=log, limit=1).get(exercise.pk)
@@ -378,7 +200,7 @@ def _block(se, athlete, log, unit, editable, label=""):
         "measure": measure,
         "rows": rows,
         "time_unit": time_unit,
-        "banner": _banner(p, unit),
+        "banner": screens.banner(p, unit),
         "custom_fields": p.custom_fields if p else [],
         "last": last,
         **video_context(se, editable),
@@ -509,13 +331,6 @@ def pause(request, log_id):
 # ---------------------------------------------------------------- post-session and done
 
 
-def _set_counts(log):
-    exercises = list(log.exercises.filter(warmup=False).prefetch_related("sets"))
-    done = sum(1 for se in exercises for s in se.sets.all() if s.done)
-    planned = sum(max(sessions.planned_sets(se), sum(1 for s in se.sets.all() if s.done)) for se in exercises)
-    return len(exercises), done, planned
-
-
 @athlete_required
 def finish(request, log_id):
     log = _log(request, log_id)
@@ -568,12 +383,10 @@ def done(request, log_id):
     log = _log(request, log_id)
     if not log.finished:
         return redirect(_resume_url(log))
-    exercise_count, sets_done, sets_planned = _set_counts(log)
+    exercise_count, sets_done, sets_planned = screens.set_counts(log)
     today = athlete.today()
     next_date = history.next_session_date(athlete, today)
-    top_sets = sum(
-        1 for se in log.exercises.prefetch_related("sets") if any(s.done and s.load_kg for s in se.sets.all())
-    )
+    top_sets = screens.top_sets(log)
     context = _flow(
         {
             "log": log,
@@ -610,7 +423,7 @@ def progress(request):
     ]
     recent = list(athlete.session_logs.finished().order_by("-date", "-finished_at")[:5])
     now = timezone.now()
-    lifts = [e for e in charts.chart_lifts(athlete) if len(charts.e1rm_points(athlete, e)) >= 2]
+    lifts = charts.progress_lifts(athlete)
     lift = next((e for e in lifts if str(e.pk) == request.GET.get("lift")), lifts[0] if lifts else None)
     chart, change = charts.progress_chart(athlete, lift, unit) if lift else (None, None)
     context = {

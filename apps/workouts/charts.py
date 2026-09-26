@@ -212,3 +212,9 @@ def chart_lifts(athlete):
         .order_by("name")
     )
     return tracked + list(others)
+
+
+def progress_lifts(athlete):
+    """The lifts the athlete's Progress chart offers: tracked or logged lifts with at least
+    two e1RM points (one point isn't a line)."""
+    return [e for e in chart_lifts(athlete) if len(e1rm_points(athlete, e)) >= 2]
