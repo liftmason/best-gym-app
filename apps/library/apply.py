@@ -242,3 +242,102 @@ def confirm(athlete, template, days, mode, placement_value, publish, by):
         if habits.prescribe(athlete, h.name, h.emoji, h.cadence, h.note, source_template=template)
     )
     return program, first, added
+
+
+# ---------------------------------------------------------------- the preview draft
+#
+# While a coach previews, the draft is a plain dict (the page keeps it in the Django
+# session; the API can keep it anywhere): {"template", "days", "mode", "start",
+# "publish", "view", optionally "real_week"}. These functions build and change it.
+
+APPLYABLE = [TemplateKind.PROGRAM, TemplateKind.WEEK]
+
+
+def sources(gym):
+    """What can be applied: the gym's program templates and saved weeks."""
+    from .models import Template
+
+    return Template.objects.filter(gym=gym, kind__in=APPLYABLE).order_by("kind", "name", "id")
+
+
+def first_source(gym, kind):
+    """The first template (kind "program") or saved week (kind "week") by name, or None."""
+    from .models import Template
+
+    wanted = TemplateKind.WEEK if kind == "week" else TemplateKind.PROGRAM
+    return Template.objects.filter(gym=gym, kind=wanted).order_by("name", "id").first()
+
+
+def new_draft(template, athlete):
+    """A fresh preview: the template's default days, tag slots from recent lifts, the first
+    placement, not published, showing the first ghost week."""
+    return {
+        "template": template.pk,
+        "days": default_days(template),
+        "mode": RECENT,
+        "start": placements(athlete)[0].value,
+        "publish": False,
+        "view": 0,  # the ghost week shown; None shows the real week in "real_week"
+    }
+
+
+def draft_template(gym, draft):
+    """The draft's template if it's still one of the gym's applyable ones, else None."""
+    return sources(gym).filter(pk=draft.get("template")).first() if draft else None
+
+
+def update_draft(draft, athlete, *, template=None, days=None, mode=None, start=None, publish=None, view=None):
+    """The draft with whichever changes are given. A different template starts over but
+    keeps the mode and placement; new days or a new placement go back to the first ghost
+    week; `view` is a ghost week's index, or "week:<id>" for a real week."""
+    if template is not None and str(draft["template"]) != str(template.pk):
+        return new_draft(template, athlete) | {"mode": draft["mode"], "start": draft["start"]}
+    draft = dict(draft)
+    if days is not None:
+        draft["days"] = sorted({int(d) for d in days if str(d).isdigit() and int(d) < 7})
+        draft["view"] = 0
+    if mode in (RECENT, DEFAULTS):
+        draft["mode"] = mode
+    if start:
+        draft["start"] = start
+        draft["view"] = 0
+    if publish is not None:
+        draft["publish"] = bool(publish)
+    if view not in (None, ""):
+        view = str(view)
+        if view.isdigit():
+            draft["view"] = int(view)
+        else:
+            draft["view"], draft["real_week"] = None, view.removeprefix("week:")
+    return draft
+
+
+def preview(template, athlete, draft):
+    """What the board shows while previewing: the planned weeks as ghosts (label, start
+    date), the one being shown, the placement, and the summary counts."""
+    planned = plan(template, athlete, draft["days"], draft["mode"])
+    placement = placement_for(athlete, draft["start"])
+    first_order = placement.start_order if placement.program else 0
+    ghosts = [
+        {
+            "index": i,
+            "planned": week,
+            "label": f"Wk {first_order + i + 1}",
+            "start": placement.start_date + WEEK * i,
+        }
+        for i, week in enumerate(planned)
+    ]
+    view = draft.get("view")
+    shown = ghosts[view] if isinstance(view, int) and 0 <= view < len(ghosts) else None
+    summary = {
+        "weeks": len(planned),
+        "sessions": sum(w.session_count for w in planned),
+        "tag_slots": sum(
+            1 for w in planned for s in w.days.values() for slot, _e in s.exercises if slot.is_tag
+        ),
+        "habits": template.habits.count(),
+        "replaced": len(placement.replaced),
+        "moved": len(placement.moved),
+        "new_program": placement.program is None,
+    }
+    return {"planned": planned, "placement": placement, "ghosts": ghosts, "shown": shown, "summary": summary}

@@ -24,14 +24,9 @@ from apps.programs.prescriptions import board_items, summary
 from apps.programs.program_views import _program, _week, render_editor
 
 from . import apply, services
-from .models import Template, TemplateKind
+from .models import Template
 
 SESSION_KEY = "apply_drafts"
-APPLYABLE = [TemplateKind.PROGRAM, TemplateKind.WEEK]
-
-
-def sources(gym):
-    return Template.objects.filter(gym=gym, kind__in=APPLYABLE).order_by("kind", "name", "id")
 
 
 def get_draft(request, athlete):
@@ -47,20 +42,8 @@ def save_draft(request, athlete, draft):
     request.session[SESSION_KEY] = drafts
 
 
-def new_draft(template, athlete):
-    options = apply.placements(athlete)
-    return {
-        "template": template.pk,
-        "days": apply.default_days(template),
-        "mode": apply.RECENT,
-        "start": options[0].value,
-        "publish": False,
-        "view": 0,  # the ghost week shown; None shows the real week
-    }
-
-
 def _draft_template(request, draft):
-    return Template.objects.filter(pk=draft["template"], gym=request.coach.gym, kind__in=APPLYABLE).first()
+    return apply.draft_template(request.coach.gym, draft)
 
 
 def apply_context(request, athlete):
@@ -73,23 +56,8 @@ def apply_context(request, athlete):
         save_draft(request, athlete, None)
         return {}
     unit = request.coach.gym.units
-    planned = apply.plan(template, athlete, draft["days"], draft["mode"])
-    placement = apply.placement_for(athlete, draft["start"])
-    program = placement.program
-    start = placement.start_date
-    ghosts = []
-    for i, week in enumerate(planned):
-        first_order = placement.start_order if program else 0
-        ghosts.append(
-            {
-                "index": i,
-                "planned": week,
-                "label": f"Wk {first_order + i + 1}",
-                "start": start + apply.WEEK * i,
-            }
-        )
-    view = draft.get("view")
-    shown = ghosts[view] if isinstance(view, int) and 0 <= view < len(ghosts) else None
+    p = apply.preview(template, athlete, draft)
+    placement, ghosts, shown = p["placement"], p["ghosts"], p["shown"]
     board = None
     if shown:
         board = []
@@ -109,30 +77,20 @@ def apply_context(request, athlete):
             board.append(
                 {"date": shown["start"] + datetime.timedelta(days=offset), "session": session, "items": items}
             )
-    st_sessions = sum(w.session_count for w in planned)
-    tag_slots = sum(1 for w in planned for s in w.days.values() for slot, _e in s.exercises if slot.is_tag)
     week_start = athlete.gym.week_start
     day_names = [datetime.date(2024, 1, 1 + (week_start + i) % 7).strftime("%a") for i in range(7)]
     return {
         "applying": True,
         "draft": draft,
         "apply_template": template,
-        "apply_sources": sources(request.coach.gym),
+        "apply_sources": apply.sources(request.coach.gym),
         "apply_days": [{"offset": i, "name": day_names[i], "on": i in draft["days"]} for i in range(7)],
         "apply_placements": apply.placements(athlete),
         "apply_placement": placement,
         "ghosts": ghosts,
         "ghost_shown": shown,
         "ghost_board": board,
-        "apply_summary": {
-            "weeks": len(planned),
-            "sessions": st_sessions,
-            "tag_slots": tag_slots,
-            "habits": template.habits.count(),
-            "replaced": len(placement.replaced),
-            "moved": len(placement.moved),
-            "new_program": program is None,
-        },
+        "apply_summary": p["summary"],
         "replaced_ids": {w.pk for w in placement.replaced},
         "moved_ids": {w.pk for w in placement.moved},
     }
@@ -155,7 +113,7 @@ class StartForm(forms.Form):
 
     def __init__(self, *args, coach, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["template"].queryset = sources(coach.gym)
+        self.fields["template"].queryset = apply.sources(coach.gym)
         self.fields["athlete"].queryset = coach.athletes.filter(archived_at__isnull=True).select_related(
             "user"
         )
@@ -169,7 +127,7 @@ def apply_modal(request):
     )
     if request.method == "POST" and form.is_valid():
         athlete, template = form.cleaned_data["athlete"], form.cleaned_data["template"]
-        save_draft(request, athlete, new_draft(template, athlete))
+        save_draft(request, athlete, apply.new_draft(template, athlete))
         response = HttpResponse(status=204)
         response["HX-Redirect"] = reverse("coach:program", args=[athlete.pk])
         messages.info(
@@ -186,7 +144,7 @@ def apply_modal(request):
         "library/_apply_modal.html",
         {
             "form": form,
-            "sources": sources(request.coach.gym),
+            "sources": apply.sources(request.coach.gym),
             "athletes": athletes,
             "chosen": request.GET.get("template", ""),
         },
@@ -198,12 +156,12 @@ def apply_modal(request):
 def apply_start(request, pk):
     """From the athlete's board: "+ Template" or "+ Saved week" starts a preview."""
     athlete = coach_athlete(request, pk)
-    kind = TemplateKind.WEEK if request.POST.get("kind") == "week" else TemplateKind.PROGRAM
-    template = Template.objects.filter(gym=request.coach.gym, kind=kind).order_by("name", "id").first()
+    kind = "week" if request.POST.get("kind") == "week" else "program"
+    template = apply.first_source(request.coach.gym, kind)
     if template is None:
-        what = "saved weeks" if kind == TemplateKind.WEEK else "templates"
+        what = "saved weeks" if kind == "week" else "templates"
         return hx.toast(HttpResponse(status=204), f"No {what} yet — build one under Programming", "err")
-    save_draft(request, athlete, new_draft(template, athlete))
+    save_draft(request, athlete, apply.new_draft(template, athlete))
     name = athlete.user.get_short_name()
     message = f"Previewing on {name}'s board — nothing is applied until you confirm"
     if not (request.htmx and request.htmx.target == "programEditor"):
@@ -223,26 +181,21 @@ def apply_update(request, pk):
     if not draft:
         return render_editor(request, athlete)
     post = request.POST
-    if "template" in post and str(draft["template"]) != post["template"]:
-        template = get_object_or_404(sources(request.coach.gym), pk=post["template"])
-        draft = new_draft(template, athlete) | {"mode": draft["mode"], "start": draft["start"]}
-    else:
-        if "day" in post or post.get("days_sent"):
-            draft["days"] = sorted({int(d) for d in post.getlist("day") if d.isdigit() and int(d) < 7})
-            draft["view"] = 0
-        if post.get("mode") in (apply.RECENT, apply.DEFAULTS):
-            draft["mode"] = post["mode"]
-        if post.get("start"):
-            draft["start"] = post["start"]
-            draft["view"] = 0
-        if "publish_sent" in post:
-            draft["publish"] = post.get("publish") == "on"
-        if post.get("view", "") != "":
-            view = post["view"]
-            if view.isdigit():
-                draft["view"] = int(view)
-            else:
-                draft["view"], draft["real_week"] = None, view.removeprefix("week:")
+    template = (
+        get_object_or_404(apply.sources(request.coach.gym), pk=post["template"])
+        if "template" in post
+        else None
+    )
+    draft = apply.update_draft(
+        draft,
+        athlete,
+        template=template,
+        days=post.getlist("day") if ("day" in post or post.get("days_sent")) else None,
+        mode=post.get("mode"),
+        start=post.get("start"),
+        publish=(post.get("publish") == "on") if "publish_sent" in post else None,
+        view=post.get("view"),
+    )
     save_draft(request, athlete, draft)
     return _redraw(request, athlete)
 
@@ -299,7 +252,7 @@ def save_week(request, pk, week_id):
     sessions = services.board_sessions(week)
     if not sessions:
         return hx.toast(HttpResponse(status=204), "This week has no sessions to save", "err")
-    form = SaveForm(request.POST or None, initial={"name": f"{week.week_type.name} — {len(sessions)} day"})
+    form = SaveForm(request.POST or None, initial={"name": services.suggested_week_name(week)})
     if request.method == "POST" and form.is_valid():
         saved = services.save_week(
             request.coach.gym, request.user, week, form.cleaned_data["name"], form.cleaned_data["description"]
@@ -328,14 +281,8 @@ def save_program(request, pk):
     program = _program(athlete)
     if program is None or not any(services.board_sessions(w) for w in program.weeks.all()):
         return hx.toast(HttpResponse(status=204), "Nothing to save — this program has no sessions yet", "err")
-    name = athlete.user.get_short_name()
-    form = SaveForm(
-        request.POST or None,
-        initial={
-            "name": f"{program.name} (from {name})",
-            "description": f"Saved from {athlete.user.name or name}'s program",
-        },
-    )
+    name, description = services.suggested_program_names(program)
+    form = SaveForm(request.POST or None, initial={"name": name, "description": description})
     if request.method == "POST" and form.is_valid():
         saved = services.save_program(
             request.coach.gym,

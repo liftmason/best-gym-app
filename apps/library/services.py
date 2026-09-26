@@ -24,6 +24,11 @@ from .models import (
     TemplateWeek,
 )
 
+
+class InvalidTemplate(Exception):
+    """With the message to show."""
+
+
 STARTER_SESSIONS = {TemplateKind.PROGRAM: 3, TemplateKind.WEEK: 2, TemplateKind.SESSION: 1}
 
 
@@ -148,7 +153,8 @@ def add_week(template, points=None):
 
 @transaction.atomic
 def add_saved_week(template, saved):
-    order = (template.weeks.aggregate(m=Max("order"))["m"] or -1) + 1
+    last = template.weeks.aggregate(m=Max("order"))["m"]
+    order = 0 if last is None else last + 1  # not `or -1`: a last week numbered 0 is a week (audit M5)
     return copy_week(single_week(saved), template, order)
 
 
@@ -251,9 +257,22 @@ def board_sessions(program_week):
     return found
 
 
+def suggested_week_name(program_week):
+    return f"{program_week.week_type.name} — {len(board_sessions(program_week))} day"
+
+
+def suggested_program_names(program):
+    """(name, description) offered when saving an athlete's program as a template."""
+    user = program.athlete.user
+    short = user.get_short_name()
+    return f"{program.name} (from {short})", f"Saved from {user.name or short}'s program"
+
+
 @transaction.atomic
 def save_week(gym, by, program_week, name, description=""):
     sessions = board_sessions(program_week)
+    if not sessions:
+        raise InvalidTemplate("This week has no sessions to save")
     template = Template.objects.create(
         gym=gym,
         kind=TemplateKind.WEEK,
@@ -304,6 +323,8 @@ def save_template_week(gym, by, template_week, name, description=""):
 @transaction.atomic
 def save_program(gym, by, program, name, description=""):
     """An athlete's program as a template: every week with work, its sessions in day order."""
+    if not any(board_sessions(w) for w in program.weeks.all()):
+        raise InvalidTemplate("Nothing to save — this program has no sessions yet")
     template = Template.objects.create(
         gym=gym,
         kind=TemplateKind.PROGRAM,
@@ -331,3 +352,206 @@ def save_program(gym, by, program, name, description=""):
     template.sessions_per_week = min(6, most)
     template.save(update_fields=["sessions_per_week"])
     return template
+
+
+# ---------------------------------------------------------------- finding things (scoped to the gym)
+
+
+def gym_template(gym, template_id):
+    """One of the gym's templates, saved weeks or saved sessions (DoesNotExist otherwise)."""
+    return Template.objects.get(pk=template_id, gym=gym)
+
+
+def template_week(template, week_id):
+    return TemplateWeek.objects.select_related("template").get(pk=week_id, template=template)
+
+
+def template_session(template, session_id):
+    return TemplateSession.objects.select_related("week").get(pk=session_id, week__template=template)
+
+
+def template_slot(template, slot_id):
+    return TemplateSlot.objects.select_related("session__week", "exercise").get(
+        pk=slot_id, session__week__template=template
+    )
+
+
+def stats(template):
+    """Counts shown on library cards and in the editor. `calendar_weeks` is how long the
+    template runs at its sessions-per-week."""
+    weeks = list(template.weeks.all())
+    sessions = [s for w in weeks for s in w.sessions.all()]
+    slots = [sl for s in sessions for sl in s.slots.all()]
+    return {
+        "weeks": len(weeks),
+        "sessions": len(sessions),
+        "slots": len(slots),
+        "tag_slots": sum(1 for sl in slots if sl.kind == SlotKind.TAG),
+        "habits": len(template.habits.all()),
+        "calendar_weeks": -(-len(sessions) // template.sessions_per_week) if sessions else 0,
+    }
+
+
+# ---------------------------------------------------------------- template settings
+
+
+MAX_NAME, MAX_DESCRIPTION, MAX_NOTE = 80, 200, 2000
+MAX_POINTS = Decimal("50")
+
+
+def update_meta(template, *, name=None, description=None, program_note=None, sessions_per_week=None):
+    """Change whichever of name, description, program note and sessions per week (1-6) are
+    given; names and descriptions are tidied. Returns the fields that changed."""
+    fields = []
+    for field, value, limit in (("name", name, MAX_NAME), ("description", description, MAX_DESCRIPTION)):
+        if value is not None:
+            value = " ".join(value.split())
+            if len(value) > limit:
+                raise InvalidTemplate(f"Keep the {field} to {limit} characters.")
+            setattr(template, field, value)
+            fields.append(field)
+    if program_note is not None:
+        program_note = program_note.strip()
+        if len(program_note) > MAX_NOTE:
+            raise InvalidTemplate(f"Keep the program note to {MAX_NOTE} characters.")
+        template.program_note = program_note
+        fields.append("program_note")
+    if sessions_per_week is not None:
+        if not 1 <= int(sessions_per_week) <= 6:
+            raise InvalidTemplate("Written for 1 to 6 sessions a week.")
+        template.sessions_per_week = int(sessions_per_week)
+        fields.append("sessions_per_week")
+    if fields:
+        template.save(update_fields=[*fields, "updated_at"])
+    return fields
+
+
+def delete_template(template):
+    """Programs it was applied to keep their weeks (everything was copied)."""
+    template.delete()
+
+
+def check_points(points):
+    """A bump for percentage loads when adding a week: -50 to +50 points, or none."""
+    if points in (None, ""):
+        return None
+    points = Decimal(str(points))
+    if not -MAX_POINTS <= points <= MAX_POINTS:
+        raise InvalidTemplate("Bump percentages by -50 to +50 points.")
+    return points
+
+
+def set_week_type(week, week_type):
+    if week_type.gym_id != week.template.gym_id:
+        raise InvalidTemplate("Pick one of your week types.")
+    week.week_type = week_type
+    week.save(update_fields=["week_type"])
+    return week
+
+
+def rename_session(session, name):
+    session.name = " ".join((name or "").split())[:80]
+    session.save(update_fields=["name"])
+    return session
+
+
+# ---------------------------------------------------------------- slots
+
+
+def default_for_tags(gym, tags):
+    """The first (A–Z) active exercise carrying every tag, or None."""
+    from apps.exercises.models import Exercise
+
+    candidates = Exercise.objects.filter(gym=gym, archived=False)
+    for tag in tags:
+        candidates = candidates.filter(tags=tag)
+    return candidates.order_by("name").first()
+
+
+def add_tag_slot(session, tags):
+    """A tag slot from the rail's ticked tags; its default is the first exercise with them all."""
+    tags = list(tags)
+    gym = session.week.template.gym
+    if not tags:
+        raise InvalidTemplate("Tick at least one tag first")
+    if any(t.gym_id != gym.pk for t in tags):
+        raise InvalidTemplate("Pick from your own tags.")
+    default = default_for_tags(gym, tags)
+    if default is None:
+        raise InvalidTemplate("No exercise carries all of those tags — loosen the filter")
+    return add_slot(session, default, tags=tags)
+
+
+def check_slot_kind(gym, kind, exercise=None, default=None, tags=()):
+    """(exercise, tags) for a slot: a fixed exercise, or tags plus a default carrying them all.
+    InvalidTemplate names the field that's wrong via its message."""
+    tags = list(tags)
+    if kind == SlotKind.EXERCISE:
+        if exercise is None or exercise.gym_id != gym.pk or exercise.archived:
+            raise InvalidTemplate("Pick an exercise.")
+        return exercise, []
+    if kind != SlotKind.TAG:
+        raise InvalidTemplate("Pick what kind of slot it is.")
+    if not tags or any(t.gym_id != gym.pk for t in tags):
+        raise InvalidTemplate("Pick at least one tag.")
+    if (
+        default is None
+        or default.gym_id != gym.pk
+        or default.archived
+        or not {t.pk for t in tags} <= set(default.tags.values_list("pk", flat=True))
+    ):
+        raise InvalidTemplate("Pick a default that carries every tag.")
+    return default, tags
+
+
+@transaction.atomic
+def edit_slot(slot, *, kind, exercise=None, default=None, tags=(), dose=None):
+    """Change what a slot is and its dose (from apps/programs/dose.validate) together."""
+    from apps.programs import dose as doses
+
+    chosen, tags = check_slot_kind(slot.session.week.template.gym, kind, exercise, default, tags)
+    slot.kind, slot.exercise = kind, chosen
+    if dose is not None:
+        doses.apply(slot, dose)
+    else:
+        slot.save(update_fields=["kind", "exercise"])
+    slot.tags.set(tags)
+    return slot
+
+
+# ---------------------------------------------------------------- habits and saved parts
+
+
+def remove_habit(template, habit_id):
+    TemplateHabit.objects.get(pk=habit_id, template=template).delete()
+
+
+def saved_sources(gym, kind, exclude=None):
+    """Saved weeks (kind "week") or saved sessions to drop into a template."""
+    wanted = TemplateKind.WEEK if kind == "week" else TemplateKind.SESSION
+    items = Template.objects.filter(gym=gym, kind=wanted)
+    return items.exclude(pk=exclude.pk) if exclude is not None else items
+
+
+def use_saved(template, kind, source_id, week=None):
+    """Copy a saved week (as a new last week) or a saved session (into `week`)."""
+    source = saved_sources(template.gym, kind, exclude=template).get(pk=source_id)
+    if kind == "week":
+        return source, add_saved_week(template, source)
+    if week is None or week.template_id != template.pk:
+        raise InvalidTemplate("Pick the week it goes in.")
+    return source, add_saved_session(week, source)
+
+
+def suggested_name(template, what, part):
+    """The name offered when saving a template's week or session to the library."""
+    if what == "week":
+        return f"{template.display_name} — week {part.order + 1}"
+    return part.name or template.display_name
+
+
+def check_save_names(name, description=""):
+    name, description = " ".join((name or "").split()), " ".join((description or "").split())
+    if len(name) > MAX_NAME or len(description) > MAX_DESCRIPTION:
+        raise InvalidTemplate(f"Names are up to {MAX_NAME} characters, descriptions {MAX_DESCRIPTION}.")
+    return name, description

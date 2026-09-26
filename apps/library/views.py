@@ -6,8 +6,9 @@ are always scoped to the coach's gym.
 """
 
 from django import forms
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count, Prefetch, Q
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -31,8 +32,6 @@ from .models import (
     Template,
     TemplateHabit,
     TemplateKind,
-    TemplateSession,
-    TemplateSlot,
     TemplateWeek,
 )
 
@@ -43,26 +42,27 @@ TAB_FOR_KIND = {v: k for k, v in KIND_TABS.items()}
 # ---------------------------------------------------------------- lookups (scoped to the gym)
 
 
+def _scoped(lookup, *args):
+    try:
+        return lookup(*args)
+    except ObjectDoesNotExist as err:
+        raise Http404 from err
+
+
 def _template(request, pk):
-    return get_object_or_404(Template, pk=pk, gym=request.coach.gym)
+    return _scoped(services.gym_template, request.coach.gym, pk)
 
 
 def _tweek(request, template, week_id):
-    return get_object_or_404(TemplateWeek.objects.select_related("template"), pk=week_id, template=template)
+    return _scoped(services.template_week, template, week_id)
 
 
 def _tsession(request, template, session_id):
-    return get_object_or_404(
-        TemplateSession.objects.select_related("week"), pk=session_id, week__template=template
-    )
+    return _scoped(services.template_session, template, session_id)
 
 
 def _slot(request, template, slot_id):
-    return get_object_or_404(
-        TemplateSlot.objects.select_related("session__week", "exercise"),
-        pk=slot_id,
-        session__week__template=template,
-    )
+    return _scoped(services.template_slot, template, slot_id)
 
 
 def _exercise(request, pk):
@@ -70,20 +70,6 @@ def _exercise(request, pk):
 
 
 # ---------------------------------------------------------------- stats shown on cards and the editor
-
-
-def stats(template):
-    weeks = list(template.weeks.all())
-    sessions = [s for w in weeks for s in w.sessions.all()]
-    slots = [sl for s in sessions for sl in s.slots.all()]
-    return {
-        "weeks": len(weeks),
-        "sessions": len(sessions),
-        "slots": len(slots),
-        "tag_slots": sum(1 for sl in slots if sl.kind == SlotKind.TAG),
-        "habits": len(template.habits.all()),
-        "calendar_weeks": -(-len(sessions) // template.sessions_per_week) if sessions else 0,
-    }
 
 
 def _prefetched(queryset):
@@ -105,7 +91,7 @@ def library_page(request, ptab):
     templates = list(_prefetched(Template.objects.filter(gym=request.coach.gym, kind=kind)))
     cards = []
     for t in templates:
-        st = stats(t)
+        st = services.stats(t)
         first = t.weeks.all()[0] if st["weeks"] else None
         names = []
         if kind == TemplateKind.SESSION and first:
@@ -150,7 +136,7 @@ def editor_context(request, template):
     return {
         "template": template,
         "weeks": weeks,
-        "stats": stats(template),
+        "stats": services.stats(template),
         "week_types": WeekType.objects.filter(gym=gym).filter(Q(archived=False) | Q(pk__in=in_use)),
         "is_program": template.kind == TemplateKind.PROGRAM,
         "is_week": template.kind == TemplateKind.WEEK,
@@ -204,18 +190,16 @@ def meta(request, pk):
     if not form.is_valid():
         return hx.toast(HttpResponse(status=400), "Check the name and frequency", "err")
     data = form.cleaned_data
-    fields = []
-    for field in ["name", "description"]:
-        if field in request.POST:
-            setattr(template, field, " ".join(data[field].split()))
-            fields.append(field)
-    if "program_note" in request.POST:
-        template.program_note = data["program_note"]
-        fields.append("program_note")
-    if data.get("sessions_per_week"):
-        template.sessions_per_week = data["sessions_per_week"]
-        fields.append("sessions_per_week")
-    template.save(update_fields=[*fields, "updated_at"])
+    try:
+        fields = services.update_meta(
+            template,
+            name=data["name"] if "name" in request.POST else None,
+            description=data["description"] if "description" in request.POST else None,
+            program_note=data["program_note"] if "program_note" in request.POST else None,
+            sessions_per_week=data.get("sessions_per_week") or None,
+        )
+    except services.InvalidTemplate as err:
+        return hx.toast(HttpResponse(status=400), str(err), "err")
     if "sessions_per_week" in fields:
         return render_editor(request, template)  # the "runs N calendar weeks" line changes
     return HttpResponse(status=204)
@@ -226,7 +210,7 @@ def meta(request, pk):
 def delete(request, pk):
     template = _template(request, pk)
     tab, name = TAB_FOR_KIND[template.kind], template.display_name
-    template.delete()
+    services.delete_template(template)
     response = HttpResponse(status=204)
     response["HX-Redirect"] = reverse(f"coach:programming_{tab}")
     from django.contrib import messages
@@ -246,8 +230,10 @@ class AddWeekForm(forms.Form):
 @require_POST
 def week_add(request, pk):
     template = _template(request, pk)
-    form = AddWeekForm(request.POST)
-    points = form.cleaned_data["points"] if form.is_valid() else None
+    try:
+        points = services.check_points(request.POST.get("points", "").strip() or None)
+    except services.InvalidTemplate, ArithmeticError:
+        points = None  # a bad bump is ignored: the week is still added, unchanged
     week = services.add_week(template, points)
     note = (
         f", percentages +{points.normalize():f}"
@@ -264,8 +250,8 @@ def week_add(request, pk):
 def week_type(request, pk, week_id):
     template = _template(request, pk)
     week = _tweek(request, template, week_id)
-    week.week_type = get_object_or_404(WeekType, pk=request.POST.get("week_type"), gym=request.coach.gym)
-    week.save(update_fields=["week_type"])
+    week_type = get_object_or_404(WeekType, pk=request.POST.get("week_type"), gym=request.coach.gym)
+    services.set_week_type(week, week_type)
     return render_editor(request, template)
 
 
@@ -304,8 +290,7 @@ def session_add(request, pk, week_id):
 def session_rename(request, pk, session_id):
     template = _template(request, pk)
     session = _tsession(request, template, session_id)
-    session.name = " ".join(request.POST.get(f"name_{session.pk}", "").split())[:80]
-    session.save(update_fields=["name"])
+    services.rename_session(session, request.POST.get(f"name_{session.pk}", ""))
     return HttpResponse(status=204)
 
 
@@ -354,17 +339,11 @@ def tag_slot_add(request, pk):
             gym=request.coach.gym, pk__in=[t for t in request.POST.getlist("tag") if t.isdigit()]
         )
     )
-    if not tags:
-        return hx.toast(HttpResponse(status=204), "Tick at least one tag first", "err")
-    candidates = Exercise.objects.filter(gym=request.coach.gym, archived=False)
-    for tag in tags:
-        candidates = candidates.filter(tags=tag)
-    default = candidates.order_by("name").first()
-    if default is None:
-        return hx.toast(
-            HttpResponse(status=204), "No exercise carries all of those tags — loosen the filter", "err"
-        )
-    services.add_slot(session, default, tags=tags)
+    try:
+        slot = services.add_tag_slot(session, tags)
+    except services.InvalidTemplate as err:
+        return hx.toast(HttpResponse(status=204), str(err), "err")
+    default = slot.exercise
     names = ", ".join(t.name for t in tags)
     return render_editor(request, template, f"Tag slot [{names}] added — default {default.name}", "good")
 
@@ -402,6 +381,7 @@ class SlotKindForm(forms.Form):
 
     def __init__(self, *args, gym, **kwargs):
         super().__init__(*args, **kwargs)
+        self.gym = gym
         exercises = Exercise.objects.filter(gym=gym, archived=False)
         self.fields["exercise"].queryset = exercises
         self.fields["default"].queryset = exercises
@@ -409,17 +389,17 @@ class SlotKindForm(forms.Form):
 
     def clean(self):
         data = super().clean()
-        if data.get("kind") == SlotKind.EXERCISE:
-            if not data.get("exercise"):
-                self.add_error("exercise", "Pick an exercise.")
-            data["chosen"], data["tags"] = data.get("exercise"), []
-        else:
-            tags, default = list(data.get("tags") or []), data.get("default")
-            if not tags:
-                self.add_error("tags", "Pick at least one tag.")
-            elif not default or not {t.pk for t in tags} <= set(default.tags.values_list("pk", flat=True)):
-                self.add_error("default", "Pick a default that carries every tag.")
-            data["chosen"], data["tags"] = default, tags
+        if self.errors:
+            return data
+        try:
+            data["chosen"], data["tags"] = services.check_slot_kind(
+                self.gym, data.get("kind"), data.get("exercise"), data.get("default"), data.get("tags") or []
+            )
+        except services.InvalidTemplate as err:
+            field = {"Pick an exercise.": "exercise", "Pick at least one tag.": "tags"}.get(
+                str(err), "default"
+            )
+            self.add_error(field, str(err))
         return data
 
 
@@ -474,10 +454,15 @@ def slot_edit(request, pk, slot_id):
         form = PrescriptionForm(request.POST, unit=unit)
         kind_form = SlotKindForm(request.POST, gym=gym)
         if form.is_valid() and kind_form.is_valid():
-            slot.kind = kind_form.cleaned_data["kind"]
-            slot.exercise = kind_form.cleaned_data["chosen"]
-            form.save(slot)
-            slot.tags.set(kind_form.cleaned_data["tags"])
+            k = kind_form.cleaned_data
+            services.edit_slot(
+                slot,
+                kind=k["kind"],
+                exercise=k["exercise"],
+                default=k["default"],
+                tags=k["tags"],
+                dose=form.dose,
+            )
             response = render_editor(request, template, "Slot updated", "good")
             response = hx.retarget(response, "#tplEditor", "outerHTML")
             return hx.trigger_after_swap(response, closeModal=True)
@@ -531,7 +516,10 @@ def habit_add(request, pk):
 @require_POST
 def habit_remove(request, pk, habit_id):
     template = _template(request, pk)
-    get_object_or_404(TemplateHabit, pk=habit_id, template=template).delete()
+    try:
+        services.remove_habit(template, habit_id)
+    except TemplateHabit.DoesNotExist as err:
+        raise Http404 from err
     return render_editor(request, template, "Habit removed")
 
 
@@ -542,13 +530,12 @@ def habit_remove(request, pk, habit_id):
 def pick(request, pk, kind):
     """The "+ From saved week / session" picker. `week_id` (for sessions) says where it goes."""
     template = _template(request, pk)
-    wanted = TemplateKind.WEEK if kind == "week" else TemplateKind.SESSION
-    items = _prefetched(Template.objects.filter(gym=request.coach.gym, kind=wanted).exclude(pk=template.pk))
+    items = _prefetched(services.saved_sources(request.coach.gym, kind, exclude=template))
     context = {
         "template": template,
         "kind": kind,
         "items": [
-            {"template": t, "stats": stats(t), "first": t.weeks.all()[0] if t.weeks.all() else None}
+            {"template": t, "stats": services.stats(t), "first": t.weeks.all()[0] if t.weeks.all() else None}
             for t in items
         ],
         "week_id": request.GET.get("week", ""),
@@ -560,14 +547,14 @@ def pick(request, pk, kind):
 @require_POST
 def pick_use(request, pk, kind, source_id):
     template = _template(request, pk)
-    wanted = TemplateKind.WEEK if kind == "week" else TemplateKind.SESSION
-    saved = get_object_or_404(Template, pk=source_id, gym=request.coach.gym, kind=wanted)
+    week = None if kind == "week" else _tweek(request, template, request.POST.get("week"))
+    try:
+        saved, added = services.use_saved(template, kind, source_id, week)
+    except Template.DoesNotExist as err:
+        raise Http404 from err
     if kind == "week":
-        week = services.add_saved_week(template, saved)
-        message = f"“{saved.display_name}” added as week {week.order + 1}"
+        message = f"“{saved.display_name}” added as week {added.order + 1}"
     else:
-        week = _tweek(request, template, request.POST.get("week"))
-        services.add_saved_session(week, saved)
         message = f"“{saved.display_name}” added to week {week.order + 1}"
     response = render_editor(request, template, message, "good")
     response = hx.retarget(response, "#tplEditor", "outerHTML")
@@ -583,21 +570,19 @@ class SaveForm(InputClassMixin, forms.Form):
 def save_part(request, pk, what, part_id):
     """Save a template week (what="week") or session (what="session") to the library."""
     template = _template(request, pk)
-    if what == "week":
-        part = _tweek(request, template, part_id)
-        suggested = f"{template.display_name} — week {part.order + 1}"
-    else:
-        part = _tsession(request, template, part_id)
-        suggested = part.name or template.display_name
+    part = _tweek(request, template, part_id) if what == "week" else _tsession(request, template, part_id)
+    suggested = services.suggested_name(template, what, part)
     form = SaveForm(request.POST or None, initial={"name": suggested})
     if request.method == "POST" and form.is_valid():
-        d = form.cleaned_data
+        name, description = services.check_save_names(
+            form.cleaned_data["name"], form.cleaned_data["description"]
+        )
         gym, by = request.coach.gym, request.user
         if what == "week":
-            saved = services.save_template_week(gym, by, part, d["name"], d["description"])
+            saved = services.save_template_week(gym, by, part, name, description)
             where = "Weeks"
         else:
-            saved = services.save_session(gym, by, part, d["name"], d["description"])
+            saved = services.save_session(gym, by, part, name, description)
             where = "Sessions"
         response = HttpResponse(status=204)
         hx.toast(response, f"“{saved.display_name}” saved — find it under Programming › {where}", "good")
