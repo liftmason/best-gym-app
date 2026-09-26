@@ -4,17 +4,14 @@ side's messages read (and clears the coach's feed item)."""
 
 from django import forms
 from django.template.response import TemplateResponse
-from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps.accounts.access import athlete_required, coach_required
 from apps.accounts.coach_views import _header_context, coach_athlete
-from apps.dashboard import alerts
 from apps.ratelimit import by_user, rate_limit
 
+from . import services
 from .models import Message, Thread
-
-SHOWN = 100  # most recent messages shown
 
 
 class MessageForm(forms.Form):
@@ -26,12 +23,9 @@ def _thread_context(request, thread, send_url, poll_url, mobile=False):
     read, unless another site made the browser fetch it (an <img> pointing here, say):
     that isn't the person reading."""
     viewer = request.user
-    unread = thread.unread_for(viewer)
-    if unread.exists() and request.headers.get("Sec-Fetch-Site") != "cross-site":
-        unread.update(read_at=timezone.now())
-        if viewer == thread.coach.user:
-            alerts.thread_read(thread)
-    messages = list(thread.messages.select_related("sender").order_by("-sent_at", "-id")[:SHOWN])[::-1]
+    if request.headers.get("Sec-Fetch-Site") != "cross-site":
+        services.mark_read(thread, viewer)
+    messages = services.recent(thread)
     return {
         "thread": thread,
         "thread_messages": messages,
@@ -44,11 +38,11 @@ def _thread_context(request, thread, send_url, poll_url, mobile=False):
 
 def _send(request, thread):
     form = MessageForm(request.POST)
-    if form.is_valid() and form.cleaned_data["body"].strip():
-        message = Message.objects.create(
-            thread=thread, sender=request.user, body=form.cleaned_data["body"].strip()
-        )
-        alerts.message_sent(message)
+    if form.is_valid():
+        try:
+            services.send(thread, request.user, form.cleaned_data["body"])
+        except services.EmptyMessage:
+            pass
 
 
 # ---------------------------------------------------------------- coach
