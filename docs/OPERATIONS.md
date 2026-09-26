@@ -1,5 +1,7 @@
 # Operations
 
+> **Superseded for the rebuild (26 September 2026).** This describes running the current Django + HTMX site, including the free-tier trial. It stays accurate for `main` until the migration in `docs/EXPO_MIGRATION.md` lands. Launch hosting is planned there (Render Virginia for the API and Postgres, Cloudflare Pages for the web app, EAS for phone builds) and this file gets rewritten in sub-project 8.
+
 Running the site on Render: the services, the settings to set by hand, form-video storage
 on Cloudflare R2, the hourly cron job, backups, and the rate limits. The build plan
 (`docs/BUILD_PLAN.md`, "Render deployment") explains why it's set up this way; this file

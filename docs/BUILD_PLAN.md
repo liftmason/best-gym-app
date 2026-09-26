@@ -2,6 +2,8 @@
 
 *23 September 2026 · Steven*
 
+> **Partly superseded (26 September 2026).** The stack, architecture, front end and deployment choices here ("Django + HTMX", "no JavaScript framework, no REST API", the PWA, the Render free tier) are replaced by `docs/EXPO_MIGRATION.md`: one Expo app for iOS, Android and web over a Django API with offline sync. The screen inventory, domain rules and data-model reasoning below still describe what the product does; where they conflict with the migration design, the migration design wins.
+
 The plan takes the single-file mockup (a coach desktop app plus an athlete phone app for weightlifting programming) to a production Django + HTMX site on Render in nine phases, for two part-time developers. Revised 23 September 2026 after review; the changes are listed at the end.
 
 **How to use this plan when building.** The mockup at `mockup/index.html` is the visual and behavioural spec; this file is the technical spec. Work through the phases in order, one phase per branch, and treat each phase's "Delivers" cell as the checklist. When the mockup and this plan disagree on data shape, this plan wins (it has been through review); when they disagree on look or wording, the mockup wins. Keep the seed command in step with every model change so the app always has the mockup's demo data to click through.
