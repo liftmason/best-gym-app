@@ -162,6 +162,24 @@ def check_percent_of(gym, exercise, target):
     return target
 
 
+def check_link(url):
+    """A demo link: http(s) only (never javascript: and the like); "youtube.com/…" gets
+    https:// in front. Blank is fine."""
+    from django.core.exceptions import ValidationError
+    from django.core.validators import URLValidator
+
+    url = (url or "").strip()
+    if not url:
+        return ""
+    if "://" not in url:
+        url = "https://" + url
+    try:
+        URLValidator(schemes=["http", "https"])(url)
+    except ValidationError:
+        raise InvalidExercise("youtube_url", "Enter a full link, like https://youtube.com/…") from None
+    return url
+
+
 @transaction.atomic
 def save_exercise(
     gym,
@@ -183,6 +201,7 @@ def save_exercise(
     if measure not in Measure.values:
         raise InvalidExercise("measure", "Pick how it's measured.")
     percent_of = check_percent_of(gym, exercise, percent_of)
+    youtube_url = check_link(youtube_url)
     tags = list(tags)
     if any(t.gym_id != gym.pk for t in tags):
         raise InvalidExercise("tags", "Pick from your own tags.")
