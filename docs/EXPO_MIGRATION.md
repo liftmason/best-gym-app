@@ -1,8 +1,30 @@
 # Expo migration design
 
-*26 September 2026 · approved in brainstorming, pending written review*
+*26 September 2026 · design approved by the owner; supersedes the stack sections of `docs/BUILD_PLAN.md`*
 
 GymTrainer moves from server-rendered Django + HTMX pages to a single Expo (React Native) app that ships to iOS, Android and the web. Django stays as the backend and becomes a JSON API with an offline sync layer. This document is the overall design; each sub-project in "Order of work" gets its own spec, plan and build.
+
+## Handoff
+
+**Status (26 September 2026).** The design below is approved. No migration code has been written; `main` is still the Django + HTMX app from `docs/BUILD_PLAN.md`, deployed as a free-tier trial with an empty database and no real users. The offline storage spike is done and its working code is in the appendix.
+
+**Read in this order:** this document; `docs/AUDIT_2026-09.md` (the evidence behind section 2 and the checklist for sub-project 1); `mockup/index.html` (the visual spec, still authoritative for look and wording); `docs/BUILD_PLAN.md` for the domain rules and data model it describes, ignoring its stack and deployment choices.
+
+**Next step:** write the implementation plan for sub-project 0 (restructure and fresh schema), then build it.
+
+**How to work.** Each sub-project in "Order of work" gets its own short spec (only where this document leaves real decisions open), then an implementation plan, then the build, one branch and PR per sub-project. Keep the Django service tests passing throughout; write tests before fixes for the audit items. When this document and the code disagree, raise it rather than silently diverging; update this document when a decision changes.
+
+**Decided and not to be reopened without the owner:** everything in the decision log below.
+
+**Open, and who decides:**
+
+| Item | Owner | Needed by |
+|---|---|---|
+| Product name and domain | Owner | Before sub-project 8 (email authentication, the API address in the apps, store listings) |
+| Whether web Safari embeds YouTube under cross-origin isolation or links out | Whoever builds the exercise demo view (sub-project 5) | Sub-project 5 |
+| Whether "program runs out" should count unpublished weeks (audit M12) | Owner, asked during sub-project 1 | Sub-project 1 |
+| Plan limits and prices | Owner | When billing is turned on (after launch) |
+| Hosting account (moving off the current free-tier Render account to the owner's own) | Owner | Sub-project 8 |
 
 ## Why
 
@@ -20,6 +42,27 @@ A full audit on 26 September 2026 found the backend sound: 349 unit and 27 end-t
 - **Billing:** Stripe coach subscriptions on the web, fully built but with every check passing by default.
 - **No users yet and an empty database:** the schema can change freely.
 - Users are on the US east coast. Hosting is decided (see "Hosting at launch") and happens after the rebuild. Product naming is discussed after the build.
+
+## Decision log
+
+Each row was decided by the owner on 26 September 2026 after weighing the alternatives shown.
+
+| Decision | Chosen | Rejected, and why |
+|---|---|---|
+| Rewrite or fix | Keep the Django backend (models, services, tests), replace the front end | **Full rewrite:** the audit found the backend sound (all tests passing, clean services, correct rules); a rewrite would re-solve the same domain problems. **Just fix the PWA:** can't meet offline logging reliably on iOS or give a store app. |
+| Front-end stack | One Expo (React Native, TypeScript) app for iOS, Android and web | **Rust shared core** (Crux/UniFFI): still needs three native UIs, heavy toolchain, and the app isn't compute-bound. **Capacitor/Hotwire Native wrapper:** webview feel and performance, App Store "minimum functionality" risk, offline no better than the PWA. **Flutter:** weaker web for a text-heavy desktop coach UI. **Kotlin Multiplatform:** web still maturing. |
+| Coach side on phone | Scope B: dashboard, messages, videos, issues, athlete overview; programming desktop-first | **Desktop only:** misses what coaches do between sessions. **Full programming on phone now:** much more design work; planned for later, so nothing may assume a desktop. |
+| Offline scope | Everything the athlete does (scope B) | **Only an already-started session:** fails "opened the app in the basement". **Coach programming offline too:** needs conflict resolution between coach and athlete edits; the sync layer is built so it can be added later. |
+| Launch sequencing | Everything in Expo before launch | **Staged replacement** (athlete app first, coach desktop stays on Django pages): launches ~2–3 months sooner but runs two coach front ends. **Cut features for v1:** coaches lose tools they have today. |
+| Builder | Mostly the owner with AI tools; favour conventional, documented tools | — |
+| Sync technology | Custom pull/push protocol in Django with local SQLite (`expo-sqlite` + Drizzle async proxy) | **PowerSync:** needs Postgres logical replication, which Render's managed Postgres doesn't support (open request since 2021), so it forces a different database host; $49/month from launch; sync rules live in a second place next to Django's permissions. **Cached API + offline queue (TanStack Query persistence):** screens not opened while online don't work offline and it can't stretch to offline coach editing. **Drizzle's standard `expo-sqlite` driver:** failed the spike (see below). |
+| Sign-in | One-time email codes plus Sign in with Apple and Google | **Email and password only:** forgotten passwords and a password database to protect. **Password plus social:** still keeps passwords. |
+| Accounts and roles | One account per person; coach and athlete are profiles; training history belongs to the athlete; coaching and gym membership are relationship tables | **One coach profile and one athlete profile, athlete tied to one coach:** switching coaches strands history; no path to two coaches or two gyms. |
+| History visibility | New coach sees full prior history unless the athlete hides it; old coach loses access at the end date | — |
+| Billing | Stripe subscriptions paid by the gym on the web, built but allowing everything by default | **Not in this rebuild:** owner wants the integration ready. **In-app purchases:** 15–30% store fees and per-platform billing. |
+| Athletes when a coach's billing lapses | Can always log and view their own data | Locking athletes out of their own history. |
+| Old HTML pages | Deleted at the start of sub-project 0 | Keeping them in step through a schema rewrite for pages about to be replaced. |
+| Hosting | Render (Virginia) for backend and Postgres, Cloudflare Pages for the web app, EAS for phone builds, about $14/month at launch | **Railway** (cheapest managed, backups DIY), **Fly.io** (managed Postgres from $38/month), **Hetzner + Kamal** (cheapest raw but self-managed; two price rises in 2026), **Neon** (extra vendor, cold starts). |
 
 ## Offline storage spike (done)
 
@@ -65,7 +108,7 @@ Measured: logging one set with its outbox entry takes about 10 ms; an indexed hi
 
 **The server stays the authority.** PR detection, maxes and alerts run on the server when it applies an athlete's actions; their results reach the phone through pull.
 
-**Audit fixes carried into the rebuild:**
+**Audit fixes carried into the rebuild.** The full findings, with file and line references and the sub-project each belongs to, are in `docs/AUDIT_2026-09.md`. In summary:
 
 - Rate limiting moves to a counter table updated in one statement with an explicit expiry (the cache-based limiter reset after five idle minutes and could be emptied by filling the cache).
 - Alert de-duplication includes the athlete.
@@ -215,8 +258,129 @@ Each row is its own sub-project with a spec, a plan and a build.
 
 The athlete app (4–5) comes before the coach screens because offline is the riskiest part; seeded demo data stands in for coach-built programs until step 7.
 
-## Open items (decided later, not blocking)
+Open items and their owners are listed under "Handoff" at the top.
 
-- Product name and domain (before launch; needed for email authentication and the API address built into the apps).
-- Whether web Safari can embed YouTube under cross-origin isolation, or links out.
-- Plan limits and prices, when billing is turned on.
+## Appendix: spike code
+
+The spike app itself was throwaway and isn't in the repo. This is the core of the variant that passed every check on web and iOS, kept so the real database layer (`app/src/db/`) starts from known-good code rather than rediscovering the failures.
+
+**Tested versions:** Expo SDK 57 (`expo` 57.0.25), `expo-sqlite` 57.0.3, `react-native` 0.86.3, React 19.2.3, `drizzle-orm` 0.45.3, `drizzle-kit` 0.31.11; Chrome 152 (static web export) and the iOS 27.0 simulator (Expo Go).
+
+**Database client: one queue, Drizzle's proxy driver over the async API.**
+
+```ts
+import { addDatabaseChangeListener, openDatabaseAsync, type SQLiteDatabase } from 'expo-sqlite';
+import { drizzle, type SqliteRemoteDatabase } from 'drizzle-orm/sqlite-proxy';
+
+// Every database call goes through this queue, so a transaction's statements
+// can't interleave with other queries on the shared connection.
+let chain: Promise<unknown> = Promise.resolve();
+function exclusive<T>(fn: () => Promise<T>): Promise<T> {
+  const next = chain.then(fn, fn);
+  chain = next.catch(() => {});
+  return next;
+}
+
+let handle: SQLiteDatabase;
+
+async function exec(query: string, params: unknown[], method: 'run' | 'all' | 'values' | 'get') {
+  const stmt = await handle.prepareAsync(query);
+  try {
+    if (method === 'run') {
+      await stmt.executeAsync(params as never);
+      return { rows: [] };
+    }
+    const rows = await (await stmt.executeForRawResultAsync(params as never)).getAllAsync();
+    return { rows: method === 'get' ? (rows[0] ?? []) : rows };
+  } finally {
+    await stmt.finalizeAsync();
+  }
+}
+
+// `db` queues each statement; `raw` is used only inside writeTx, which already holds the queue.
+let db: SqliteRemoteDatabase;
+let raw: SqliteRemoteDatabase;
+function writeTx<T>(fn: (tx: SqliteRemoteDatabase) => Promise<T>) {
+  return exclusive(() => raw.transaction(fn as never) as Promise<T>);
+}
+
+async function open() {
+  handle = await openDatabaseAsync('app.db', { enableChangeListener: true });
+  await handle.execAsync('pragma journal_mode = wal');
+  db = drizzle((q, p, m) => exclusive(() => exec(q, p, m)));
+  raw = drizzle((q, p, m) => exec(q, p, m));
+  await exclusive(migrate);
+}
+```
+
+Usage: an offline action writes its row and its outbox entry together.
+
+```ts
+await writeTx(async (tx) => {
+  await tx.insert(setLogs).values({ id, sessionExerciseId, setNumber: 1, loadKg: 100, reps: 3, done: true, updatedAt: Date.now() });
+  await tx.insert(outbox).values({ id: uuid(), name: 'set.save', args: { id, loadKg: 100, reps: 3 }, createdAt: Date.now() });
+});
+```
+
+**Migrations: plain begin/commit inside the queue** (`withExclusiveTransactionAsync` doesn't exist on web). This runs drizzle-kit's generated SQL (`drizzle.config.ts` with `dialect: 'sqlite', driver: 'expo'`; `babel-plugin-inline-import` for `.sql` files; `metro.config.js` adding `sql` to `sourceExts` and `wasm` to `assetExts`). The real app should also record a hash per migration.
+
+```ts
+import migrations from './drizzle/migrations';
+
+async function migrate() {
+  await exec('create table if not exists __migrations (tag text primary key)', [], 'run');
+  const done = new Set(((await exec('select tag from __migrations', [], 'all')).rows as string[][]).map((r) => r[0]));
+  for (const entry of migrations.journal.entries) {
+    if (done.has(entry.tag)) continue;
+    const key = `m${String(entry.idx).padStart(4, '0')}` as keyof typeof migrations.migrations;
+    await handle.execAsync('begin');
+    try {
+      for (const stmt of (migrations.migrations[key] as string).split('--> statement-breakpoint')) {
+        if (stmt.trim()) await handle.execAsync(stmt);
+      }
+      await handle.runAsync('insert into __migrations (tag) values (?)', entry.tag);
+      await handle.execAsync('commit');
+    } catch (e) {
+      await handle.execAsync('rollback');
+      throw e;
+    }
+  }
+}
+```
+
+**Live queries: batch the per-row change events.**
+
+```ts
+function useLive<T>(run: () => Promise<T>, tables: string[]): T | undefined {
+  const [value, setValue] = useState<T>();
+  const runRef = useRef(run);
+  runRef.current = run;
+  useEffect(() => {
+    let alive = true;
+    let pending = false;
+    // The update hook fires once per changed row; coalesce a burst into one re-query.
+    const refresh = () => {
+      if (pending) return;
+      pending = true;
+      setTimeout(() => {
+        pending = false;
+        runRef.current().then((v) => alive && setValue(v));
+      }, 50);
+    };
+    refresh();
+    const sub = addDatabaseChangeListener((e) => tables.includes(e.tableName) && refresh());
+    return () => { alive = false; sub.remove(); };
+  }, [tables.join()]);
+  return value;
+}
+```
+
+**Web headers.** Serve the static export (`npx expo export -p web`) with these on every response, including `index.html`. On Cloudflare Pages this is a `_headers` file:
+
+```
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+```
+
+**Checks the spike ran** (all passed on web and iOS with the code above): migrations on first launch; one set plus outbox entry (~10 ms); 13,500-row insert in one transaction (0.8 s web, 1.2 s iOS dev build); indexed history query (3–4 ms); a transaction whose second insert fails leaves the count unchanged; a read issued during an uncommitted transaction doesn't see its rows; data survives reload (web) and force-quit (iOS); a second browser tab fails to open the database (expected; see rule 5).
