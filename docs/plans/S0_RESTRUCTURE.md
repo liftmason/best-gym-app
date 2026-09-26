@@ -1,6 +1,6 @@
 # Sub-project 0: restructure and fresh schema — implementation plan
 
-*26 September 2026 · draft for review · design: `docs/EXPO_MIGRATION.md` ("Order of work", row 0)*
+*26 September 2026 · decisions A–F answered by the owner the same day · design: `docs/EXPO_MIGRATION.md` ("Order of work", row 0)*
 
 Sub-project 0 turns `main` from a Django + HTMX site into a Django backend with no pages, in
 `backend/`, on the schema the Expo app and the sync layer need. Nothing user-facing is built
@@ -30,12 +30,14 @@ with the views calling the new services so the existing 222 tests prove the move
 nothing. Only then are the pages and their tests deleted. This pulls the "move rules into
 services" part of H17 from S1 into S0; the rest of S1 is unchanged.
 
-## 2. Decisions needed before building
+## 2. Decisions (answered 26 September 2026)
+
+The owner accepted every recommendation except B: **upgrade to Python 3.14 and use its built-in `uuid.uuid7`** instead of writing our own.
 
 | # | Question | Recommendation | Why |
 |---|---|---|---|
 | A | Extract rules from views and forms into services, with service tests, **before** deleting the pages (section 1)? | Yes | Keeps the tested rules; the API in S2 then calls services that already exist and are tested. |
-| B | Where UUIDv7 comes from (Python 3.12 has no `uuid.uuid7`; 3.14 does) | A 15-line function in `backend/core/ids.py` (RFC 9562 layout, `os.urandom`), with tests; swap for `uuid.uuid7` when the project moves to Python 3.14 | No new dependency for a tiny, well-specified function. Alternative: the `uuid-utils` package. |
+| B | Where UUIDv7 comes from (Python 3.12 has no `uuid.uuid7`; 3.14 does) | **Decided: upgrade to Python 3.14** and use `uuid.uuid7` (step 1) | Owner's call; no custom ID code to maintain. Django 5.2 supports 3.14 from 5.2.8. |
 | C | What a message thread belongs to | The **coaching link** (one thread per coach–athlete period) | "Old coach loses access at the end date" becomes a check on one row; a new coach starts a fresh thread; the athlete keeps old threads as history. |
 | D | "Archiving" an athlete, now that coaching is a link | Archiving **ends the coaching link** (status `ended`, `ended_at` set); a new invite creates a new link | One concept instead of two; matches "ending a coaching link or archiving an athlete revokes access" in the design. |
 | E | The free-tier trial site on Render | **Suspend the Render service before S0 merges** | Render deploys `main` automatically; after S0 there are no pages, and the start command's `seed_demo --if-empty` would run against the new schema. Nobody is using it. |
@@ -58,6 +60,10 @@ step; the branch merges as one PR once all steps are done.
 
 ### Step 1 — Tooling baseline (small)
 
+- **Python 3.14** (decision B): install `uv`, which also installs the interpreter
+  (`uv python install 3.14`); rebuild the virtualenv; `requires-python = ">=3.14"`, ruff
+  `target-version = "py314"`, CI `setup-python` 3.14, `PYTHON_VERSION` in the blueprints. Check
+  every dependency installs and the suite passes before anything else changes.
 - `uv` lockfile for Python dependencies; CI and local both install from it (M31). Pin ruff to
   the same version in CI and pre-commit; pin the MinIO image digest.
 - Test infrastructure (T1, T3, T6): `time-machine` with a frozen-clock fixture (today fixed to a
@@ -210,6 +216,6 @@ error, and the guard test passes.
 
 ## 6. Size
 
-Roughly: step 1 half a day, step 2 three to four days, step 3 one day, step 4 half a day,
+Roughly: step 1 one day (with the Python upgrade), step 2 three to four days, step 3 one day, step 4 half a day,
 step 5 three to four days, step 6 half a day — about two working weeks for one developer with AI
 tools. The design rated S0 "M"; with the rule extraction pulled in, it's the upper end of M.
