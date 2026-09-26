@@ -10,7 +10,7 @@ from django.db import transaction
 from apps.exercises.starter import PACKS, install_pack
 from apps.workouts.models import install_default_questions
 
-from .models import Coach, Gym, Units, User
+from .models import Athlete, Coach, Gym, MaxUpdates, Units, User, WeekStart
 
 
 class AccountExists(Exception):
@@ -51,3 +51,70 @@ def set_units(athlete, value):
     athlete.units = value
     athlete.save(update_fields=["units"])
     return athlete
+
+
+class InvalidSettings(Exception):
+    """With the message to show."""
+
+
+@transaction.atomic
+def update_gym_settings(coach, *, gym_name, coach_title, digest, timezone, units, week_start):
+    """The coach's own title and digest choice, and their gym's name, zone, units and the
+    day training weeks start (new programs only; existing ones keep their dates)."""
+    gym_name = (gym_name or "").strip()
+    if not gym_name or len(gym_name) > 120:
+        raise InvalidSettings("The gym needs a name of up to 120 characters.")
+    coach_title = (coach_title or "").strip()
+    if len(coach_title) > 60:
+        raise InvalidSettings("Keep the title to 60 characters.")
+    if timezone not in zoneinfo.available_timezones():
+        raise InvalidSettings("Pick a real time zone.")
+    if units not in Units.values:
+        raise InvalidSettings("Pick kilograms or pounds.")
+    if int(week_start) not in WeekStart.values:
+        raise InvalidSettings("Pick the day weeks start on.")
+    gym = coach.gym
+    gym.name, gym.timezone, gym.units, gym.week_start = gym_name, timezone, units, int(week_start)
+    gym.full_clean()
+    gym.save()
+    coach.title, coach.digest = coach_title, bool(digest)
+    coach.save(update_fields=["title", "digest"])
+    return coach
+
+
+def set_max_updates(athlete, value):
+    """Whether session PRs update the athlete's maxes automatically or wait for the coach."""
+    from apps.dashboard import alerts
+
+    if value not in MaxUpdates.values:
+        raise ValueError(f"Unknown choice: {value!r}")
+    athlete.max_updates = value
+    athlete.save(update_fields=["max_updates"])
+    alerts.sync_prs(athlete)
+    return athlete
+
+
+def coach_athletes(coach):
+    """The coach's own active athletes."""
+    return coach.athletes.filter(archived_at__isnull=True)
+
+
+def coach_athlete(coach, athlete_id):
+    """One of the coach's own active athletes (Athlete.DoesNotExist for anyone else)."""
+    return Athlete.objects.select_related("user", "gym", "coach__user").get(
+        pk=athlete_id, coach=coach, archived_at__isnull=True
+    )
+
+
+def roster(coach, q=""):
+    """The coach's active athletes, optionally by name or email, each with how many metrics
+    are missing."""
+    from django.db.models import Q
+
+    from .metrics import missing_metrics
+
+    athletes = coach_athletes(coach).select_related("user")
+    q = (q or "").strip()
+    if q:
+        athletes = athletes.filter(Q(user__name__icontains=q) | Q(user__email__icontains=q))
+    return [{"athlete": a, "missing": len(missing_metrics(a))} for a in athletes]

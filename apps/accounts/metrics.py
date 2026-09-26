@@ -12,15 +12,30 @@ refer to the gym's own exercises rather than to fixed names.
 """
 
 from dataclasses import dataclass
+from decimal import Decimal, InvalidOperation
 
 from django.db import transaction
 
 from apps.exercises.models import Exercise, tracked_exercises
 
 from . import units
-from .models import BodyweightEntry, MaxEntry
+from .models import BodyweightEntry, MaxEntry, MeasurementSource, YearsTraining
 
 LIFT_PREFIX = "lift_"
+# (lowest, highest, decimal places) a metric accepts, in the unit it's entered in.
+LIMITS = {
+    "bodyweight": (Decimal("20"), Decimal("600"), 2),
+    "height_cm": (Decimal("100"), Decimal("250"), 1),
+    "lift": (Decimal("1"), Decimal("1000"), 2),
+}
+
+
+class InvalidMetric(Exception):
+    """With the message to show."""
+
+
+class MetricUnknown(Exception):
+    """Not one of this gym's metrics (e.g. a lift it doesn't track)."""
 
 
 @dataclass(frozen=True)
@@ -109,3 +124,68 @@ def save_metrics(athlete, data, source, date=None, entry_units=None):
         changed.append("years_training")
     if changed:
         athlete.save(update_fields=changed)
+
+
+def limits_for(spec):
+    return LIMITS["lift" if spec.exercise is not None else spec.key]
+
+
+def clean_value(spec, raw):
+    """A metric value as entered (a number, or a years-training choice), checked against the
+    metric's limits. None for blank (not provided)."""
+    if raw is None or str(raw).strip() == "":
+        return None
+    if spec.kind == "years":
+        if raw not in YearsTraining.values:
+            raise InvalidMetric("Pick how long they've been training.")
+        return raw
+    try:
+        value = Decimal(str(raw).strip())
+    except InvalidOperation:
+        raise InvalidMetric("Enter a number.") from None
+    low, high, places = limits_for(spec)
+    if not low <= value <= high:
+        raise InvalidMetric(f"{spec.label}: enter a value between {low} and {high}.")
+    if -value.as_tuple().exponent > places:
+        raise InvalidMetric(f"{spec.label}: at most {places} decimal place{'s' if places != 1 else ''}.")
+    return value
+
+
+def validate(gym, data):
+    """{key: value} checked for every metric of the gym present in `data`; unknown keys are
+    ignored. Raises InvalidMetric naming the first bad one."""
+    cleaned = {}
+    for spec in metric_specs(gym):
+        if spec.key in data:
+            cleaned[spec.key] = clean_value(spec, data[spec.key])
+    return cleaned
+
+
+def save_coach_metric(athlete, key, raw, date=None, entry_units=None):
+    """The coach sets one metric. Weights are dated history (no future dates, default today)
+    in `entry_units` (the gym's unit); height and years just replace the value."""
+    spec = spec_for(athlete.gym, key)
+    if spec is None:
+        raise MetricUnknown(key)
+    value = clean_value(spec, raw)
+    if value is None:
+        raise InvalidMetric(f"Enter {spec.label.lower()}.")
+    if spec.kind == "weight":
+        date = date or athlete.today()
+        if date > athlete.today():
+            raise InvalidMetric("That date is in the future.")
+    else:
+        date = None
+    save_metrics(athlete, {key: value}, source=MeasurementSource.COACH, date=date, entry_units=entry_units)
+    return spec
+
+
+def remind(athlete, base_url):
+    """Email the athlete about their missing metrics; returns the missing keys (nothing is
+    sent when everything is filled in)."""
+    from .emails import send_metrics_reminder
+
+    missing = missing_metrics(athlete)
+    if missing:
+        send_metrics_reminder(base_url, athlete, missing)
+    return missing

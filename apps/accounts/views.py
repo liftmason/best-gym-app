@@ -7,11 +7,11 @@ from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.views.decorators.http import require_POST
 
-from apps import hx
+from apps import hx, ratelimit
 from apps.exercises.models import MAX_TRACKED_LIFTS, TrackedLift
 from apps.exercises.tracked_views import trackable
 from apps.programs.views import card_context as week_type_card_context
-from apps.ratelimit import by_ip, by_user, client_ip, hit, rate_limit, too_many
+from apps.ratelimit import by_ip, by_user, client_ip, rate_limit, too_many
 
 from . import invites, services
 from .access import athlete_required, coach_required, home_url_for
@@ -32,18 +32,8 @@ from .services import AccountExists
 
 
 def login_allowed(request):
-    """Sign-in attempts in 15 minutes: 10 per address and email, 50 per address (trying
-    many accounts), 30 per email from anywhere (many addresses on one account). Every
-    bucket counts the attempt, so none can be skipped."""
-    email = request.POST.get("username", "").strip().lower()
-    ip = client_ip(request)
-    window = 15 * 60
-    checks = [
-        hit("login", f"{ip}:{email}", 10, window),
-        hit("login-ip", ip, 50, window),
-        hit("login-email", email, 30, window),
-    ]
-    return all(checks)
+    """The sign-in limits (apps/ratelimit.login_allowed) for this request."""
+    return ratelimit.login_allowed(client_ip(request), request.POST.get("username", ""))
 
 
 def admin_login(request, extra_context=None):
@@ -66,6 +56,11 @@ class RateLimitedLoginView(auth_views.LoginView):
             form.add_error(None, "Too many sign-in attempts. Wait 15 minutes, or reset your password.")
             return self.render_to_response(self.get_context_data(form=form), status=429)
         return super().post(request, *args, **kwargs)
+
+
+def _base_url(request):
+    """This site's address as the browser sees it, for links in emails."""
+    return request.build_absolute_uri("/").rstrip("/")
 
 
 def index(request):
@@ -130,9 +125,9 @@ def invite_create(request):
         return TemplateResponse(request, "partials/invite_modal.html", {"form": form})
     email = form.cleaned_data["email"]
     invite = invites.create(request.coach, email, form.cleaned_data["starting_template"])
-    join_url = invite_url(request, invite)
+    join_url = invite_url(_base_url(request), invite)
     if email:
-        send_invite_email(request, invite)
+        send_invite_email(_base_url(request), invite)
         toast = f"Invite sent to {email}"
     else:
         toast = "Invite link created — share it with your athlete"
@@ -148,7 +143,8 @@ def invite_list(request):
 
 
 def _invite_list_context(request):
-    return {"pending_invites": [(i, invite_url(request, i)) for i in invites.pending(request.coach)]}
+    base = _base_url(request)
+    return {"pending_invites": [(i, invite_url(base, i)) for i in invites.pending(request.coach)]}
 
 
 @coach_required
@@ -256,17 +252,21 @@ def settings_page(request):
     form = GymSettingsForm(request.POST or None, initial=initial)
     if request.method == "POST" and form.is_valid():
         data = form.cleaned_data
-        gym.name = data["gym_name"]
-        gym.timezone = data["timezone"]
-        gym.units = data["units"]
-        gym.week_start = data["week_start"]
-        gym.full_clean()
-        gym.save()
-        request.coach.title = data["coach_title"]
-        request.coach.digest = data["digest"]
-        request.coach.save(update_fields=["title", "digest"])
-        messages.success(request, "Settings saved")
-        return redirect("coach:settings")
+        try:
+            services.update_gym_settings(
+                request.coach,
+                gym_name=data["gym_name"],
+                coach_title=data["coach_title"],
+                digest=data["digest"],
+                timezone=data["timezone"],
+                units=data["units"],
+                week_start=data["week_start"],
+            )
+        except services.InvalidSettings as err:
+            form.add_error(None, str(err))
+        else:
+            messages.success(request, "Settings saved")
+            return redirect("coach:settings")
     return TemplateResponse(
         request,
         "coach/settings.html",

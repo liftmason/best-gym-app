@@ -3,9 +3,8 @@
 from decimal import Decimal
 
 from django import forms
-from django.db.models import Q
 from django.http import Http404, HttpResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -13,12 +12,11 @@ from django.views.decorators.http import require_POST
 from apps import hx
 from apps.workouts.models import CheckinQuestion
 
-from . import units
+from . import metrics, services, units
 from .access import coach_required
-from .emails import send_metrics_reminder
 from .forms import InputClassMixin
-from .metrics import current_metrics, metric_specs, missing_metrics, save_metrics, spec_for
-from .models import Athlete, MaxUpdates, MeasurementSource, YearsTraining
+from .metrics import current_metrics, metric_specs, spec_for
+from .models import Athlete, MaxUpdates, YearsTraining
 from .views import _invite_list_context
 
 DETAIL_TABS = [
@@ -32,21 +30,16 @@ DETAIL_TABS = [
 
 def coach_athlete(request, pk):
     """One of this coach's own, active athletes, or 404."""
-    return get_object_or_404(
-        Athlete.objects.select_related("user", "gym", "coach__user"),
-        pk=pk,
-        coach=request.coach,
-        archived_at__isnull=True,
-    )
+    try:
+        return services.coach_athlete(request.coach, pk)
+    except Athlete.DoesNotExist as err:
+        raise Http404 from err
 
 
 @coach_required
 def roster(request):
     q = request.GET.get("q", "").strip()
-    athletes = request.coach.athletes.filter(archived_at__isnull=True).select_related("user")
-    if q:
-        athletes = athletes.filter(Q(user__name__icontains=q) | Q(user__email__icontains=q))
-    cards = [{"athlete": a, "missing": len(missing_metrics(a))} for a in athletes]
+    cards = services.roster(request.coach, q)
     context = {"panel": "athletes", "title": "Athletes", "cards": cards, "q": q}
     if request.htmx and request.htmx.target == "clientCards":
         return TemplateResponse(request, "coach/_roster_cards.html", context)
@@ -216,14 +209,20 @@ def metric_edit(request, pk, key):
     label, kind = spec.label, spec.kind
     unit = {"weight": request.coach.gym.units, "height": "cm", "years": ""}[kind]
     form = MetricEditForm(request.POST or None, kind=kind, unit=unit, athlete=athlete)
+    saved = False
     if request.method == "POST" and form.is_valid():
-        save_metrics(
-            athlete,
-            {key: form.cleaned_data["value"]},
-            source=MeasurementSource.COACH,
-            date=form.cleaned_data.get("date"),
-            entry_units=request.coach.gym.units,
-        )
+        try:
+            metrics.save_coach_metric(
+                athlete,
+                key,
+                form.cleaned_data["value"],
+                date=form.cleaned_data.get("date"),
+                entry_units=request.coach.gym.units,
+            )
+            saved = True
+        except metrics.InvalidMetric as err:
+            form.add_error("value", str(err))
+    if saved:
         response = TemplateResponse(
             request,
             "coach/athlete/_metrics_panel.html",
@@ -243,10 +242,8 @@ def metric_edit(request, pk, key):
 @require_POST
 def remind_metrics(request, pk):
     athlete = coach_athlete(request, pk)
-    missing = missing_metrics(athlete)
-    if not missing:
+    if not metrics.remind(athlete, request.build_absolute_uri("/")):
         return hx.toast(HttpResponse(""), f"{athlete.user.get_short_name()} has filled in everything")
-    send_metrics_reminder(request, athlete, missing)
     return hx.toast(HttpResponse(""), f"Reminder emailed to {athlete.user.get_short_name()}", "good")
 
 
@@ -256,11 +253,7 @@ def max_updates(request, pk):
     athlete = coach_athlete(request, pk)
     value = request.POST.get("max_updates")
     if value in MaxUpdates.values:
-        athlete.max_updates = value
-        athlete.save(update_fields=["max_updates"])
-        from apps.dashboard import alerts
-
-        alerts.sync_prs(athlete)
+        services.set_max_updates(athlete, value)
     name = athlete.user.get_short_name()
     message = (
         f"Session PRs now update {name}'s maxes automatically"
@@ -277,19 +270,16 @@ def pr_decide(request, pk, set_id):
     from apps.workouts import prs
 
     athlete = coach_athlete(request, pk)
-    candidate = prs.pending_set(athlete, set_id)
-    if candidate is None:
+    use = request.POST.get("decision") == "use"
+    try:
+        candidate = prs.decide(athlete, set_id, use)
+    except prs.AlreadyHandled:
         return hx.toast(athlete_metrics(request, athlete), "That PR has already been handled", "err")
-    lift = candidate.exercise.name
-    if request.POST.get("decision") == "use":
-        prs.accept(athlete, candidate)
-        message = f"{lift} max is now {units.display(candidate.set_log.load_kg, request.coach.gym.units)}"
+    lift, unit = candidate.exercise.name, request.coach.gym.units
+    if use:
+        message = f"{lift} max is now {units.display(candidate.set_log.load_kg, unit)}"
     else:
-        prs.dismiss(athlete, candidate)
-        message = f"Kept {lift} at {units.display(candidate.current.kg, request.coach.gym.units)}"
-    from apps.dashboard import alerts
-
-    alerts.sync_prs(athlete)
+        message = f"Kept {lift} at {units.display(candidate.current.kg, unit)}"
     return hx.toast(athlete_metrics(request, athlete), message, "good")
 
 

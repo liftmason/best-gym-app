@@ -131,3 +131,23 @@ def dismiss(athlete, candidate):
         session_exercise__session_log__athlete=athlete,
         session_exercise__session_log__date__gte=current.date,
     ).update(max_dismissed=True)
+
+
+class AlreadyHandled(Exception):
+    """The PR was used or dismissed already (or was never a candidate)."""
+
+
+def decide(athlete, set_id, use):
+    """The coach's call on a session PR: use it as the working max, or keep the current
+    one. Returns the candidate; the coach's PR alerts are brought up to date."""
+    from apps.dashboard import alerts
+
+    candidate = pending_set(athlete, set_id)
+    if candidate is None:
+        raise AlreadyHandled(set_id)
+    if use:
+        accept(athlete, candidate)
+    else:
+        dismiss(athlete, candidate)
+    alerts.sync_prs(athlete)
+    return candidate

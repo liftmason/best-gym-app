@@ -1,12 +1,11 @@
 import zoneinfo
-from decimal import Decimal
 
 from django import forms
 from django.contrib.auth import password_validation
 
 from apps.exercises.starter import PACK_CHOICES, PACKS
 
-from .metrics import metric_specs
+from .metrics import LIMITS, metric_specs
 from .models import Units, User, WeekStart, YearsTraining
 
 
@@ -110,29 +109,28 @@ class MetricsForm(InputClassMixin, forms.Form):
                 widget=forms.Select(attrs={"class": "input"}),
             )
         if metric.kind == "height":
+            low, high, places = LIMITS["height_cm"]
             field = forms.DecimalField(
-                required=False,
-                min_value=Decimal("100"),
-                max_value=Decimal("250"),
-                decimal_places=1,
-                label="Height (cm)",
+                required=False, min_value=low, max_value=high, decimal_places=places, label="Height (cm)"
             )
             placeholder = "e.g. 168"
         elif metric.key == "bodyweight":
+            low, high, places = LIMITS["bodyweight"]
             field = forms.DecimalField(
                 required=False,
-                min_value=Decimal("20"),
-                max_value=Decimal("600"),
-                decimal_places=2,
+                min_value=low,
+                max_value=high,
+                decimal_places=places,
                 label=f"Bodyweight ({units})",
             )
             placeholder = "e.g. 64" if units == "kg" else "e.g. 141"
         else:
+            low, high, places = LIMITS["lift"]
             field = forms.DecimalField(
                 required=False,
-                min_value=Decimal("1"),
-                max_value=Decimal("1000"),
-                decimal_places=2,
+                min_value=low,
+                max_value=high,
+                decimal_places=places,
                 label=f"{metric.label} ({units})",
             )
             placeholder = "best single"
@@ -161,11 +159,11 @@ class InviteForm(InputClassMixin, forms.Form):
 
     def __init__(self, *args, gym, **kwargs):
         super().__init__(*args, **kwargs)
-        from apps.library.models import Template, TemplateKind
+        from apps.library.models import TemplateKind
 
-        self.fields["starting_template"].queryset = Template.objects.filter(
-            gym=gym, kind__in=[TemplateKind.PROGRAM, TemplateKind.WEEK]
-        ).order_by("kind", "name")
+        from .invites import template_choices
+
+        self.fields["starting_template"].queryset = template_choices(gym)
         self.fields["starting_template"].label_from_instance = lambda t: (
             f"{t.display_name}{' (saved week)' if t.kind == TemplateKind.WEEK else ''}"
         )

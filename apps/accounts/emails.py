@@ -1,26 +1,29 @@
+"""Account emails. Links are built from `base_url` (the site's address, e.g.
+"https://gymtrainer.onrender.com"): a page passes its own, the API and cron use SITE_URL."""
+
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.urls import reverse
 
 
-def invite_url(request, invite):
+def invite_url(base_url, invite):
     """The short /join/<token>/ link that goes in emails and the copy box."""
-    return request.build_absolute_uri(f"/join/{invite.token}/")
+    return f"{base_url.rstrip('/')}/join/{invite.token}/"
 
 
-def send_invite_email(request, invite):
+def send_invite_email(base_url, invite):
     context = {
         "invite": invite,
         "coach": invite.coach,
         "gym": invite.coach.gym,
-        "join_url": invite_url(request, invite),
+        "join_url": invite_url(base_url, invite),
     }
     subject = render_to_string("emails/invite_subject.txt", context).strip()
     body = render_to_string("emails/invite.txt", context)
     send_mail(subject, body, None, [invite.email])
 
 
-def send_metrics_reminder(request, athlete, missing_keys):
+def send_metrics_reminder(base_url, athlete, missing_keys):
     from .metrics import metric_specs
 
     labels = [m.label for m in metric_specs(athlete.gym) if m.key in missing_keys]
@@ -28,7 +31,7 @@ def send_metrics_reminder(request, athlete, missing_keys):
         "athlete": athlete,
         "coach": athlete.coach,
         "labels": labels,
-        "url": request.build_absolute_uri(reverse("app:numbers")),
+        "url": f"{base_url.rstrip('/')}{reverse('app:numbers')}",
     }
     subject = render_to_string("emails/metrics_reminder_subject.txt", context).strip()
     body = render_to_string("emails/metrics_reminder.txt", context)

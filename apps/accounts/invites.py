@@ -23,6 +23,15 @@ class ArchivedAthlete(Exception):
     """This account's athlete profile was archived by a coach; one profile per account."""
 
 
+def template_choices(gym):
+    """What an invite can start the athlete on: the gym's program templates and saved weeks."""
+    from apps.library.models import Template, TemplateKind
+
+    return Template.objects.filter(gym=gym, kind__in=[TemplateKind.PROGRAM, TemplateKind.WEEK]).order_by(
+        "kind", "name"
+    )
+
+
 def create(coach, email="", starting_template=None):
     """A pending invite. `starting_template` must be one of the coach's gym's program
     templates or saved weeks."""

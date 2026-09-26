@@ -69,3 +69,19 @@ def rate_limit(name, limit, window, key=by_ip, methods=("POST",)):
         return wrapped
 
     return decorator
+
+
+LOGIN_WINDOW = 15 * 60
+
+
+def login_allowed(ip, email):
+    """Sign-in attempts in 15 minutes: 10 per address and email, 50 per address (trying many
+    accounts), 30 per email from anywhere (many addresses on one account). Every bucket
+    counts the attempt, so none can be skipped."""
+    email = (email or "").strip().lower()
+    checks = [
+        hit("login", f"{ip}:{email}", 10, LOGIN_WINDOW),
+        hit("login-ip", ip, 50, LOGIN_WINDOW),
+        hit("login-email", email, 30, LOGIN_WINDOW),
+    ]
+    return all(checks)
