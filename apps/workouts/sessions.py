@@ -19,6 +19,36 @@ from . import prs
 from .models import SessionExercise, SessionLog, SetLog
 
 PLATE_STEP = {"kg": Decimal("0.5"), "lb": Decimal("2.5")}
+MAX_SET_NUMBER = 50
+# What one logged set may hold, in the athlete's unit: load, reps, time (minutes or seconds).
+SET_LIMITS = {"load": Decimal("2000"), "reps": 999, "time": Decimal("1440")}
+MAX_RIR = 5  # 5 means "5 or more"
+MAX_COMMENT = 2000
+
+
+class SessionClosed(Exception):
+    """Finished more than 24 hours ago: the log can't change any more."""
+
+
+class InvalidSet(Exception):
+    """A set with numbers out of range."""
+
+
+class InvalidFinish(Exception):
+    """A session RPE outside 1-10, or an overlong comment."""
+
+
+class NotYetUnlocked(Exception):
+    """A planned session opens on its day; `date` says when."""
+
+    def __init__(self, date):
+        super().__init__(date)
+        self.date = date
+
+
+def _open(log):
+    if not log.editable():
+        raise SessionClosed()
 
 
 def _dec(value):
@@ -174,9 +204,29 @@ def step_done(step):
 
 
 def check_warmup(se, checked):
+    """Tick or untick a warm-up drill while the session can still change."""
+    _open(se.session_log)
     se.checked_at = timezone.now() if checked else None
     se.save(update_fields=["checked_at"])
     return se
+
+
+def start_planned(athlete, session_id):
+    """Start (or resume) one of the athlete's planned sessions: in a published week of their
+    active program, on its day or a day already past (a missed day filled in afterwards).
+    ProgramSession.DoesNotExist for anyone else's or a draft week's; NotYetUnlocked before
+    its day."""
+    from apps.programs.models import ProgramSession
+
+    session = ProgramSession.objects.select_related("day__week__week_type").get(
+        pk=session_id,
+        day__week__program__athlete=athlete,
+        day__week__program__active=True,
+        day__week__published=True,
+    )
+    if session.day.date > athlete.today():
+        raise NotYetUnlocked(session.day.date)
+    return start(athlete, session)
 
 
 @transaction.atomic
@@ -221,6 +271,43 @@ def start(athlete, program_session):
     return log
 
 
+def _number(value, name, limit, whole=False):
+    if value is None or value == "":
+        return None
+    try:
+        number = int(value) if whole else Decimal(str(value))
+    except ValueError, ArithmeticError:
+        raise InvalidSet(f"{name} isn't a number.") from None
+    if whole and str(value).strip() != str(number):
+        raise InvalidSet(f"{name} must be a whole number.")
+    if not 0 <= number <= limit:
+        raise InvalidSet(f"{name} must be between 0 and {limit}.")
+    return number
+
+
+def log_set(se, number, *, load=None, reps=None, time=None, time_unit="s", rir=None, done=False, unit="kg"):
+    """One set as the athlete entered it: load in their `unit`, time in minutes or seconds.
+    Validates, converts and saves; SessionClosed once the edit window has passed."""
+    _open(se.session_log)
+    if not 1 <= int(number) <= MAX_SET_NUMBER:
+        raise InvalidSet(f"Sets are numbered 1 to {MAX_SET_NUMBER}.")
+    load = _number(load, "Load", SET_LIMITS["load"])
+    reps = _number(reps, "Reps", SET_LIMITS["reps"], whole=True)
+    time = _number(time, "Time", SET_LIMITS["time"])
+    rir = _number(rir, "RIR", MAX_RIR, whole=True)
+    if time_unit not in ("s", "min"):
+        raise InvalidSet("Time is in seconds or minutes.")
+    return save_set(
+        se,
+        int(number),
+        load_kg=units.to_kg(load, unit) if load is not None else None,
+        reps=reps,
+        duration_seconds=int(time * (60 if time_unit == "min" else 1)) if time is not None else None,
+        rir=rir,
+        done=bool(done),
+    )
+
+
 def save_set(se, set_number, *, load_kg, reps, duration_seconds, rir, done):
     row, _ = SetLog.objects.update_or_create(
         session_exercise=se,
@@ -240,7 +327,19 @@ def save_set(se, set_number, *, load_kg, reps, duration_seconds, rir, done):
 
 
 @transaction.atomic
-def finish(log, rpe, comment):
+def finish(log, rpe, comment=""):
+    """Finish (or, within 24 hours, change) a session: RPE 1-10 and an optional comment.
+    Session PRs are worked out again from the logged sets."""
+    _open(log)
+    try:
+        rpe = int(rpe)
+    except TypeError, ValueError:
+        raise InvalidFinish("Pick how hard it was, from 1 to 10.") from None
+    if not 1 <= rpe <= 10:
+        raise InvalidFinish("Pick how hard it was, from 1 to 10.")
+    comment = (comment or "").strip()
+    if len(comment) > MAX_COMMENT:
+        raise InvalidFinish(f"Keep the note to {MAX_COMMENT} characters.")
     log.session_rpe = rpe
     log.comment = comment
     if log.finished_at is None:

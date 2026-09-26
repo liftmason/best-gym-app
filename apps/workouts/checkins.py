@@ -4,6 +4,7 @@
 from django.db import transaction
 
 from .models import OTHER_OPTION, CheckinAnswer, CheckinQuestion, QuestionType
+from .sessions import SessionClosed  # noqa: F401 - part of this module's interface
 
 SCALE_VALUES = {str(i) for i in range(1, 11)}
 MAX_DETAIL = 300  # a scale's follow-up words, or a choice's "Other" details
@@ -12,10 +13,6 @@ MAX_TEXT = 200  # a short answer
 
 class InvalidAnswer(Exception):
     """Not an answer this question accepts."""
-
-
-class SessionClosed(Exception):
-    """The session is finished; its check-in can't change."""
 
 
 def questions(athlete):

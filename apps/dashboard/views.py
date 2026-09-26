@@ -267,10 +267,9 @@ def resolve_issue(request, pk, issue_id):
 
     athlete = coach_athlete(request, pk)
     issue = get_object_or_404(IssueReport, pk=issue_id, athlete=athlete)
-    if issue.resolved_at is None:
-        issue.resolved_at = timezone.now()
-        issue.save(update_fields=["resolved_at"])
-        alerts.issue_resolved(issue)
+    from apps.workouts import issues
+
+    issues.resolve(issue)
     response = TemplateResponse(
         request, "coach/athlete/_issue_note.html", {"issue": issue, "athlete": athlete}
     )

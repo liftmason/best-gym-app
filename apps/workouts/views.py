@@ -16,6 +16,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps import hx
+from apps.accounts import services as account_services
 from apps.accounts import units
 from apps.accounts.access import athlete_required
 from apps.accounts.metrics import current_metrics, metric_specs, missing_metrics
@@ -23,8 +24,8 @@ from apps.exercises.models import Measure
 from apps.programs.models import LoadBasis, ProgramSession
 from apps.programs.prescriptions import layout, load_text, rir_text, summary
 
-from . import charts, checkins, history, sessions
-from .forms import RIR_CHOICES, FinishForm, IssueForm, SetForm
+from . import charts, checkins, history, issues, sessions
+from .forms import RIR_CHOICES, FinishForm, IssueForm
 from .models import EDIT_WINDOW, OTHER_OPTION, SessionLog
 from .video_views import video_context
 
@@ -169,18 +170,13 @@ def home(request):
 @require_POST
 def start(request, session_id):
     """Start (or resume) a planned session: today's, or a missed one filled in afterwards."""
-    athlete = request.athlete
-    session = get_object_or_404(
-        ProgramSession.objects.select_related("day__week__week_type"),
-        pk=session_id,
-        day__week__program__athlete=athlete,
-        day__week__program__active=True,
-        day__week__published=True,
-    )
-    if session.day.date > athlete.today():
-        messages.error(request, f"This session unlocks on {session.day.date:%A}.")
-        return redirect(f"{reverse('app:home')}?day={session.day.date.isoformat()}")
-    log = sessions.start(athlete, session)
+    try:
+        log = sessions.start_planned(request.athlete, session_id)
+    except ProgramSession.DoesNotExist as err:
+        raise Http404 from err
+    except sessions.NotYetUnlocked as locked:
+        messages.error(request, f"This session unlocks on {locked.date:%A}.")
+        return redirect(f"{reverse('app:home')}?day={locked.date.isoformat()}")
     return redirect(_resume_url(log))
 
 
@@ -456,9 +452,10 @@ def warmup_check(request, log_id, se_id):
     """Tick (or untick) one warm-up drill."""
     log = _log(request, log_id)
     se = get_object_or_404(log.exercises, pk=se_id, warmup=True)
-    if not log.editable():
+    try:
+        sessions.check_warmup(se, request.POST.get("checked") == "1")
+    except sessions.SessionClosed:
         return hx.toast(HttpResponse(status=409), "This session can no longer be changed.", "bad")
-    sessions.check_warmup(se, request.POST.get("checked") == "1")
     return TemplateResponse(
         request,
         "app/_warmup_item.html",
@@ -478,22 +475,25 @@ def save_set(request, log_id, se_id, number):
     if not log.editable():
         return JsonResponse({"error": "This session can no longer be changed."}, status=409)
     se = get_object_or_404(log.exercises, pk=se_id)
-    if not 1 <= number <= 50:
+    if not 1 <= number <= sessions.MAX_SET_NUMBER:
         raise Http404
-    form = SetForm(request.POST)
-    if not form.is_valid():
+    post = request.POST
+    try:
+        sessions.log_set(
+            se,
+            number,
+            load=post.get("load", "").strip(),
+            reps=post.get("reps", "").strip(),
+            time=post.get("time", "").strip(),
+            time_unit=post.get("time_unit") or "s",
+            rir=post.get("rir", "").strip(),
+            done=bool(post.get("done")),
+            unit=request.athlete.units,
+        )
+    except sessions.InvalidSet:
         return JsonResponse({"error": "Check the numbers in this set."}, status=400)
-    data = form.cleaned_data
-    load = data["load"]
-    sessions.save_set(
-        se,
-        number,
-        load_kg=units.to_kg(load, request.athlete.units) if load is not None else None,
-        reps=data["reps"],
-        duration_seconds=data["duration_seconds"],
-        rir=data["rir"],
-        done=data["done"],
-    )
+    except sessions.SessionClosed:
+        return JsonResponse({"error": "This session can no longer be changed."}, status=409)
     return JsonResponse({"saved": True})
 
 
@@ -524,7 +524,7 @@ def finish(request, log_id):
     form = FinishForm(request.POST or None, initial={"rpe": log.session_rpe, "comment": log.comment})
     if request.method == "POST" and form.is_valid():
         first_time = not log.finished
-        sessions.finish(log, form.cleaned_data["rpe"], form.cleaned_data["comment"])
+        sessions.finish(log, form.cleaned_data["rpe"], form.cleaned_data["comment"])  # the form checked both
         if first_time:
             return redirect("app:done", log.pk)
         messages.success(request, "Changes saved")
@@ -549,12 +549,7 @@ def issue(request, log_id):
     log = _log(request, log_id)
     form = IssueForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        report = form.save(commit=False)
-        report.athlete, report.session_log = request.athlete, log
-        report.save()
-        from apps.dashboard import alerts
-
-        alerts.issue_reported(report)
+        issues.report(log, form.cleaned_data["kind"], form.cleaned_data["text"])
         response = TemplateResponse(request, "app/_issue_list.html", {"issues": list(log.issues.all())})
         hx.toast(response, f"Sent — {_coach_first_name(request.athlete)} has been notified", "good")
         return hx.trigger_after_swap(response, closeModal=True)
@@ -665,7 +660,6 @@ def units_setting(request):
     """Kilograms or pounds for this athlete's app (loads are stored in kg either way)."""
     athlete = request.athlete
     if request.POST.get("units") in ("kg", "lb"):
-        athlete.units = request.POST["units"]
-        athlete.save(update_fields=["units"])
+        account_services.set_units(athlete, request.POST["units"])
         messages.success(request, f"Weights now show in {athlete.get_units_display().lower()}")
     return redirect("app:profile")

@@ -42,3 +42,12 @@ def sign_up_coach(*, name, email, gym_name, units, starter, timezone, password=N
     install_default_questions(gym)
     user = User.objects.create_user(email, password, name=name, timezone=tz)
     return Coach.objects.create(user=user, gym=gym)
+
+
+def set_units(athlete, value):
+    """Kilograms or pounds in the athlete's own app (loads are stored in kg either way)."""
+    if value not in Units.values:
+        raise ValueError(f"Unknown units: {value!r}")
+    athlete.units = value
+    athlete.save(update_fields=["units"])
+    return athlete
