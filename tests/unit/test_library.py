@@ -16,13 +16,11 @@ from apps.programs import services as program_services
 from apps.programs.models import LoadBasis, Prescription, ProgramWeek, WeekType
 from apps.workouts import sessions as workout_sessions
 
+from ..conftest import ex
+
 pytestmark = pytest.mark.django_db
 HX = {"HTTP_HX_REQUEST": "true"}
 DAY = datetime.timedelta(days=1)
-
-
-def ex(gym, key):
-    return Exercise.objects.get(gym=gym, key=key)
 
 
 def tag(gym, name):

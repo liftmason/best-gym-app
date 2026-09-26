@@ -14,7 +14,7 @@ envVarGroups:
       - key: SECRET_KEY
         generateValue: true
       - key: PYTHON_VERSION
-        value: 3.12.3
+        value: 3.14.7
 
 services:
   - type: web
@@ -22,7 +22,7 @@ services:
     runtime: python
     plan: free
     branch: main
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    buildCommand: pip install uv && uv export --locked --no-dev --no-hashes -o /tmp/requirements.txt && pip install -r /tmp/requirements.txt && python manage.py collectstatic --noinput
     # No pre-deploy on free: migrate at start-up, and load the demo gym once (seed_demo
     # --if-empty leaves it alone after that, so the client's changes survive restarts).
     startCommand: >-

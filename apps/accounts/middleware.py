@@ -14,7 +14,7 @@ class UserTimezoneMiddleware:
         if user is not None and user.is_authenticated:
             try:
                 timezone.activate(zoneinfo.ZoneInfo(user.timezone))
-            except (zoneinfo.ZoneInfoNotFoundError, ValueError):
+            except zoneinfo.ZoneInfoNotFoundError, ValueError:
                 timezone.deactivate()
         else:
             timezone.deactivate()

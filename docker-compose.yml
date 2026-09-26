@@ -18,7 +18,9 @@ services:
   # Stands in for Cloudflare R2 (form videos) locally and in tests. Start: docker compose up -d storage
   storage:
     # MinIO no longer publishes public images (Docker Hub, then quay.io); Chainguard's build is public.
-    image: cgr.dev/chainguard/minio:latest
+    # Pinned by digest (Chainguard's free images only publish :latest). To update: docker pull
+    # cgr.dev/chainguard/minio:latest, then copy its digest here and into .github/workflows/ci.yml.
+    image: cgr.dev/chainguard/minio@sha256:bd014394a80898e68c149f2311fdf8d5a2c2f3bb2c33b9327ae6d02b4b065ae1
     user: root  # the videos volume may hold files written as root by the old image
     command: server /data --console-address ":9001"
     environment:

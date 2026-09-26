@@ -14,7 +14,7 @@ envVarGroups:
       - key: SECRET_KEY
         generateValue: true
       - key: PYTHON_VERSION
-        value: 3.12.3
+        value: 3.14.7
 
 services:
   - type: web
@@ -22,7 +22,7 @@ services:
     runtime: python
     plan: starter
     branch: main
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    buildCommand: pip install uv && uv export --locked --no-dev --no-hashes -o /tmp/requirements.txt && pip install -r /tmp/requirements.txt && python manage.py collectstatic --noinput
     preDeployCommand: python manage.py migrate --noinput && python manage.py ensure_admin
     startCommand: gunicorn config.wsgi:application --workers 3 --access-logfile -
     healthCheckPath: /healthz
@@ -64,7 +64,7 @@ services:
     plan: starter
     branch: main
     schedule: "0 * * * *"
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install uv && uv export --locked --no-dev --no-hashes -o /tmp/requirements.txt && pip install -r /tmp/requirements.txt
     startCommand: python manage.py cron
     envVars:
       - fromGroup: gymtrainer-shared

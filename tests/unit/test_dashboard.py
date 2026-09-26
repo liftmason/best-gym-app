@@ -9,20 +9,17 @@ import pytest
 from apps.accounts.models import Athlete, BodyweightEntry, Coach, MaxEntry, MaxUpdates
 from apps.dashboard import alerts
 from apps.dashboard.models import Notification, NotificationKind
-from apps.exercises.models import Exercise
 from apps.messaging.models import Message, Thread
 from apps.programs import services as program_services
 from apps.programs.models import WeekType
 from apps.workouts import sessions
 from apps.workouts.models import IssueReport
 
+from ..conftest import ex
+
 pytestmark = pytest.mark.django_db
 HX = {"HTTP_HX_REQUEST": "true"}
 DAY = datetime.timedelta(days=1)
-
-
-def ex(gym, key):
-    return Exercise.objects.get(gym=gym, key=key)
 
 
 def kinds(coach):

@@ -11,13 +11,11 @@ from apps.programs import services
 from apps.programs.models import LoadBasis, PrescribedSet, Prescription, Program, ProgramSession, WeekType
 from apps.programs.prescriptions import default_dose, load_text, parse_rep_scheme, suggested_weight, summary
 
+from ..conftest import ex
+
 pytestmark = pytest.mark.django_db
 HX = {"HTTP_HX_REQUEST": "true"}
 MON = datetime.date(2026, 9, 21)  # a Monday
-
-
-def ex(gym, key):
-    return Exercise.objects.get(gym=gym, key=key)
 
 
 def wt(gym, name="Accumulation"):

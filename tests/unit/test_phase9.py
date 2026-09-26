@@ -22,12 +22,10 @@ from apps.programs.prescriptions import layout, parse_rep_scheme, parse_rir, sum
 from apps.workouts import sessions
 from apps.workouts.models import CheckinAnswer, CheckinQuestion, QuestionType
 
+from ..conftest import ex
+
 pytestmark = pytest.mark.django_db
 HX = {"HTTP_HX_REQUEST": "true"}
-
-
-def ex(gym, key):
-    return Exercise.objects.get(gym=gym, key=key)
 
 
 @pytest.fixture

@@ -10,18 +10,15 @@ from django.utils import timezone
 
 from apps.accounts.models import Athlete, Coach, MaxEntry, MaxUpdates, MeasurementSource
 from apps.exercises.deletion import delete_exercise, deletion_impact
-from apps.exercises.models import Exercise
 from apps.programs import services
 from apps.programs.models import LoadBasis, PrescribedSet, ProgramDay, WeekType
 from apps.workouts import history, prs, sessions
 from apps.workouts.models import CheckinAnswer, IssueReport, SessionExercise, SessionLog, SetLog
 
+from ..conftest import ex
+
 pytestmark = pytest.mark.django_db
 DAY = datetime.timedelta(days=1)
-
-
-def ex(gym, key):
-    return Exercise.objects.get(gym=gym, key=key)
 
 
 @pytest.fixture

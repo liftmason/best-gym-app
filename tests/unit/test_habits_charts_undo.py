@@ -7,7 +7,6 @@ from decimal import Decimal
 import pytest
 
 from apps.accounts.models import BodyweightEntry
-from apps.exercises.models import Exercise
 from apps.library import apply
 from apps.library import services as library_services
 from apps.library.models import TemplateHabit, TemplateKind
@@ -16,13 +15,11 @@ from apps.programs import services as program_services
 from apps.programs.models import EditHistory, Habit, HabitLog, LoadBasis, Prescription, WeekType
 from apps.workouts import charts, sessions
 
+from ..conftest import ex
+
 pytestmark = pytest.mark.django_db
 HX = {"HTTP_HX_REQUEST": "true"}
 DAY = datetime.timedelta(days=1)
-
-
-def ex(gym, key):
-    return Exercise.objects.get(gym=gym, key=key)
 
 
 def toast(response):
@@ -83,9 +80,9 @@ def test_weekly_targets(athlete):
     assert habits.streak(h, today) == 1  # last week met; this week not over yet
     for i in range(3):
         HabitLog.objects.get_or_create(habit=h, date=week_start + i * DAY)
+    # The frozen clock makes today Thursday, so Thursday is never in the future here.
     item = next(i for i in habits.for_day(athlete, week_start + 3 * DAY) if i["habit"] == h)
-    if week_start + 3 * DAY <= today:
-        assert item["met_for_week"] and item["week_count"] == 3
+    assert item["met_for_week"] and item["week_count"] == 3
     assert habits.streak(h, today) == 2
 
 

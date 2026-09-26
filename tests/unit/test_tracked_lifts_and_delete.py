@@ -8,14 +8,10 @@ from apps.accounts.models import Coach, Gym, MaxEntry
 from apps.exercises.models import MAX_TRACKED_LIFTS, Exercise, TrackedLift, tracked_exercises
 from apps.exercises.starter import install_pack
 
-from ..conftest import lift_field
+from ..conftest import ex, lift_field
 
 pytestmark = pytest.mark.django_db
 HX = {"HTTP_HX_REQUEST": "true"}
-
-
-def ex(gym, key):
-    return Exercise.objects.get(gym=gym, key=key)
 
 
 def toast(response):
