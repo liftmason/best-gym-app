@@ -9,7 +9,7 @@ from django.template.response import TemplateResponse
 from apps import hx
 from apps.ratelimit import by_user, rate_limit
 
-from .models import BugReport
+from . import bugs
 
 
 class BugForm(forms.Form):
@@ -25,35 +25,21 @@ class BugForm(forms.Form):
     screen = forms.CharField(max_length=40, required=False, widget=forms.HiddenInput)
 
 
-def _side(request):
-    """Which app the button was pressed in: as the header says, else from the profile."""
-    side = request.GET.get("side") or request.POST.get("side")
-    if side in BugReport.Side.values:
-        return side
-    return BugReport.Side.COACH if request.user.coach_profile else BugReport.Side.ATHLETE
-
-
-def _gym(user):
-    profile = user.coach_profile or user.athlete_profile
-    return profile.gym if profile else None
-
-
 @login_required
 @rate_limit("bug", 20, 60 * 60, key=by_user)
 def bug_report(request):
-    side = _side(request)
+    side = bugs.side_for(request.user, request.GET.get("side") or request.POST.get("side"))
     if request.method == "POST":
         form = BugForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            BugReport.objects.create(
-                user=request.user,
-                gym=_gym(request.user),
+            bugs.report(
+                request.user,
+                description=data["description"],
                 side=side,
-                description=data["description"].strip(),
                 page=data["page"],
                 screen=data["screen"],
-                user_agent=request.headers.get("User-Agent", "")[:400],
+                user_agent=request.headers.get("User-Agent", ""),
             )
             response = hx.toast(HttpResponse(""), "Thanks — your bug report was sent", "good")
             return hx.trigger_after_swap(response, closeModal=True)

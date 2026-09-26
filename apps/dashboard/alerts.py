@@ -335,3 +335,17 @@ def link_for(row):
         if day:
             return _tab(athlete, "program") + f"?week={day.week_id}#day-{day.pk}"
     return row.link
+
+
+def dismiss(user, notification_id):
+    """Tick one of the user's feed rows as read (it stays, dimmed). DoesNotExist otherwise."""
+    row = Notification.objects.get(pk=notification_id, recipient=user)
+    if row.read_at is None:
+        row.read_at = timezone.now()
+        row.save(update_fields=["read_at"])
+    return row
+
+
+def clear_read(coach):
+    """Remove every read row from the coach's feed; returns how many."""
+    return feed(coach).filter(read_at__isnull=False).update(cleared_at=timezone.now())
