@@ -17,7 +17,8 @@ from apps import hx
 from apps.accounts.access import coach_required
 from apps.accounts.forms import InputClassMixin
 from apps.exercises.models import Exercise, Tag
-from apps.programs.forms import MAX_CUSTOM_FIELDS, MAX_SETS, PrescriptionForm, set_rows_initial
+from apps.programs.dose import MAX_CUSTOM_FIELDS, MAX_SETS
+from apps.programs.forms import PrescriptionForm, set_rows_initial
 from apps.programs.models import WeekType
 from apps.programs.prescriptions import board_items, summary
 from apps.programs.program_views import load_basis_for, rail_context

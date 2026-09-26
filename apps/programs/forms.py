@@ -6,16 +6,10 @@ from django import forms
 from apps.accounts import units
 from apps.accounts.forms import InputClassMixin
 
+from . import dose
+from .dose import MAX_SETS
 from .models import LoadBasis, WeekType
-from .prescriptions import parse_rep_scheme, parse_rir, rir_text
-
-MAX_SETS = 20
-MAX_CUSTOM_FIELDS = 8
-LOAD_LIMITS = {
-    LoadBasis.PERCENT: (Decimal("1"), Decimal("200"), "a percentage between 1 and 200"),
-    LoadBasis.RPE: (Decimal("1"), Decimal("10"), "an RPE between 1 and 10"),
-    LoadBasis.WEIGHT: (Decimal("0.5"), Decimal("1000"), "a weight"),
-}
+from .prescriptions import parse_rir, rir_text
 
 
 class StartProgramForm(InputClassMixin, forms.Form):
@@ -35,16 +29,6 @@ class StartProgramForm(InputClassMixin, forms.Form):
         start = gym.get_week_start_display()
         end = (datetime.date(2024, 1, 1) + datetime.timedelta(days=gym.week_start + 6)).strftime("%A")
         self.fields["first_day"].help_text = f"Weeks run {start}–{end}; any day in the first week works."
-
-
-def _decimal(raw):
-    raw = (raw or "").strip()
-    if not raw:
-        return None
-    try:
-        return Decimal(raw)
-    except ArithmeticError as err:
-        raise forms.ValidationError("Enter a number.") from err
 
 
 class PrescriptionForm(InputClassMixin, forms.Form):
@@ -94,105 +78,41 @@ class PrescriptionForm(InputClassMixin, forms.Form):
             "superset": rx.superset,
         }
 
-    def _checked_load(self, basis, raw, where="Load"):
-        value = _decimal(raw)
-        if basis in (LoadBasis.NONE, LoadBasis.BODYWEIGHT):
-            return None
-        if value is None:
-            raise forms.ValidationError(f"{where}: enter {LOAD_LIMITS[basis][2]}.")
-        low, high, what = LOAD_LIMITS[basis]
-        if not low <= value <= high:
-            raise forms.ValidationError(f"{where}: enter {what}.")
-        return units.to_kg(value, self.unit) if basis == LoadBasis.WEIGHT else value
-
     def clean_rir(self):
         try:
-            return parse_rir(self.cleaned_data.get("rir"))
+            parse_rir(self.cleaned_data.get("rir"))
         except ValueError as err:
             raise forms.ValidationError("Enter a number (2) or a range (1-2), up to 10.") from err
+        return self.cleaned_data.get("rir")
 
     def clean(self):
+        """The field checks above give per-field messages on the page; the dose rules
+        themselves are in apps/programs/dose.py, shared with the API."""
         data = super().clean()
         if self.errors:
             return data
-        data["rir"], data["rir_max"] = data["rir"]
-        for name in ("section", "section_note"):
-            data[name] = " ".join(data.get(name, "").split())
-        if data["warmup"]:
-            # A warm-up drill is ticked off once: no sets, load or RIR, and it isn't in a section.
-            data.update(sets=1, load_basis=LoadBasis.NONE, rir=None, rir_max=None, vary=False)
-            data.update(section="", section_note="", superset=False)
-        basis = data["load_basis"]
+        raw = {
+            **data,
+            "custom_fields": [
+                {"key": k, "value": v}
+                for k, v in zip(self.data.getlist("cf_key"), self.data.getlist("cf_value"), strict=False)
+            ],
+            "set_rows": [
+                {"reps": r, "load": v}
+                for r, v in zip(self.data.getlist("set_reps"), self.data.getlist("set_load"), strict=False)
+            ],
+        }
+        if data.get("vary") and (len(self.data.getlist("set_reps")) != len(self.data.getlist("set_load"))):
+            raw["set_rows"] = []  # a mismatched pair of lists is never a full set of rows
         try:
-            data["load_value"] = self._checked_load(basis, data.get("load_value"))
-        except forms.ValidationError as err:
-            self.add_error("load_value", err)
-            return data
-
-        data["rep_scheme"] = " ".join(data.get("rep_scheme", "").split())
-        data["reps"], data["duration_seconds"] = parse_rep_scheme(data["rep_scheme"])
-
-        keys, values = self.data.getlist("cf_key"), self.data.getlist("cf_value")
-        custom = []
-        for key, value in zip(keys, values, strict=False):
-            key, value = " ".join(key.split())[:30], " ".join(value.split())[:60]
-            if key:
-                custom.append({"key": key, "value": value})
-        if len(custom) > MAX_CUSTOM_FIELDS:
-            self.add_error(None, f"Keep it to {MAX_CUSTOM_FIELDS} custom fields.")
-        data["custom_fields"] = custom
-
-        data["set_rows"] = []
-        if data.get("vary"):
-            reps_list, loads = self.data.getlist("set_reps"), self.data.getlist("set_load")
-            if len(reps_list) != data["sets"] or len(loads) != data["sets"]:
-                self.add_error(None, "Fill in a row for every set.")
-                return data
-            for i, (reps_text, load_raw) in enumerate(zip(reps_list, loads, strict=True), start=1):
-                reps_text = " ".join(reps_text.split())[:30]
-                try:
-                    load = self._checked_load(basis, load_raw, where=f"Set {i}") if load_raw.strip() else None
-                except forms.ValidationError as err:
-                    self.add_error(None, err)
-                    return data
-                data["set_rows"].append(
-                    {
-                        "set_number": i,
-                        "rep_scheme": reps_text,
-                        "reps": parse_rep_scheme(reps_text or data["rep_scheme"])[0],
-                        "load_value": load,
-                    }
-                )
+            self.dose = dose.validate(raw, self.unit)
+        except dose.InvalidDose as err:
+            for field, message in err.errors.items():
+                self.add_error(field, message)
         return data
 
     def save(self, rx):
-        data = self.cleaned_data
-        for field in [
-            "sets",
-            "rep_scheme",
-            "reps",
-            "duration_seconds",
-            "load_basis",
-            "load_value",
-            "rir",
-            "rir_max",
-            "note",
-            "custom_fields",
-            "warmup",
-            "section",
-            "section_note",
-            "superset",
-        ]:
-            setattr(rx, field, data[field])
-        rx.save()
-        from .prescriptions import keep_warmups_first
-
-        keep_warmups_first(rx.session)
-        # Works for a program prescription (PrescribedSet) and a template slot (TemplateSlotSet).
-        rx.set_overrides.all().delete()
-        model, parent = rx.set_overrides.model, rx.set_overrides.field.name
-        model.objects.bulk_create([model(**{parent: rx}, **row) for row in data["set_rows"]])
-        return rx
+        return dose.apply(rx, self.dose)
 
 
 def set_rows_initial(rx, unit):

@@ -16,7 +16,8 @@ from apps.accounts.coach_views import _header_context, coach_athlete
 from apps.exercises.models import Exercise, Tag
 
 from . import services, undo
-from .forms import MAX_CUSTOM_FIELDS, MAX_SETS, PrescriptionForm, StartProgramForm, set_rows_initial
+from .dose import MAX_CUSTOM_FIELDS, MAX_SETS
+from .forms import PrescriptionForm, StartProgramForm, set_rows_initial
 from .models import LoadBasis, Prescription, ProgramDay, ProgramSession, ProgramWeek, WeekType
 from .prescriptions import board_items, load_text, suggested_weight, summary
 
