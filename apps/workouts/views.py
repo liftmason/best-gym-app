@@ -23,9 +23,9 @@ from apps.exercises.models import Measure
 from apps.programs.models import LoadBasis, ProgramSession
 from apps.programs.prescriptions import layout, load_text, rir_text, summary
 
-from . import charts, history, sessions
+from . import charts, checkins, history, sessions
 from .forms import RIR_CHOICES, FinishForm, IssueForm, SetForm
-from .models import EDIT_WINDOW, OTHER_OPTION, CheckinAnswer, CheckinQuestion, QuestionType, SessionLog
+from .models import EDIT_WINDOW, OTHER_OPTION, SessionLog
 from .video_views import video_context
 
 
@@ -190,7 +190,7 @@ def resume(request, log_id):
 
 
 def _questions(athlete):
-    return list(CheckinQuestion.objects.for_athlete(athlete).active())
+    return checkins.questions(athlete)
 
 
 def _resume_url(log):
@@ -236,28 +236,11 @@ def checkin(request, log_id, n):
     answer = log.answers.filter(question=question).first()
     error = ""
     if request.method == "POST":
-        value = request.POST.get("value", "").strip()
-        other = request.POST.get("other_text", "").strip()
-        if question.type == QuestionType.SCALE:
-            valid = value in {str(i) for i in range(1, 11)}
-            other = other[:300] if question.detail_label else ""
-        elif question.type == QuestionType.TEXT:
-            valid, value, other = True, " ".join(value.split())[:200], ""
+        try:
+            checkins.answer(log, question, request.POST.get("value", ""), request.POST.get("other_text", ""))
+        except checkins.InvalidAnswer:
+            pass
         else:
-            valid = value in [*question.options, OTHER_OPTION]
-            other = other if value == OTHER_OPTION else ""
-        if valid:
-            CheckinAnswer.objects.update_or_create(
-                session_log=log,
-                question=question,
-                defaults={
-                    "order": n - 1,
-                    "question_text": question.text,
-                    "type": question.type,
-                    "value": value,
-                    "other_text": other,
-                },
-            )
             if n < len(questions):
                 return redirect("app:checkin", log.pk, n + 1)
             return redirect("app:checkin_summary", log.pk)
@@ -287,11 +270,7 @@ def checkin_summary(request, log_id):
     if log.finished:
         return redirect("app:player", log.pk, 1)
     if request.method == "POST":
-        skip = request.POST.get("action") == "skip"
-        if skip:
-            log.answers.all().delete()
-        log.checkin_skipped = skip
-        log.save(update_fields=["checkin_skipped"])
+        checkins.finish(log, skip=request.POST.get("action") == "skip")
         return redirect("app:player", log.pk, 1)
     questions = _questions(request.athlete)
     total = len(questions) + 1
