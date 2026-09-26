@@ -14,9 +14,7 @@ def timezone_choices():
     return [(tz, tz.replace("_", " ")) for tz in sorted(zoneinfo.available_timezones())]
 
 
-def clean_browser_timezone(value, fallback):
-    """The browser reports its zone in a hidden field; use it if it's real."""
-    return value if value in zoneinfo.available_timezones() else fallback
+# The browser reports its zone in a hidden field; the rule lives with the account services.
 
 
 class InputClassMixin:

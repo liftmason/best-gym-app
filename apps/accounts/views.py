@@ -2,20 +2,18 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
-from django.shortcuts import get_object_or_404, redirect
+from django.http import Http404
+from django.shortcuts import redirect
 from django.template.response import TemplateResponse
-from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps import hx
 from apps.exercises.models import MAX_TRACKED_LIFTS, TrackedLift
-from apps.exercises.starter import install_pack
 from apps.exercises.tracked_views import trackable
 from apps.programs.views import card_context as week_type_card_context
 from apps.ratelimit import by_ip, by_user, client_ip, hit, rate_limit, too_many
-from apps.workouts.models import copy_defaults_to, install_default_questions
 
+from . import invites, services
 from .access import athlete_required, coach_required, home_url_for
 from .emails import invite_url, send_invite_email
 from .forms import (
@@ -24,18 +22,13 @@ from .forms import (
     InviteForm,
     JoinForm,
     MetricsForm,
-    clean_browser_timezone,
 )
 from .metrics import missing_metrics, save_metrics
 from .models import (
-    Athlete,
-    Coach,
-    Gym,
     Invite,
-    InviteStatus,
     MeasurementSource,
-    User,
 )
+from .services import AccountExists
 
 
 def login_allowed(request):
@@ -98,13 +91,20 @@ def signup(request):
     form = CoachSignupForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         data = form.cleaned_data
-        tz = clean_browser_timezone(data["browser_timezone"], "UTC")
-        with transaction.atomic():
-            gym = Gym.objects.create(name=data["gym_name"], units=data["units"], timezone=tz)
-            install_pack(gym, data["starter"])
-            install_default_questions(gym)
-            user = User.objects.create_user(data["email"], data["password"], name=data["name"], timezone=tz)
-            Coach.objects.create(user=user, gym=gym)
+        try:
+            coach = services.sign_up_coach(
+                name=data["name"],
+                email=data["email"],
+                password=data["password"],
+                gym_name=data["gym_name"],
+                units=data["units"],
+                starter=data["starter"],
+                timezone=data["browser_timezone"],
+            )
+        except services.AccountExists:  # taken since the form checked
+            form.add_error("email", "An account with this email already exists. Log in instead.")
+            return TemplateResponse(request, "accounts/signup.html", {"form": form})
+        user = coach.user
         login(request, user, backend="django.contrib.auth.backends.ModelBackend")
         messages.success(request, f"Welcome to Platform, {user.get_short_name()}")
         return redirect("coach:dashboard")
@@ -129,9 +129,7 @@ def invite_create(request):
     if not form.is_valid():
         return TemplateResponse(request, "partials/invite_modal.html", {"form": form})
     email = form.cleaned_data["email"]
-    invite = Invite.objects.create(
-        coach=request.coach, email=email, starting_template=form.cleaned_data["starting_template"]
-    )
+    invite = invites.create(request.coach, email, form.cleaned_data["starting_template"])
     join_url = invite_url(request, invite)
     if email:
         send_invite_email(request, invite)
@@ -150,16 +148,16 @@ def invite_list(request):
 
 
 def _invite_list_context(request):
-    pending = [i for i in request.coach.invites.filter(status=InviteStatus.PENDING) if not i.is_expired]
-    return {"pending_invites": [(i, invite_url(request, i)) for i in pending]}
+    return {"pending_invites": [(i, invite_url(request, i)) for i in invites.pending(request.coach)]}
 
 
 @coach_required
 @require_POST
 def invite_revoke(request, pk):
-    invite = get_object_or_404(Invite, pk=pk, coach=request.coach, status=InviteStatus.PENDING)
-    invite.status = InviteStatus.REVOKED
-    invite.save(update_fields=["status"])
+    try:
+        invites.revoke(request.coach, pk)
+    except Invite.DoesNotExist as err:
+        raise Http404 from err
     response = TemplateResponse(request, "partials/invite_list.html", _invite_list_context(request))
     return hx.toast(response, "Invite revoked")
 
@@ -174,64 +172,45 @@ def join(request, token):
         return TemplateResponse(request, "accounts/join_invalid.html", {"invite": invite}, status=410)
 
     user = request.user if request.user.is_authenticated else None
-    if user and user.athlete_profile:
-        messages.warning(request, "You already have an athlete account.")
-        return redirect("app:home")
-    if user and hasattr(user, "athlete"):  # an archived athlete profile: one per account
-        messages.error(
-            request,
-            "This account's athlete profile was archived by a coach. Ask them to restore it, "
-            "or sign out and join with a different email.",
-        )
-        return redirect("accounts:no_profile")
+    if user:
+        try:
+            invites.check_can_join(user)
+        except invites.AlreadyAthlete:
+            messages.warning(request, "You already have an athlete account.")
+            return redirect("app:home")
+        except invites.ArchivedAthlete:
+            messages.error(
+                request,
+                "This account's athlete profile was archived by a coach. Ask them to restore it, "
+                "or sign out and join with a different email.",
+            )
+            return redirect("accounts:no_profile")
 
     form = None if user else JoinForm(request.POST or None, invite_email=invite.email)
     if request.method == "POST" and (user or form.is_valid()):
-        with transaction.atomic():
-            invite = Invite.objects.select_for_update().get(pk=invite.pk)
-            if not invite.is_usable:
-                return TemplateResponse(request, "accounts/join_invalid.html", {"invite": invite}, status=410)
-            if user is None:
-                data = form.cleaned_data
-                tz = clean_browser_timezone(data["browser_timezone"], invite.gym.timezone)
-                user = User.objects.create_user(
-                    data["email"], data["password"], name=data["name"], timezone=tz
-                )
-            athlete = Athlete.objects.create(
-                user=user, coach=invite.coach, gym=invite.gym, units=invite.gym.units
+        data = form.cleaned_data if form else {}
+        try:
+            athlete = invites.accept(
+                invite.pk,
+                user=user,
+                name=data.get("name", ""),
+                email=data.get("email", ""),
+                password=data.get("password"),
+                timezone_name=data.get("browser_timezone", ""),
             )
-            copy_defaults_to(athlete)
-            if invite.starting_template_id:
-                _apply_starting_template(invite, athlete)
-            invite.status = InviteStatus.ACCEPTED
-            invite.accepted_by = user
-            invite.accepted_at = timezone.now()
-            invite.save(update_fields=["status", "accepted_by", "accepted_at"])
+        except invites.InviteUnusable:
+            invite.refresh_from_db()
+            return TemplateResponse(request, "accounts/join_invalid.html", {"invite": invite}, status=410)
+        except AccountExists:  # taken since the form checked
+            form.add_error("email", "An account with this email already exists. Log in instead.")
+            return TemplateResponse(
+                request, "accounts/join.html", {"invite": invite, "form": form, "step": 1}
+            )
         if not request.user.is_authenticated:
-            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+            login(request, athlete.user, backend="django.contrib.auth.backends.ModelBackend")
         return redirect("app:welcome_metrics")
 
     return TemplateResponse(request, "accounts/join.html", {"invite": invite, "form": form, "step": 1})
-
-
-def _apply_starting_template(invite, athlete):
-    """The invite's template becomes an unpublished draft program from next week, on the
-    template's default training days, for the coach to review and publish."""
-    from apps.library import apply
-
-    template = invite.starting_template
-    try:
-        apply.confirm(
-            athlete,
-            template,
-            apply.default_days(template),
-            apply.RECENT,
-            "new:next",
-            False,
-            invite.coach.user,
-        )
-    except apply.CannotApply:
-        pass  # an empty template: the coach builds the program by hand
 
 
 @athlete_required

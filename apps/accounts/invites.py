@@ -1,0 +1,105 @@
+"""Invites: a coach creates or revokes one; an athlete accepts one, as a new account or
+their existing one. The link is the credential (single use, 144-bit token, 14-day expiry);
+the email on an invite only pre-fills the form (docs/EXPO_MIGRATION.md, "Sign-in")."""
+
+from django.db import transaction
+from django.utils import timezone
+
+from apps.workouts.models import copy_defaults_to
+
+from .models import Athlete, Invite, InviteStatus, User
+from .services import AccountExists, email_taken, valid_timezone
+
+
+class InviteUnusable(Exception):
+    """Accepted, revoked or expired."""
+
+
+class AlreadyAthlete(Exception):
+    """This account already has an active athlete profile."""
+
+
+class ArchivedAthlete(Exception):
+    """This account's athlete profile was archived by a coach; one profile per account."""
+
+
+def create(coach, email="", starting_template=None):
+    """A pending invite. `starting_template` must be one of the coach's gym's program
+    templates or saved weeks."""
+    from apps.library.models import TemplateKind
+
+    if starting_template is not None and (
+        starting_template.gym_id != coach.gym_id
+        or starting_template.kind not in (TemplateKind.PROGRAM, TemplateKind.WEEK)
+    ):
+        raise ValueError("That template isn't one of this gym's programs or saved weeks.")
+    return Invite.objects.create(coach=coach, email=email or "", starting_template=starting_template)
+
+
+def revoke(coach, invite_id):
+    """Revoke one of the coach's pending invites. Invite.DoesNotExist for anyone else's."""
+    invite = Invite.objects.get(pk=invite_id, coach=coach, status=InviteStatus.PENDING)
+    invite.status = InviteStatus.REVOKED
+    invite.save(update_fields=["status"])
+    return invite
+
+
+def pending(coach):
+    return [i for i in coach.invites.filter(status=InviteStatus.PENDING) if not i.is_expired]
+
+
+def check_can_join(user):
+    """Raise if this signed-in account can't take an athlete profile."""
+    if user.athlete_profile:
+        raise AlreadyAthlete()
+    if hasattr(user, "athlete"):
+        raise ArchivedAthlete()
+
+
+@transaction.atomic
+def accept(invite_id, *, user=None, name="", email="", password=None, timezone_name=""):
+    """Join through an invite: as the signed-in `user`, or as a new account (name, email,
+    optional password). Creates the athlete profile with the gym's units, copies the gym's
+    check-in questions, applies the starting template as an unpublished draft, and marks the
+    invite accepted. The invite row is locked, so two people can't use one link."""
+    invite = Invite.objects.select_for_update().select_related("coach__gym", "coach__user").get(pk=invite_id)
+    if not invite.is_usable:
+        raise InviteUnusable()
+    gym = invite.coach.gym
+    if user is not None:
+        check_can_join(user)
+    else:
+        if email_taken(email):
+            raise AccountExists(email)
+        user = User.objects.create_user(
+            email, password, name=name, timezone=valid_timezone(timezone_name, gym.timezone)
+        )
+    athlete = Athlete.objects.create(user=user, coach=invite.coach, gym=gym, units=gym.units)
+    copy_defaults_to(athlete)
+    if invite.starting_template_id:
+        _apply_starting_template(invite, athlete)
+    invite.status = InviteStatus.ACCEPTED
+    invite.accepted_by = user
+    invite.accepted_at = timezone.now()
+    invite.save(update_fields=["status", "accepted_by", "accepted_at"])
+    return athlete
+
+
+def _apply_starting_template(invite, athlete):
+    """The invite's template becomes an unpublished draft program from next week, on the
+    template's default training days, for the coach to review and publish."""
+    from apps.library import apply
+
+    template = invite.starting_template
+    try:
+        apply.confirm(
+            athlete,
+            template,
+            apply.default_days(template),
+            apply.RECENT,
+            "new:next",
+            False,
+            invite.coach.user,
+        )
+    except apply.CannotApply:
+        pass  # an empty template: the coach builds the program by hand
