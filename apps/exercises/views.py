@@ -1,5 +1,3 @@
-from django.db import transaction
-from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
@@ -8,37 +6,17 @@ from django.views.decorators.http import require_POST
 from apps import hx
 from apps.accounts.access import coach_required
 
+from . import services
 from .deletion import CannotDelete, check_deletable, delete_exercise, deletion_impact
 from .forms import ExerciseForm
 from .models import Exercise, Tag, TrackedLift
 
 
 def _filtered(request):
-    gym = request.coach.gym
     q = request.GET.get("q", "").strip()
-    tag_ids = {t for t in request.GET.getlist("tag") if t.isdigit()}
-    tags = list(Tag.objects.filter(gym=gym, pk__in=tag_ids))
     show_archived = request.GET.get("archived") == "1"
-    exercises = (
-        Exercise.objects.filter(gym=gym, archived=show_archived)
-        .select_related("percent_of", "category")
-        .prefetch_related("tags")
-    )
-    if q:
-        exercises = exercises.filter(
-            Q(name__icontains=q)
-            | Q(tags__name__icontains=q)
-            | Q(cue__icontains=q)
-            | Q(category__name__icontains=q)
-        ).distinct()
-    for tag in tags:
-        exercises = exercises.filter(tags=tag)
-    return exercises.order_by("category__order", "name"), {
-        "q": q,
-        "tags": tags,
-        "tag_ids": {t.pk for t in tags},
-        "show_archived": show_archived,
-    }
+    exercises, tags = services.search(request.coach.gym, q, request.GET.getlist("tag"), show_archived)
+    return exercises, {"q": q, "tags": tags, "tag_ids": {t.pk for t in tags}, "show_archived": show_archived}
 
 
 @coach_required
@@ -87,12 +65,7 @@ def exercise_form(request, pk=None):
 @require_POST
 def exercise_archive(request, pk):
     exercise = _exercise(request, pk)
-    users = Exercise.objects.filter(percent_of=exercise, archived=False).count()
-    was_tracked = TrackedLift.objects.filter(exercise=exercise).exists()
-    with transaction.atomic():
-        exercise.archived = True
-        exercise.save(update_fields=["archived"])
-        TrackedLift.objects.filter(exercise=exercise).delete()
+    was_tracked, users = services.archive(exercise)
     message = f"“{exercise.name}” archived"
     if was_tracked:
         message += " and removed from tracked lifts"
@@ -105,8 +78,7 @@ def exercise_archive(request, pk):
 @require_POST
 def exercise_restore(request, pk):
     exercise = _exercise(request, pk)
-    exercise.archived = False
-    exercise.save(update_fields=["archived"])
+    services.restore(exercise)
     return hx.trigger(
         HttpResponse(""),
         toast={"message": f"“{exercise.name}” restored", "kind": "good"},

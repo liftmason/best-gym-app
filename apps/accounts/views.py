@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 
 from apps import hx, ratelimit
 from apps.exercises.models import MAX_TRACKED_LIFTS, TrackedLift
-from apps.exercises.tracked_views import trackable
+from apps.exercises.services import trackable
 from apps.programs.views import card_context as week_type_card_context
 from apps.ratelimit import by_ip, by_user, client_ip, rate_limit, too_many
 

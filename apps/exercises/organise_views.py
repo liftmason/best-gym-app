@@ -1,8 +1,7 @@
 """Programming › Exercises › Categories & tags: the gym's own categories (ordered)
 and tags (alphabetical, at most TAG_MAX_LENGTH characters)."""
 
-from django.db import transaction
-from django.db.models import Count, Max
+from django.db.models import Count
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
@@ -11,6 +10,7 @@ from django.views.decorators.http import require_POST
 from apps import hx
 from apps.accounts.access import coach_required
 
+from . import services
 from .forms import CATEGORY_NAME_LENGTH, TAG_NAME_LENGTH, NameForm, save_pending_names
 from .models import Category, Tag
 
@@ -81,9 +81,7 @@ def category_add(request):
         return _card(
             request, "categories", form.errors["name"][0], "bad", errors={"new": form.errors["name"][0]}
         )
-    gym = request.coach.gym
-    order = (Category.objects.filter(gym=gym).aggregate(m=Max("order"))["m"] or 0) + 1
-    Category.objects.create(gym=gym, name=form.cleaned_data["name"], order=order)
+    services.add_category(request.coach.gym, form.cleaned_data["name"])
     return _card(request, "categories", f"Category “{form.cleaned_data['name']}” added", "good")
 
 
@@ -97,8 +95,7 @@ def category_rename(request, pk):
         return hx.retarget(
             _card(request, "categories", form.errors["name"][0], "bad"), "#categoriesCard", "outerHTML"
         )
-    category.name = form.cleaned_data["name"]
-    category.save(update_fields=["name"])
+    services.rename_category(category, form.cleaned_data["name"])
     return hx.toast(HttpResponse(""), "Category renamed")  # the new name is already on screen
 
 
@@ -106,20 +103,10 @@ def category_rename(request, pk):
 @require_POST
 def category_move(request, pk, direction):
     _save_pending(request, Category)
-    gym = request.coach.gym
-    with transaction.atomic():
-        rows = list(Category.objects.select_for_update().filter(gym=gym))
-        ids = [r.pk for r in rows]
-        if pk not in ids or direction not in ("up", "down"):
-            raise Http404
-        i = ids.index(pk)
-        j = i - 1 if direction == "up" else i + 1
-        if 0 <= j < len(rows):
-            rows[i], rows[j] = rows[j], rows[i]
-            for order, row in enumerate(rows):
-                if row.order != order:
-                    row.order = order
-                    row.save(update_fields=["order"])
+    try:
+        services.move_category(request.coach.gym, pk, direction)
+    except ValueError as err:
+        raise Http404 from err
     return _card(request, "categories")
 
 
@@ -131,26 +118,26 @@ def category_delete(request, pk):
     count = category.exercises.count()  # archived exercises too: they still need a category
     others = Category.objects.filter(gym=gym).exclude(pk=category.pk)
     if request.method == "POST":
-        with transaction.atomic():
-            if count:
-                target = others.filter(pk=request.POST.get("move_to")).first()
-                if target is None:
-                    return TemplateResponse(
-                        request,
-                        "exercises/_category_delete_modal.html",
-                        {
-                            "category": category,
-                            "count": count,
-                            "others": others,
-                            "error": "Pick where its exercises should go." if others else None,
-                        },
-                    )
-                category.exercises.update(category=target)
-                plural = "s" if count != 1 else ""
-                message = f"Moved {count} exercise{plural} to {target.name} and deleted {category.name}"
-            else:
-                message = f"Deleted {category.name}"
-            category.delete()
+        target = others.filter(pk=request.POST.get("move_to")).first() if count else None
+        name = category.name
+        try:
+            services.delete_category(category, target)
+        except services.NeedsTarget:
+            return TemplateResponse(
+                request,
+                "exercises/_category_delete_modal.html",
+                {
+                    "category": category,
+                    "count": count,
+                    "others": others,
+                    "error": "Pick where its exercises should go." if others else None,
+                },
+            )
+        if count:
+            plural = "s" if count != 1 else ""
+            message = f"Moved {count} exercise{plural} to {target.name} and deleted {name}"
+        else:
+            message = f"Deleted {name}"
         response = hx.trigger(_card(request, "categories"), toast={"message": message}, exercisesChanged=True)
         response = hx.retarget(response, "#categoriesCard", "outerHTML")
         return hx.trigger_after_swap(response, closeModal=True)
@@ -171,7 +158,7 @@ def tag_add(request):
     form = _name_form(request, Tag)
     if not form.is_valid():
         return _card(request, "tags", form.errors["name"][0], "bad", errors={"new": form.errors["name"][0]})
-    Tag.objects.create(gym=request.coach.gym, name=form.cleaned_data["name"])
+    services.add_tag(request.coach.gym, form.cleaned_data["name"])
     return _card(request, "tags", f"Tag “{form.cleaned_data['name']}” added", "good")
 
 
@@ -182,8 +169,7 @@ def tag_rename(request, pk):
     form = _name_form(request, Tag, instance=tag)
     if not form.is_valid():
         return hx.retarget(_card(request, "tags", form.errors["name"][0], "bad"), "#tagsCard", "outerHTML")
-    tag.name = form.cleaned_data["name"]
-    tag.save(update_fields=["name"])
+    services.rename_tag(tag, form.cleaned_data["name"])
     return hx.toast(HttpResponse(""), "Tag renamed")
 
 
@@ -192,9 +178,8 @@ def tag_rename(request, pk):
 def tag_delete(request, pk):
     _save_pending(request, Tag)
     tag = get_object_or_404(Tag, pk=pk, gym=request.coach.gym)
-    count = tag.exercises.count()
     name = tag.name
-    tag.delete()  # removes it from those exercises; the exercises themselves stay
+    count = services.delete_tag(tag)  # the exercises themselves stay
     message = f"Deleted “{name}”" + (
         f" and removed it from {count} exercise{'s' if count != 1 else ''}" if count else ""
     )
