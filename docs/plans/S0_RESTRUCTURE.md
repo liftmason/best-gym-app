@@ -93,6 +93,29 @@ the view call the service. The existing view tests must still pass unchanged.
 | Form-video start/confirm/review rules | `workouts/video_views.py` | `workouts/videos.py` |
 | Bug report creation | `dashboard/bug_views.py` | `dashboard/services.py` |
 
+**Full inventory (27 September).** The table above was the audit's list (H17). A read-only
+pass over every view and form found more, in two kinds:
+
+- **Writes and validation** (must move before the pages go, or the rule is lost): set saving
+  (`SetForm` bounds, set number 1–50, the 24-hour edit window), finishing a session (RPE 1–10,
+  comment ≤ 2000), issue reports and resolving them, warm-up ticks, units, gym settings, metric
+  edits by the coach (1–1000, no future dates), PR use/dismiss, "max updates" preference, the
+  exercise library (save rules: unique names ignoring case, `percent_of` limited to base lifts,
+  archive/restore), categories, tags, tracked lifts (max 6, order), week types (colour check,
+  archive-if-used), the check-in question builder (max 12 options, min 2, text required, push
+  defaults), habits (name tidying), template meta and slot kinds (tag slots need tags and a
+  matching default), saved weeks/sessions, the apply draft (days 0–6, mode), program start
+  (1–52 weeks, active week types), program note, week add, form videos (upload checks, review
+  sending feedback through messages), bug reports, feed dismiss/clear.
+- **Read-side calculations** the screens show (the API will need them, reshaped): dashboard
+  KPIs, roster rows and readiness, compliance bands, which week/day opens by default, session
+  card states, where a session resumes, the player's time unit and target loads, the coach
+  Sessions tab summaries, the library rail search and "recent" sort, template stats, the
+  apply preview's ghost weeks.
+
+Both kinds move into service modules with service-level tests, in the same way as the groups
+above. This roughly doubles step 2 (see "Size").
+
 Then go through the 222 view-level tests and sort each into:
 
 - **Rule** — asserts a business rule or permission → make sure a service-level test covers it
@@ -216,6 +239,6 @@ error, and the guard test passes.
 
 ## 6. Size
 
-Roughly: step 1 one day (with the Python upgrade), step 2 three to four days, step 3 one day, step 4 half a day,
-step 5 three to four days, step 6 half a day — about two working weeks for one developer with AI
-tools. The design rated S0 "M"; with the rule extraction pulled in, it's the upper end of M.
+Roughly: step 1 one day (with the Python upgrade), step 2 seven to nine days (after the full inventory; it was estimated at three to four), step 3 one day, step 4 half a day,
+step 5 three to four days, step 6 half a day — about three working weeks for one developer with AI
+tools. The design rated S0 "M"; with the full rule extraction pulled in, it's closer to L.
