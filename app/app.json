@@ -40,6 +40,12 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "owner": "spearws-team"
+    "owner": "spearws-team",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "643c544f-ee0c-4f91-a951-0cd2511ce166"
+      }
+    }
   }
 }
