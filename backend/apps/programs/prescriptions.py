@@ -117,8 +117,10 @@ def suggested_weight(rx, athlete, gym_units):
     entry = athlete.current_max(source)
     if entry is None:
         return None
-    kg = entry.kg * Decimal(rx.load_value) / 100
-    return f"≈ {units.display(kg, gym_units)} of {source.name} max {units.display(entry.kg, gym_units)}"
+    from apps.workouts.sessions import plate_round  # the athlete's player rounds the same way
+
+    kg = plate_round(entry.kg * Decimal(rx.load_value) / 100, gym_units)
+    return f"≈ {format(kg, 'f')} {gym_units} of {source.name} max {units.display(entry.kg, gym_units)}"
 
 
 DEFAULTS = {

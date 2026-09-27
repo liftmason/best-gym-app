@@ -75,8 +75,8 @@ def weekly(athlete, weeks=8):
         volume[athlete.gym.week_start_for(date)] += load * reps
     rows = []
     for start in starts:
-        done, scheduled = history.compliance(
-            athlete, today, end=min(start + datetime.timedelta(days=6), today)
+        done, scheduled = history.compliance(  # the training week only, not a trailing 7 days
+            athlete, today, start=start, end=min(start + datetime.timedelta(days=6), today)
         )
         rows.append((start, volume[start], round(done / scheduled * 100) if scheduled else None))
     return rows

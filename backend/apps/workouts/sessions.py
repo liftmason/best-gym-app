@@ -140,12 +140,28 @@ def prescribed(se):
     )
 
 
-def plate_round(kg, unit):
-    """A kg value shown in `unit`, rounded to the nearest plate step (display only)."""
-    step = PLATE_STEP[unit]
-    value = (units.from_kg(kg, unit) / step).quantize(Decimal("1"), rounding=ROUND_HALF_UP) * step
+def _tidy(value):
     # normalize() alone would write 80 as "8E+1".
     return value.quantize(Decimal("1")) if value == value.to_integral_value() else value.normalize()
+
+
+def plate_round(kg, unit):
+    """A kg value shown in `unit`, rounded to the nearest plate step (display only). Converted
+    exactly first, so it rounds once: 63.747 kg is 63.5, not 63.75 then 64."""
+    step = PLATE_STEP[unit]
+    value = Decimal(kg) if unit == "kg" else Decimal(kg) / units.KG_PER_LB
+    return _tidy((value / step).quantize(Decimal("1"), rounding=ROUND_HALF_UP) * step)
+
+
+def suggested_load(p, load_value, unit):
+    """The load to show for a set, in `unit`: a percentage of the max rounded to the nearest
+    plate, or a fixed weight exactly as prescribed. None when there's no load to suggest."""
+    kg = target_kg(p, load_value)
+    if not kg:
+        return None
+    if p.load_basis == LoadBasis.PERCENT:
+        return plate_round(kg, unit)
+    return _tidy(units.from_kg(kg, unit))
 
 
 def target_kg(p, load_value):
