@@ -85,3 +85,23 @@ def test_scheduled_days_can_start_from_a_date(two_weeks, athlete, gym):
     plan(two_weeks, athlete, gym, today - DAY)
     days = history.scheduled_days(athlete, today, since=today - 3 * DAY)
     assert [d for d, _ in days] == [today - DAY]
+
+
+def test_compliance_counts_done_days_and_leaves_today_until_it_is_over(two_weeks, athlete, gym):
+    today = athlete.today()
+    done = plan(two_weeks, athlete, gym, today - 2 * DAY)
+    plan(two_weeks, athlete, gym, today - DAY)  # missed
+    plan(two_weeks, athlete, gym, today)  # not done yet, and not a miss
+    sessions.finish(sessions.start_planned(athlete, done.pk), 7)
+    assert history.compliance(athlete, today) == (1, 2)
+
+
+def test_the_next_session_is_the_next_published_day_with_work(two_weeks, athlete, gym, coach):
+    today = athlete.today()
+    assert history.next_session_date(athlete, today) is None
+    plan(two_weeks, athlete, gym, today + 2 * DAY)
+    plan(two_weeks, athlete, gym, today)  # today isn't "next"
+    assert history.next_session_date(athlete, today) == today + 2 * DAY
+    for week in two_weeks.weeks.all():
+        program_services.set_published(week, False)
+    assert history.next_session_date(athlete, today) is None  # drafts don't count

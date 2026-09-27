@@ -98,3 +98,15 @@ def test_one_coach_failing_does_not_stop_the_others(coach, athlete, gym, monkeyp
     with pytest.raises(CommandError):  # the job reports failure, after doing the rest
         call_command("cron")
     assert sent == [other]
+
+
+def test_backup_check_reports_counts_and_the_newest_finished_session(athlete, capsys):
+    from apps.workouts.models import SessionLog
+
+    finished = timezone.now() - datetime.timedelta(hours=2)
+    SessionLog.objects.create(athlete=athlete, date=athlete.today(), finished_at=finished)
+    SessionLog.objects.create(athlete=athlete, date=athlete.today())  # still open
+    call_command("backup_check")
+    out = capsys.readouterr().out
+    assert "workouts.SessionLog" in out and " 2\n" in out
+    assert f"newest finished session: {finished}" in out
