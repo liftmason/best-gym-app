@@ -4540,6 +4540,39 @@
         "title": "TemplateWeek",
         "type": "object"
       },
+      "ThreadRow": {
+        "properties": {
+          "athlete": {
+            "$ref": "#/components/schemas/AthleteRef"
+          },
+          "last_at": {
+            "format": "date-time",
+            "title": "Last At",
+            "type": "string"
+          },
+          "last_body": {
+            "title": "Last Body",
+            "type": "string"
+          },
+          "last_from": {
+            "title": "Last From",
+            "type": "string"
+          },
+          "unread": {
+            "title": "Unread",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "athlete",
+          "last_body",
+          "last_at",
+          "last_from",
+          "unread"
+        ],
+        "title": "ThreadRow",
+        "type": "object"
+      },
       "TodayItem": {
         "properties": {
           "athlete": {
@@ -11593,6 +11626,38 @@
         "summary": "Add Session",
         "tags": [
           "Templates"
+        ]
+      }
+    },
+    "/api/v1/threads": {
+      "get": {
+        "description": "The coach's conversations with their current athletes that have messages, the latest\nfirst, with how many of the athlete's are unread. A fixed number of queries.",
+        "operationId": "apps_messaging_api_threads",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ThreadRow"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Threads",
+        "tags": [
+          "Messages"
         ]
       }
     },

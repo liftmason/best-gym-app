@@ -248,3 +248,47 @@ def test_check_in_questions(api, athlete):
     assert post(api, f"{base}/move", {"direction": "sideways"}).status_code == 400
     reset = post(api, f"/athletes/{athlete.pk}/reset-questions").json()
     assert q["id"] not in [x["id"] for x in reset]
+
+
+def test_the_coachs_conversations_with_unread_counts(api, athlete, coach, frozen_clock):
+    import datetime
+
+    from apps.accounts import coaching
+    from apps.messaging import services as messaging
+    from apps.messaging.models import Thread
+
+    from ..factories import AthleteFactory
+
+    quiet = AthleteFactory(coach=coach)  # no messages: not listed
+    Thread.for_athlete(quiet)
+    other = AthleteFactory(coach=coach)
+    messaging.send(Thread.for_athlete(other), coach.user, "Great week")
+    frozen_clock.shift(datetime.timedelta(minutes=5))
+    thread = Thread.for_athlete(athlete)
+    messaging.send(thread, athlete.user, "Knee is better")
+    messaging.send(thread, athlete.user, "78 or 80 for the opener?")
+    rows = api.get("/api/v1/threads").json()
+    assert [r["athlete"]["id"] for r in rows] == [str(athlete.pk), str(other.pk)]
+    assert rows[0] | {"last_at": None} == {
+        "athlete": {"id": str(athlete.pk), "name": "Maya Torres"},
+        "last_body": "78 or 80 for the opener?",
+        "last_at": None,
+        "last_from": "athlete",
+        "unread": 2,
+    }
+    assert rows[1]["unread"] == 0 and rows[1]["last_from"] == "coach"
+    coaching.end(other)  # archived: gone from the list
+    assert [r["athlete"]["id"] for r in api.get("/api/v1/threads").json()] == [str(athlete.pk)]
+
+
+def test_the_conversations_take_a_fixed_number_of_queries(api, coach, django_assert_max_num_queries):
+    from apps.messaging import services as messaging
+    from apps.messaging.models import Thread
+
+    from ..factories import AthleteFactory
+
+    for _ in range(5):
+        a = AthleteFactory(coach=coach)
+        messaging.send(Thread.for_athlete(a), a.user, "Hi")
+    with django_assert_max_num_queries(8):
+        assert len(api.get("/api/v1/threads").json()) == 5
