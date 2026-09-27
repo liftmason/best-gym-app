@@ -11,6 +11,9 @@ npm run typecheck
 npm run lint
 npm test
 npm run api:types   # after the backend's openapi.json changes (CI fails if stale)
+npm run db:schema   # after shared/sync-schema.json changes (CI fails if stale)
+npm run export:web  # the web build, into dist/
+npm run serve:web   # serve dist/ on :8082 with the hosting headers (public/_headers)
 ```
 
 The backend must be running for the app to do anything (from the repo root).
@@ -27,6 +30,8 @@ The backend must be running for the app to do anything (from the repo root).
 - **Signing in:** the seeded demo accounts (`make seed`, e.g. `dana@ironridge.example`) take the
   code `123456`. Any other email gets its code printed in the backend's console.
 - **The kit screen** (development only): `/kit` shows every component.
+- **The web database** needs cross-origin isolation headers. The dev server sends them
+  (`metro.config.js`), and so does `npm run serve:web`. Training mode opens in one tab at a time.
 
 ## Layout
 
@@ -34,8 +39,12 @@ The backend must be running for the app to do anything (from the repo root).
 - `src/ui/`: the theme and component kit, from the mockup's design tokens.
 - `src/api/`: the API client, typed from `backend/openapi.json`, with tokens and refresh. Set
   `EXPO_PUBLIC_API_URL` for a deployed backend; in development it's port 8000 on the dev machine.
-- `src/db/`: the local database (SQLite behind one queue).
-- `src/sync/`: pull, push and the outbox.
+- `src/db/`: the local database: SQLite behind one queue, tables generated from the server
+  (`schema.generated.ts`), live queries.
+- `src/sync/`: the sync engine. One file per action in `actions/`: its name and its local
+  effect.
+- `src/auth/`: sign-in screens' pieces, mode switching, sign-out.
+- `src/push/`: push notification registration (needs a build of our own, not Expo Go).
 - `src/domain/`: rules the phone runs offline, checked against `shared/rules-cases.json`.
 
 Screens never fetch or touch SQLite directly: training screens go through `db/` and `sync/`,

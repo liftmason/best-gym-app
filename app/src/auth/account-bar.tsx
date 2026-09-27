@@ -5,10 +5,10 @@
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { api } from '@/api';
 import { Button, colors, space, Text } from '@/ui';
 
 import { useMe } from './me';
+import { signOut } from './sign-out';
 import { HOME, rememberMode, type Mode } from './mode';
 
 export function AccountBar({ mode }: { mode: Mode }) {
@@ -32,7 +32,7 @@ export function AccountBar({ mode }: { mode: Mode }) {
           }}
         />
       ) : null}
-      <Button title="Sign out" variant="ghost" size="sm" onPress={() => api.signOut()} />
+      <Button title="Sign out" variant="ghost" size="sm" onPress={signOut} />
     </View>
   );
 }

@@ -7,6 +7,7 @@ if not SECRET_KEY:  # noqa: F405
 _problems = checks.production_problems(  # noqa: F405
     email_provider=EMAIL_PROVIDER,  # noqa: F405
     from_email=DEFAULT_FROM_EMAIL,  # noqa: F405
+    push_provider=PUSH_PROVIDER,  # noqa: F405
     site_url=SITE_URL,  # noqa: F405
     review_email=REVIEW_ACCOUNT_EMAIL,  # noqa: F405
     review_code=REVIEW_ACCOUNT_CODE,  # noqa: F405

@@ -169,6 +169,28 @@ def sign_out(request):
     return response
 
 
+class PushTokenIn(Schema):
+    token: str
+
+
+@router.put("/push-token", response={204: None})
+def register_push_token(request, data: PushTokenIn):
+    """This device's Expo push token, for notifications (the app sends it after sign-in)."""
+    from . import push
+
+    push.register(request.device, data.token)
+    return Status(204, None)
+
+
+@router.delete("/push-token", response={204: None})
+def forget_push_token(request):
+    """No more notifications on this device (signing out does this too)."""
+    from . import push
+
+    push.unregister(request.device)
+    return Status(204, None)
+
+
 @router.get("/devices", response=list[DeviceOut])
 def devices(request):
     return [

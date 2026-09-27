@@ -19,13 +19,23 @@ Nothing is deployed: the free-tier Render blueprint is disconnected. The offline
 
 **Sub-project 2 is done** (PR #4 for S2a; S2b on branch `s2b`; plan in `docs/plans/S2_API.md`). It covers the API at `/api/v1/`, sign-in with email codes, Apple and Google, device sessions, every coach endpoint, billing that allows everything until it's turned on, and the permission sweep.
 
-**Sub-project 3 is done** (branch `s3-sync`; plan in `docs/plans/S3_SYNC.md`):
+**Sub-project 3 is merged** (PR #6; plan in `docs/plans/S3_SYNC.md`):
 - a trigger-fed change log, with pull on a cursor that can't skip a late commit;
 - bootstrap with 12 months of history;
 - push with the eleven actions, stored per action id;
 - schema versions, and the shared rules cases.
 
-**Next step:** once S3 is merged, write the plan for sub-project 4 (the Expo app foundation).
+**Sub-project 4 is built** (plan in `docs/plans/S4_APP_FOUNDATION.md`), in two PRs:
+- **S4a (PR #7):** the Expo project, the theme and component kit, the typed API client, sign-in and mode switching, and the shared rules in TypeScript.
+- **S4b (branch `s4b-app`):**
+  - the phone's tables, generated from the server;
+  - the database queue;
+  - the sync engine, with an undo log so pending actions sit on top of the server's state;
+  - push notifications;
+  - web hosting headers, and one tab at a time.
+- **Waiting for the owner's accounts:** Apple and Google sign-in, and push on devices.
+
+**Next step:** once S4 is merged, write the plan for sub-project 5 (the athlete's screens).
 
 **How to work.** Each sub-project in "Order of work" gets its own short spec (only where this document leaves real decisions open), then an implementation plan, then the build, one branch and PR per sub-project. Keep the Django service tests passing throughout; write tests before fixes for the audit items. When this document and the code disagree, raise it rather than silently diverging; update this document when a decision changes.
 

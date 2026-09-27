@@ -12,6 +12,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
 import { api, makeQueryClient, useAuth } from '@/api';
+import { handlePushes, registerForPush } from '@/push/register';
+import { syncNow } from '@/sync/session';
 import { colors } from '@/ui';
 
 SplashScreen.preventAutoHideAsync();
@@ -39,6 +41,12 @@ export default function RootLayout() {
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();
   }, [ready]);
+
+  useEffect(() => handlePushes(syncNow), []);
+  useEffect(() => {
+    // Each sign-in is a new device session on the server, so the token is given again.
+    if (auth === 'signedIn') registerForPush(api).catch(() => {});
+  }, [auth]);
 
   if (!ready) return null;
   return (

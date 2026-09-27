@@ -7,6 +7,7 @@ import { deviceLabel, deviceTimezone } from '@/auth/device';
 import { EmailCode } from '@/auth/email-code';
 import { SignInFrame } from '@/auth/frame';
 import { ME, useMe } from '@/auth/me';
+import { signOut } from '@/auth/sign-out';
 import { Button, Field, Text } from '@/ui';
 
 /**
@@ -85,7 +86,7 @@ function Accept({ token }: { token: string }) {
         </Text>
       ) : null}
       <Button title="Join" size="lg" block busy={busy} onPress={accept} />
-      <Button title="Not you? Sign out" variant="ghost" disabled={busy} onPress={() => api.signOut()} />
+      <Button title="Not you? Sign out" variant="ghost" disabled={busy} onPress={signOut} />
     </>
   );
 }

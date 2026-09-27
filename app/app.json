@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "GymTrainer",
-    "slug": "gymtrainer",
+    "slug": "best-gym-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -20,7 +20,7 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static",
+      "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -33,11 +33,20 @@
           "imageWidth": 76
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-sqlite",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "owner": "spearws-team",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "643c544f-ee0c-4f91-a951-0cd2511ce166"
+      }
     }
   }
 }

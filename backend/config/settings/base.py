@@ -141,7 +141,7 @@ DEMO_STAFF = True
 CORS_ALLOWED_ORIGINS = [o.strip() for o in os.environ.get("WEB_APP_ORIGINS", "").split(",") if o.strip()]
 CORS_URLS_REGEX = r"^/api/.*$"
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = ["authorization", "content-type", "x-client"]
+CORS_ALLOW_HEADERS = ["authorization", "content-type", "x-client", "x-schema-version"]
 
 # Sign-in codes (apps/signin). The app-review account (App Store, Play) gets a fixed code;
 # in development the seeded demo users (@DEMO_EMAIL_DOMAIN) do (local settings).
@@ -182,3 +182,9 @@ LOGGING = {
     "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "line"}},
     "root": {"handlers": ["console"], "level": "INFO"},
 }
+
+# Push notifications (apps/signin/push.py): "expo" sends through Expo's push service; blank
+# or "console" logs them. EXPO_ACCESS_TOKEN is only needed if the Expo project turns on
+# "enhanced push security".
+PUSH_PROVIDER = checks.push(os.environ.get("PUSH_PROVIDER", ""))
+EXPO_ACCESS_TOKEN = os.environ.get("EXPO_ACCESS_TOKEN", "")

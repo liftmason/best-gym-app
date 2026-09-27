@@ -51,6 +51,7 @@ jobs:
           ALLOWED_HOSTS: gymtrainer.onrender.com
           SITE_URL: https://gymtrainer.onrender.com
           EMAIL_PROVIDER: console
+          PUSH_PROVIDER: console
           SECRET_KEY: ci-only-${{ github.run_id }}-not-a-real-key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         run: |
           python manage.py check --deploy --fail-level WARNING
@@ -74,6 +75,8 @@ jobs:
         run: npm ci
       - name: The API types match backend/openapi.json
         run: npm run api:types && git diff --exit-code src/api/schema.d.ts
+      - name: The local database matches shared/sync-schema.json
+        run: npm run db:schema && git diff --exit-code src/db/schema.generated.ts
       - name: Type-check
         run: npm run typecheck
       - name: Lint

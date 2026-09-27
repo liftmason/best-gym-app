@@ -11,13 +11,9 @@ from apps.api.main import athlete_of
 from apps.core import errors
 
 from . import pull as pulling
+from .schema import SCHEMA_VERSION
 
 router = Router(tags=["Sync"])
-
-# The shape of the phone's local database the server speaks to. Bump it when a synced table
-# changes shape; the server accepts this version and the one before, so phones not yet
-# updated keep working for one release (docs/EXPO_MIGRATION.md, "Versioning").
-SCHEMA_VERSION = 1
 
 
 def athlete_syncing(request):

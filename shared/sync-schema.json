@@ -1,0 +1,1478 @@
+{
+  "version": 1,
+  "tables": [
+    {
+      "name": "accounts_bodyweightentry",
+      "model": "BodyweightEntry",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "date",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "kg",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "created_at",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "accounts_maxentry",
+      "model": "MaxEntry",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "exercise_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "date",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "kg",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "reps",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "set_log_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "created_at",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "accounts_coaching",
+      "model": "Coaching",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "coach_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "gym_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "started_at",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "ended_at",
+          "type": "text",
+          "nullable": true,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "programs_program",
+      "model": "Program",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "start_date",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "note",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "source_template_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "created_by_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "created_at",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "ended_at",
+          "type": "text",
+          "nullable": true,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "programs_programweek",
+      "model": "ProgramWeek",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "program_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "order",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "week_type_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "start_date",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "focus_note",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "published",
+          "type": "boolean",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "published_at",
+          "type": "text",
+          "nullable": true,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "programs_programday",
+      "model": "ProgramDay",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "week_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "date",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "programs_programsession",
+      "model": "ProgramSession",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "day_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "order",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "programs_prescription",
+      "model": "Prescription",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "sets",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "rep_scheme",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "reps",
+          "type": "integer",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "duration_seconds",
+          "type": "integer",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "load_value",
+          "type": "text",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "load_basis",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "rir",
+          "type": "integer",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "rir_max",
+          "type": "integer",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "note",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "custom_fields",
+          "type": "json",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "warmup",
+          "type": "boolean",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "section",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "section_note",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "superset",
+          "type": "boolean",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "session_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "order",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "exercise_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        }
+      ]
+    },
+    {
+      "name": "programs_prescribedset",
+      "model": "PrescribedSet",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "set_number",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "rep_scheme",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "reps",
+          "type": "integer",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "load_value",
+          "type": "text",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "prescription_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        }
+      ]
+    },
+    {
+      "name": "programs_prescriptiontag",
+      "model": "PrescriptionTag",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "prescription_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "tag_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        }
+      ]
+    },
+    {
+      "name": "programs_habit",
+      "model": "Habit",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "order",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "emoji",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "cadence",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "note",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "source_template_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "created_at",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "archived_at",
+          "type": "text",
+          "nullable": true,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "programs_habitlog",
+      "model": "HabitLog",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "habit_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "date",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "created_at",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "workouts_checkinquestion",
+      "model": "CheckinQuestion",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "gym_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "order",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "type",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "text",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "low_label",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "high_label",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "options",
+          "type": "json",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "detail_label",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "archived",
+          "type": "boolean",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "created_at",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "workouts_sessionlog",
+      "model": "SessionLog",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "program_session_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "date",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "week_type_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "started_at",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "finished_at",
+          "type": "text",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "checkin_skipped",
+          "type": "boolean",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "session_rpe",
+          "type": "integer",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "comment",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "workouts_sessionexercise",
+      "model": "SessionExercise",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "session_log_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "prescription_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "exercise_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "exercise_name",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "order",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "prescribed",
+          "type": "json",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "warmup",
+          "type": "boolean",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "checked_at",
+          "type": "text",
+          "nullable": true,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "workouts_setlog",
+      "model": "SetLog",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "session_exercise_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "set_number",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "load_kg",
+          "type": "text",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "reps",
+          "type": "integer",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "duration_seconds",
+          "type": "integer",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "rir",
+          "type": "integer",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "done",
+          "type": "boolean",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "logged_at",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "max_dismissed",
+          "type": "boolean",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "workouts_checkinanswer",
+      "model": "CheckinAnswer",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "session_log_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "question_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "order",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "question_text",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "type",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "value",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "other_text",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "workouts_issuereport",
+      "model": "IssueReport",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "session_log_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "kind",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "text",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "created_at",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "resolved_at",
+          "type": "text",
+          "nullable": true,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "workouts_formvideo",
+      "model": "FormVideo",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "session_log_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "session_exercise_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "exercise_name",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "content_type",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "size",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "note",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "created_at",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "uploaded_at",
+          "type": "text",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "reviewed_at",
+          "type": "text",
+          "nullable": true,
+          "index": false
+        },
+        {
+          "name": "reviewed_by_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "feedback",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "text",
+          "nullable": true,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "messaging_thread",
+      "model": "Thread",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "coaching_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "created_at",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "messaging_message",
+      "model": "Message",
+      "scope": "athlete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "thread_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "athlete_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "sender_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "body",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "sent_at",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "read_at",
+          "type": "text",
+          "nullable": true,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "exercises_category",
+      "model": "Category",
+      "scope": "library",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "gym_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "order",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "exercises_tag",
+      "model": "Tag",
+      "scope": "library",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "gym_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "exercises_exercise",
+      "model": "Exercise",
+      "scope": "library",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "gym_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "key",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "category_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "measure",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "reps_per_rep",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "percent_of_id",
+          "type": "text",
+          "nullable": true,
+          "index": true
+        },
+        {
+          "name": "youtube_url",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "cue",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "warmup",
+          "type": "boolean",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "archived",
+          "type": "boolean",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "exercises_exercisetag",
+      "model": "ExerciseTag",
+      "scope": "library",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "exercise_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "tag_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "gym_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        }
+      ]
+    },
+    {
+      "name": "exercises_trackedlift",
+      "model": "TrackedLift",
+      "scope": "library",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "gym_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "exercise_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "order",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "programs_weektype",
+      "model": "WeekType",
+      "scope": "library",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "gym_id",
+          "type": "text",
+          "nullable": false,
+          "index": true
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "colour",
+          "type": "text",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "order",
+          "type": "integer",
+          "nullable": false,
+          "index": false
+        },
+        {
+          "name": "archived",
+          "type": "boolean",
+          "nullable": false,
+          "index": false
+        }
+      ]
+    }
+  ]
+}

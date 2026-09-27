@@ -172,6 +172,13 @@ def test_the_web_app_may_call_the_api_from_its_own_origin(api, settings):
     )
     assert response["Access-Control-Allow-Origin"] == "https://app.example.com"
     assert response["Access-Control-Allow-Credentials"] == "true"
+    syncing = api.options(
+        "/api/v1/sync/pull",
+        HTTP_ORIGIN="https://app.example.com",
+        HTTP_ACCESS_CONTROL_REQUEST_METHOD="GET",
+        HTTP_ACCESS_CONTROL_REQUEST_HEADERS="authorization,x-client,x-schema-version",
+    )
+    assert "x-schema-version" in syncing["Access-Control-Allow-Headers"]
     other = api.options(
         "/api/v1/me", HTTP_ORIGIN="https://evil.example", HTTP_ACCESS_CONTROL_REQUEST_METHOD="GET"
     )

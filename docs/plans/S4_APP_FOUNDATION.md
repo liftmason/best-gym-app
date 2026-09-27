@@ -94,6 +94,37 @@ Package manager: npm (it comes with Node; nothing to add).
 - **Apple and Google buttons:** not built yet. They need a development build and the owner's
   accounts (decision B).
 
+**S4b as built:**
+- **Generated schema (decision D):**
+  - `manage.py sync_schema` writes `shared/sync-schema.json` from the same column list pull uses.
+  - `npm run db:schema` turns it into the Drizzle tables and `CREATE` statements.
+  - Tests on both sides fail when either is stale.
+  - There's no drizzle-kit: decision E means synced tables are never migrated, only remade.
+- **The database queue:**
+  - Each committed write notifies subscribers once, with the tables it changed. The per-row SQLite hook isn't used, so this works the same on web, phones and Node, and a rolled-back write says nothing.
+  - Live queries gather notices over 50 ms.
+- **Rebasing:**
+  - An action's local effect writes through a recorder that keeps an undo log (`local_changes`).
+  - Each pulled page undoes the log, writes the server's rows, then applies the waiting actions again.
+  - Without the undo log, a habit ticked offline would show twice once the server's own row arrived.
+- **First actions:** `habit.set` and `message.send`. The session player's actions come with their screens in S5, since they need the set-entry rules on the phone.
+- **Offline start:** training mode remembers the device's athlete, so it opens without `/me`.
+- **Sign-out:** it warns about unsent changes, then clears the device's copy.
+- **Web:**
+  - Single-page output. The dev server's pre-rendering can't load SQLite's worker, and every screen is behind sign-in anyway.
+  - The Metro config bundles `.wasm` and sends COOP/COEP in development.
+  - Hosting headers are in `app/public/_headers`, and `npm run serve:web` uses the same file.
+  - One tab at a time is enforced with a Web Lock.
+- **Push:**
+  - The token is kept on the device session and moves to the newest one.
+  - Pushes are sent after the database commit, with a 5 s timeout, and failures are logged.
+  - `PUSH_PROVIDER` is required in production.
+  - The app registers only in our own builds on a real phone.
+- **Checked against the real backend** by hand: bootstrap of all 27 tables, then an offline habit tick pushed and pulled back as one row.
+- **Accounts:**
+  - The Expo project exists (`spearws-team/best-gym-app`).
+  - Still to come: Firebase (FCM) credentials for Android push, the Apple account (iOS builds and push), and Apple/Google sign-in.
+
 
 **S4a**
 1. The project, tooling and the CI job.
