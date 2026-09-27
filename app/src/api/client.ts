@@ -136,7 +136,7 @@ export function makeApi({ baseUrl, store, web, fetch = (r) => globalThis.fetch(r
      */
     async restore() {
       if (!web) {
-        const saved = await store.load();
+        const saved = await store.load().catch(() => null); // unreadable storage: sign in again
         tokens = saved;
         setState(saved ? 'signedIn' : 'signedOut');
         return;

@@ -1012,6 +1012,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/signup/starters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Starters
+         * @description The starter packs a new coach picks from (`starter` in signup/coach).
+         */
+        get: operations["apps_signin_api_starters"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/social/{provider}": {
         parameters: {
             query?: never;
@@ -4126,6 +4146,15 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** StarterOut */
+        StarterOut: {
+            /** Description */
+            description: string;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
         /** Stats */
         Stats: {
             /** Calendar Weeks */
@@ -5956,6 +5985,26 @@ export interface operations {
             };
         };
     };
+    apps_signin_api_starters: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StarterOut"][];
+                };
+            };
+        };
+    };
     apps_signin_api_social_sign_in: {
         parameters: {
             query?: never;
@@ -6834,7 +6883,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TokensOut"];
+                };
             };
         };
     };

@@ -1,10 +1,27 @@
-import { Text, View } from 'react-native';
+import { router } from 'expo-router';
 
-/** Sign in with an email code (built in S4a step 4). */
+import { EmailCode } from '@/auth/email-code';
+import { SignInFrame } from '@/auth/frame';
+import { signUp } from '@/auth/pending';
+import { Text } from '@/ui';
+
+/** Sign in with an email code. A new email goes on to set up a gym as a new coach. */
 export default function SignIn() {
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Sign in</Text>
-    </View>
+    <SignInFrame>
+      <Text variant="h2">Sign in</Text>
+      <Text variant="small" tone="muted">
+        No password: we&apos;ll email you a code.
+      </Text>
+      <EmailCode
+        onTicket={(ticket, email) => {
+          signUp.set(ticket, email);
+          router.push('/new-coach');
+        }}
+      />
+      <Text variant="tiny" tone="faint">
+        Joining a coach? Open the invite link they sent you.
+      </Text>
+    </SignInFrame>
   );
 }
