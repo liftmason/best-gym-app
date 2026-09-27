@@ -10,6 +10,8 @@ sync in S3, so S2's athlete endpoints are only their account, joining and profil
 
 ## 1. Decisions
 
+All four accepted as recommended (26 September 2026).
+
 | # | Question | Recommendation | Why |
 |---|---|---|---|
 | A | S2 is the largest sub-project so far (about 3–4 weeks). One PR, or two? | **Two PRs.** S2a: the API, email-code sign-in, tokens and devices, every coach and athlete-account endpoint, and the permission sweep. S2b: Apple and Google sign-in, plans, entitlements and Stripe. | Each PR stays reviewable. S2b is the part that depends on outside accounts (B), and S3 only needs S2a. |

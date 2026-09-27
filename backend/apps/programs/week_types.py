@@ -7,6 +7,7 @@ every model that points at WeekType, so new ones are covered automatically."""
 from django.db import transaction
 from django.db.models import Max
 
+from apps.core import errors
 from apps.exercises import services as library
 
 from .models import HEX_COLOUR, WeekType
@@ -16,7 +17,7 @@ DESCRIPTION_LENGTH = WeekType._meta.get_field("description").max_length
 DEFAULT_COLOUR = "#6B7280"
 
 
-class InvalidWeekType(Exception):
+class InvalidWeekType(errors.Invalid):
     """With the message to show."""
 
 

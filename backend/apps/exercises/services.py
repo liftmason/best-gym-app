@@ -9,7 +9,7 @@ from django.db import transaction
 from django.db.models import Max, Q
 from django.db.models.functions import Lower
 
-from apps.core import ids
+from apps.core import errors, ids
 
 from .models import MAX_TRACKED_LIFTS, TAG_MAX_LENGTH, Category, Exercise, Measure, Tag, TrackedLift
 
@@ -18,11 +18,11 @@ TAG_NAME_LENGTH = TAG_MAX_LENGTH
 EXERCISE_NAME_LENGTH = Exercise._meta.get_field("name").max_length
 
 
-class InvalidName(Exception):
+class InvalidName(errors.Invalid):
     """With the message to show."""
 
 
-class InvalidExercise(Exception):
+class InvalidExercise(errors.Invalid):
     """With the field it's about (`field`) and the message to show."""
 
     def __init__(self, field, message):
@@ -30,11 +30,11 @@ class InvalidExercise(Exception):
         self.field = field
 
 
-class NeedsTarget(Exception):
+class NeedsTarget(errors.Invalid):
     """A category with exercises can only be deleted once they have somewhere to go."""
 
 
-class TrackingRefused(Exception):
+class TrackingRefused(errors.Invalid):
     """With the message to show."""
 
 
@@ -86,7 +86,7 @@ def move_in_order(rows, pk, direction):
     """Swap one row of an ordered list with its neighbour and renumber. ValueError if the row
     isn't in the list or the direction isn't up/down."""
     if direction not in ("up", "down"):
-        raise ValueError(direction)
+        raise errors.Invalid(f"Move up or down, not {direction!r}.")
     ids = [r.pk for r in rows]
     i = ids.index(pk)
     j = i - 1 if direction == "up" else i + 1

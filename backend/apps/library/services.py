@@ -13,6 +13,7 @@ from decimal import Decimal
 from django.db import transaction
 from django.db.models import F, Max
 
+from apps.core import errors
 from apps.programs.models import LoadBasis, WeekType
 from apps.programs.prescriptions import COPIED_FIELDS, keep_warmups_first, new_dose
 
@@ -27,7 +28,7 @@ from .models import (
 )
 
 
-class InvalidTemplate(Exception):
+class InvalidTemplate(errors.Invalid):
     """With the message to show."""
 
 

@@ -14,10 +14,12 @@ from django.db import transaction
 from django.db.models import Prefetch
 from django.utils import timezone
 
+from apps.core import errors
+
 from .models import Athlete, Coaching, CoachingStatus, GymMembership, GymRole
 
 
-class AlreadyCoached(Exception):
+class AlreadyCoached(errors.Conflict):
     """The athlete already has an active coach."""
 
 

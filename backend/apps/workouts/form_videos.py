@@ -5,6 +5,7 @@ in production), and the bytes never pass through Django."""
 from django.db import transaction
 from django.utils import timezone
 
+from apps.core import errors
 from apps.dashboard import alerts
 
 from . import videos
@@ -15,7 +16,7 @@ MAX_NOTE = 300
 MAX_FEEDBACK = 4000
 
 
-class VideoRefused(Exception):
+class VideoRefused(errors.Conflict):
     """With the message to show the athlete or coach."""
 
 

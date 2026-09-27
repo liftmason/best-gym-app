@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from django.db import transaction
 
 from apps.accounts.models import MaxEntry, MaxUpdates, MeasurementSource
-from apps.core import ids
+from apps.core import errors, ids
 
 from .models import SetLog
 
@@ -138,7 +138,7 @@ def dismiss(athlete, candidate):
     ).update(max_dismissed=True)
 
 
-class AlreadyHandled(Exception):
+class AlreadyHandled(errors.Conflict):
     """The PR was used or dismissed already (or was never a candidate)."""
 
 

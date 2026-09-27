@@ -5,6 +5,8 @@ it, so past answers keep their question."""
 from django.db import transaction
 from django.db.models import Max
 
+from apps.core import errors
+
 from .models import CheckinQuestion, QuestionType, copy_defaults_to
 
 MAX_OPTIONS = 12
@@ -19,7 +21,7 @@ NEW_QUESTION = {
 }
 
 
-class InvalidQuestion(Exception):
+class InvalidQuestion(errors.Invalid):
     pass
 
 

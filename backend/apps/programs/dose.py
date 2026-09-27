@@ -13,6 +13,7 @@ from decimal import Decimal, InvalidOperation
 from django.db import transaction
 
 from apps.accounts import units
+from apps.core import errors
 
 from .models import LoadBasis
 from .prescriptions import keep_warmups_first, parse_rep_scheme, parse_rir
@@ -44,7 +45,7 @@ FIELDS = [
 ]
 
 
-class InvalidDose(Exception):
+class InvalidDose(errors.Invalid):
     def __init__(self, errors):
         super().__init__(errors)
         self.errors = errors  # {field or None: message}

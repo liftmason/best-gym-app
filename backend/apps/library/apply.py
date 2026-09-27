@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from django.db import transaction
 from django.db.models import F
 
+from apps.core import errors
 from apps.core import models as core
 from apps.exercises.models import Exercise
 from apps.programs import services as program_services
@@ -37,7 +38,7 @@ WEEK = datetime.timedelta(days=7)
 RECENT, DEFAULTS = "recent", "default"
 
 
-class CannotApply(Exception):
+class CannotApply(errors.Conflict):
     pass
 
 

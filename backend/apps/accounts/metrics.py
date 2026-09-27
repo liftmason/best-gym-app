@@ -16,6 +16,7 @@ from decimal import Decimal, InvalidOperation
 
 from django.db import transaction
 
+from apps.core import errors
 from apps.exercises.models import Exercise, tracked_exercises
 
 from . import units
@@ -30,11 +31,11 @@ LIMITS = {
 }
 
 
-class InvalidMetric(Exception):
+class InvalidMetric(errors.Invalid):
     """With the message to show."""
 
 
-class MetricUnknown(Exception):
+class MetricUnknown(errors.NotFound):
     """Not one of this gym's metrics (e.g. a lift it doesn't track)."""
 
 
@@ -180,7 +181,7 @@ def save_coach_metric(athlete, key, raw, date=None, entry_units=None):
     return spec
 
 
-class RemindedRecently(Exception):
+class RemindedRecently(errors.TooMany):
     """The athlete was already reminded in the last REMIND_WINDOW."""
 
 

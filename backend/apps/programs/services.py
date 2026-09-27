@@ -13,6 +13,7 @@ from django.db import transaction
 from django.db.models import F, Max, Q
 from django.utils import timezone
 
+from apps.core import errors
 from apps.core import models as core
 
 from . import undo
@@ -24,15 +25,15 @@ MAX_SESSIONS_PER_DAY = 3
 WEEK = datetime.timedelta(days=7)
 
 
-class HasLoggedSessions(Exception):
+class HasLoggedSessions(errors.Conflict):
     """Logged sessions are history: their days can't be moved or deleted."""
 
 
-class TooManySessions(Exception):
+class TooManySessions(errors.Conflict):
     """A day holds at most MAX_SESSIONS_PER_DAY sessions."""
 
 
-class NotAllowed(Exception):
+class NotAllowed(errors.NotFound):
     """The change refers to something outside this athlete's program or gym (or archived)."""
 
 
@@ -112,7 +113,7 @@ def board_week(program, today, week_id=None):
 # ---------------------------------------------------------------- programs and weeks
 
 
-class InvalidProgram(Exception):
+class InvalidProgram(errors.Invalid):
     """With the message to show."""
 
 

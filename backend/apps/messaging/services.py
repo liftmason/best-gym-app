@@ -4,6 +4,7 @@
 from django.utils import timezone
 
 from apps.accounts.models import Coaching, CoachingStatus
+from apps.core import errors
 from apps.dashboard import alerts
 
 from .models import Message, Thread
@@ -12,11 +13,11 @@ MAX_BODY = 4000
 SHOWN = 100  # most recent messages shown
 
 
-class EmptyMessage(Exception):
+class EmptyMessage(errors.Invalid):
     """Nothing to send once the whitespace is gone."""
 
 
-class NotInThread(Exception):
+class NotInThread(errors.NotFound):
     """Only the thread's coach and athlete can write in it, while the coaching lasts."""
 
 
@@ -37,7 +38,7 @@ def send(thread, sender, body):
     if not body:
         raise EmptyMessage()
     if len(body) > MAX_BODY:
-        raise ValueError(f"Messages are at most {MAX_BODY} characters.")
+        raise errors.Invalid(f"Messages are at most {MAX_BODY} characters.")
     message = Message.objects.create(thread=thread, sender=sender, body=body)
     alerts.message_sent(message)
     return message

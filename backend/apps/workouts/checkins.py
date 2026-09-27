@@ -3,6 +3,8 @@
 
 from django.db import transaction
 
+from apps.core import errors
+
 from .models import OTHER_OPTION, CheckinAnswer, CheckinQuestion, QuestionType
 from .sessions import SessionClosed  # noqa: F401 - part of this module's interface
 
@@ -11,7 +13,7 @@ MAX_DETAIL = 300  # a scale's follow-up words, or a choice's "Other" details
 MAX_TEXT = 200  # a short answer
 
 
-class InvalidAnswer(Exception):
+class InvalidAnswer(errors.Invalid):
     """Not an answer this question accepts."""
 
 

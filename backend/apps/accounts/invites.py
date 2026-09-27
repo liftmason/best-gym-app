@@ -5,6 +5,7 @@ the email on an invite only pre-fills the form (docs/EXPO_MIGRATION.md, "Sign-in
 from django.db import transaction
 from django.utils import timezone
 
+from apps.core import errors
 from apps.workouts.models import copy_defaults_to
 
 from . import coaching
@@ -12,15 +13,15 @@ from .models import Athlete, Invite, InviteStatus, User
 from .services import AccountExists, check_new_account, email_taken, valid_timezone
 
 
-class InviteUnusable(Exception):
+class InviteUnusable(errors.Gone):
     """Accepted, revoked or expired."""
 
 
-class AlreadyAthlete(Exception):
+class AlreadyAthlete(errors.Conflict):
     """This account's athlete profile already has an active coach."""
 
 
-class InvalidInvite(Exception):
+class InvalidInvite(errors.Invalid):
     """With the message to show."""
 
 
@@ -53,7 +54,7 @@ def create(coach, email="", starting_template=None, base_url=None):
         starting_template.gym_id != coach.gym.pk
         or starting_template.kind not in (TemplateKind.PROGRAM, TemplateKind.WEEK)
     ):
-        raise ValueError("That template isn't one of this gym's programs or saved weeks.")
+        raise InvalidInvite("That template isn't one of this gym's programs or saved weeks.")
     invite = Invite.objects.create(
         coach=coach, gym=coach.gym, email=email, starting_template=starting_template
     )
