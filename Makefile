@@ -5,7 +5,7 @@ PY := .venv/bin/python
 -include backend/.env
 export
 
-.PHONY: dev install db migrate seed run test lint fmt check audit
+.PHONY: dev install db migrate seed run run-lan test lint fmt check audit
 
 dev: install db migrate seed run
 
@@ -25,6 +25,10 @@ seed:
 
 run:
 	$(B) $(PY) manage.py runserver
+
+# For a phone on the same network (Expo Go): listens on every interface. See app/README.md.
+run-lan:
+	$(B) $(PY) manage.py runserver 0.0.0.0:8000
 
 test:
 	$(B) $(PY) -m pytest tests/unit
