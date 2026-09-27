@@ -26,14 +26,17 @@ def _week_type_on(athlete, date, weeks):
     return None
 
 
-def e1rm_points(athlete, exercise, limit=CHART_POINTS):
-    """[(date, e1rm kg, bodyweight kg or None, week type or None)], oldest first."""
+def e1rm_points(athlete, exercise, limit=CHART_POINTS, since=None):
+    """[(date, e1rm kg, bodyweight kg or None, week type or None)], oldest first (from
+    `since` when given)."""
     from apps.programs.models import ProgramWeek
 
-    entries = history.exercise_history(athlete, [exercise.pk], limit=limit).get(exercise.pk, [])
+    entries = history.exercise_history(athlete, [exercise.pk], limit=limit, since=since).get(exercise.pk, [])
     entries = [e for e in reversed(entries) if e.best_e1rm]
     weeks = list(ProgramWeek.objects.filter(program__athlete=athlete).select_related("week_type"))
-    bodyweights = list(athlete.bodyweights.order_by("date", "id"))
+    bodyweights = list(
+        athlete.bodyweights.filter(date__gte=since or datetime.date.min).order_by("date", "id")
+    )
     points = []
     for e in entries:
         bw = next((b.kg for b in reversed(bodyweights) if b.date <= e.date), None)
@@ -55,8 +58,9 @@ def phase_bands(points):
     return bands
 
 
-def weekly(athlete, weeks=8):
-    """[(week start, volume kg, compliance % or None)] for the last `weeks` training weeks."""
+def weekly(athlete, weeks=8, since=None):
+    """[(week start, volume kg, compliance % or None)] for the last `weeks` training weeks
+    (counting only from `since` when given)."""
     from .models import SetLog
 
     today = athlete.today()
@@ -68,7 +72,7 @@ def weekly(athlete, weeks=8):
         reps__isnull=False,
         session_exercise__session_log__athlete=athlete,
         session_exercise__session_log__finished_at__isnull=False,
-        session_exercise__session_log__date__gte=starts[0],
+        session_exercise__session_log__date__gte=max(starts[0], since or starts[0]),
     ).values_list("session_exercise__session_log__date", "load_kg", "reps")
     volume = dict.fromkeys(starts, Decimal(0))
     for date, load, reps in sets:
@@ -76,16 +80,20 @@ def weekly(athlete, weeks=8):
     rows = []
     for start in starts:
         done, scheduled = history.compliance(  # the training week only, not a trailing 7 days
-            athlete, today, start=start, end=min(start + datetime.timedelta(days=6), today)
+            athlete,
+            today,
+            start=max(start, since or start),
+            end=min(start + datetime.timedelta(days=6), today),
         )
         rows.append((start, volume[start], round(done / scheduled * 100) if scheduled else None))
     return rows
 
 
-def progress_change(athlete, exercise, unit):
-    """{"change", "drop", "weeks"}: how far the e1RM moved (in `unit`, rounded) over the
-    athlete's chart and over how many weeks; None with fewer than two points."""
-    points = e1rm_points(athlete, exercise)
+def progress_change(athlete, exercise, unit, since=None):
+    """{"change", "drop", "weeks"}: how far the e1RM moved (in `unit`, rounded; `drop` is its
+    size without the sign) over the athlete's chart and over how many weeks; None with fewer
+    than two points."""
+    points = e1rm_points(athlete, exercise, since=since)
     if len(points) < 2:
         return None
     first, last = (float(units.from_kg(p[1], unit)) for p in (points[0], points[-1]))
@@ -101,13 +109,13 @@ def rail_series(entries):
     return values if len(values) >= 2 else []
 
 
-def chart_lifts(athlete):
+def chart_lifts(athlete, since=None):
     """Exercises worth charting: the gym's tracked lifts, then others the athlete has
     logged with a load."""
     from apps.exercises.models import Exercise, tracked_exercises
 
     tracked = list(tracked_exercises(athlete.gym))
-    logged = history.exercise_history(athlete, limit=2)
+    logged = history.exercise_history(athlete, limit=2, since=since)
     others = (
         Exercise.objects.filter(pk__in=[k for k, v in logged.items() if any(e.best_e1rm for e in v)])
         .exclude(pk__in=[e.pk for e in tracked])

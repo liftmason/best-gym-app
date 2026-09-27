@@ -72,9 +72,10 @@ RANGE_DAYS = {key: days for key, _label, days in RANGES}
 OPEN_DAYS = 3  # sessions from the last three days start expanded
 
 
-def session_list(athlete, unit, q="", range_key="8"):
-    """(items, range_key): the athlete's sessions in the range ("4", "8" weeks or "all"),
-    newest first, optionally only those with an exercise matching `q`."""
+def session_logs(athlete, q="", range_key="8", since=None):
+    """(logs, range_key): the athlete's session logs in the range ("4", "8" weeks or "all"),
+    from `since` when given, optionally only those with an exercise matching `q`; with what
+    session_item reads prefetched."""
     range_key = range_key if range_key in RANGE_DAYS else "8"
     days = RANGE_DAYS[range_key]
     logs = athlete.session_logs.select_related("week_type", "athlete__user").prefetch_related(
@@ -82,9 +83,17 @@ def session_list(athlete, unit, q="", range_key="8"):
     )
     if days:
         logs = logs.filter(date__gte=athlete.today() - datetime.timedelta(days=days))
+    if since:
+        logs = logs.filter(date__gte=since)
     if q:
         logs = logs.filter(exercises__exercise_name__icontains=q).distinct()
-    pr_ids = history.pr_session_exercises(athlete)
+    return logs, range_key
+
+
+def session_list(athlete, unit, q="", range_key="8", since=None):
+    """(items, range_key): session_logs as session_items, newest first."""
+    logs, range_key = session_logs(athlete, q, range_key, since)
+    pr_ids = history.pr_session_exercises(athlete, since)
     today = athlete.today()
     items = [session_item(log, unit, pr_ids) for log in logs.order_by("-date", "-started_at")]
     for item in items:
@@ -92,20 +101,21 @@ def session_list(athlete, unit, q="", range_key="8"):
     return items, range_key
 
 
-def chart_lift(athlete, lift_id):
+def chart_lift(athlete, lift_id, since=None):
     """(lifts, chosen): the lifts the e1RM chart offers and the one shown."""
-    lifts = charts.chart_lifts(athlete)
+    lifts = charts.chart_lifts(athlete, since)
     chosen = next((e for e in lifts if str(e.pk) == str(lift_id)), lifts[0] if lifts else None)
     return lifts, chosen
 
 
-def recent_checkins(athlete, limit=5):
+def recent_checkins(athlete, limit=5, since=None):
     """The last finished sessions with a check-in or an RPE: each with its first 1-10 answer
     and its multiple-choice answer."""
     logs = (
         athlete.session_logs.finished()
         .prefetch_related("answers")
         .filter(Q(answers__isnull=False) | Q(session_rpe__isnull=False))
+        .filter(date__gte=since or datetime.date.min)
         .distinct()
         .order_by("-date", "-finished_at")[:limit]
     )
@@ -151,13 +161,15 @@ def week_glance(athlete):
     return glance
 
 
-def top_prs(athlete, unit, limit=6):
+def top_prs(athlete, unit, limit=6, since=None):
     """Lifetime PRs, the gym's tracked lifts first, then the most recent."""
     from apps.exercises.models import tracked_exercises
 
     today = athlete.today()
     tracked = {e.name: i for i, e in enumerate(tracked_exercises(athlete.gym))}
-    ordered = sorted(history.lifetime_prs(athlete), key=lambda pr: tracked.get(pr["name"], len(tracked)))
+    ordered = sorted(
+        history.lifetime_prs(athlete, since), key=lambda pr: tracked.get(pr["name"], len(tracked))
+    )
     return [
         {
             "name": pr["name"],

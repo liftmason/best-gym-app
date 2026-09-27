@@ -11,6 +11,7 @@ A lift metric's key is "lift_<exercise id>", so forms, URLs and saved data all
 refer to the gym's own exercises rather than to fixed names.
 """
 
+import datetime
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 
@@ -213,9 +214,11 @@ def save_missing(athlete, data, source=MeasurementSource.ATHLETE):
     return filled
 
 
-def recent_history(athlete, limit=10):
-    """[(what, entry)]: the latest bodyweight and max entries together, newest first."""
-    rows = [("Bodyweight", e) for e in athlete.bodyweights.all()[:limit]] + [
-        (e.exercise.name, e) for e in athlete.maxes.select_related("exercise")[:limit]
+def recent_history(athlete, limit=10, since=None):
+    """[(what, entry)]: the latest bodyweight and max entries together, newest first (from
+    `since` when given; current values stay visible either way)."""
+    since = since or datetime.date.min
+    rows = [("Bodyweight", e) for e in athlete.bodyweights.filter(date__gte=since)[:limit]] + [
+        (e.exercise.name, e) for e in athlete.maxes.filter(date__gte=since).select_related("exercise")[:limit]
     ]
     return sorted(rows, key=lambda pair: (pair[1].date, pair[1].created_at), reverse=True)[:limit]

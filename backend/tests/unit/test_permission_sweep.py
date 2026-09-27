@@ -34,6 +34,9 @@ PARAMS = {
     "athlete_id": ("athlete", lambda w: w["athlete"].pk),
     "key": ("athlete", lambda w: "bodyweight"),  # a metric, always under an athlete
     "invite_id": ("user", lambda w: w["invite"].pk),
+    "set_id": ("athlete", lambda w: w["pr_set"].pk),
+    "video_id": ("athlete", lambda w: w["video"].pk),
+    "issue_id": ("athlete", lambda w: w["issue"].pk),
 }
 
 # Endpoints whose path parameter is itself the credential, so anyone holding it may use it.
@@ -114,11 +117,22 @@ def test_every_path_parameter_is_known():
 @pytest.fixture
 def world(gym):
     """The owner's side: a coach and athlete in `gym`, with their data and a signed-in device."""
-    owner = CoachFactory(gym=gym)
-    athlete = AthleteFactory(coach=owner)
+    from django.utils import timezone
+
+    from apps.accounts.models import MaxEntry
     from apps.dashboard import alerts
     from apps.dashboard.models import NotificationKind
+    from apps.workouts.models import FormVideo, IssueReport, SessionExercise, SessionLog, SetLog
 
+    from ..conftest import ex
+
+    owner = CoachFactory(gym=gym)
+    athlete = AthleteFactory(coach=owner)
+    now, today = timezone.now(), athlete.today()
+    snatch = ex(gym, "sn")
+    MaxEntry.objects.create(athlete=athlete, exercise=snatch, date=today, kg=100, source="coach")
+    log = SessionLog.objects.create(athlete=athlete, date=today, finished_at=now)
+    se = SessionExercise.objects.create(session_log=log, exercise=snatch, exercise_name="Snatch")
     return {
         "gym": gym,
         "coach": owner,
@@ -126,6 +140,17 @@ def world(gym):
         "device": signin.open_session(athlete.user).session,
         "notification": alerts.notify(athlete, NotificationKind.ISSUE, "issue:x", "Sore wrist", ""),
         "invite": invites.create(owner, "new@example.com"),
+        "pr_set": SetLog.objects.create(session_exercise=se, set_number=1, load_kg=110, reps=1, done=True),
+        "video": FormVideo.objects.create(
+            session_log=log,
+            session_exercise=se,
+            exercise_name="Snatch",
+            key="sweep",
+            content_type="video/mp4",
+            size=1,
+            uploaded_at=now,
+        ),
+        "issue": IssueReport.objects.create(athlete=athlete, session_log=log, kind="pain", text="Wrist"),
     }
 
 

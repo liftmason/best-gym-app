@@ -108,11 +108,13 @@ def _routers():
     from apps.accounts.coach_api import router as athletes
     from apps.dashboard.api import router as dashboard
     from apps.signin.api import router as signin
+    from apps.workouts.coach_api import router as training
 
     api.add_router("/auth", signin)
     api.add_router("", accounts)
     api.add_router("", dashboard)
     api.add_router("", athletes)
+    api.add_router("", training)
 
 
 def coach_of(request):

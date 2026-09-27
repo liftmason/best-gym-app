@@ -82,3 +82,116 @@ def test_an_invite_can_start_the_athlete_on_a_template(api, coach, gym):
     assert created["starting_template"] == template.display_name and not created["email_sent"]
     wrong = post(api, "/invites", {"starting_template_id": "01a0d425-0000-7000-8000-000000000000"})
     assert wrong.status_code == 400 and "starting_template_id" in wrong.json()["error"]["fields"]
+
+
+# ---------------------------------------------------------------- training
+
+
+def _log(athlete, gym, days_ago, load=105):
+    import datetime
+
+    from django.utils import timezone
+
+    from apps.workouts.models import SessionExercise, SessionLog, SetLog
+
+    from ..conftest import ex
+
+    date = athlete.today() - datetime.timedelta(days=days_ago)
+    at = timezone.now() - datetime.timedelta(days=days_ago)
+    log = SessionLog.objects.create(
+        athlete=athlete, date=date, started_at=at, finished_at=at, name="Snatch day"
+    )
+    se = SessionExercise.objects.create(session_log=log, exercise=ex(gym, "sn"), exercise_name="Snatch")
+    SetLog.objects.create(session_exercise=se, set_number=1, load_kg=load, reps=1, done=True)
+    return log
+
+
+def test_the_overview(api, athlete, gym):
+    for days_ago in (2, 9, 16):
+        _log(athlete, gym, days_ago, load=100 + days_ago)
+    body = api.get(f"/api/v1/athletes/{athlete.pk}/overview").json()
+    assert len(body["week"]) == 7 and body["top_prs"][0]["name"] == "Snatch"
+    assert body["chart"]["lift"]["name"] == "Snatch" and len(body["chart"]["points"]) == 3
+    assert len(body["weekly"]) == 8
+
+
+def test_sessions_come_a_page_at_a_time(api, athlete, gym):
+    for days_ago in range(5):
+        _log(athlete, gym, days_ago)
+    first = api.get(f"/api/v1/athletes/{athlete.pk}/sessions?limit=3").json()
+    rest = api.get(f"/api/v1/athletes/{athlete.pk}/sessions?limit=3&before={first['next']}").json()
+    dates = [s["date"] for s in first["items"] + rest["items"]]
+    assert len(dates) == 5 and dates == sorted(dates, reverse=True) and rest["next"] is None
+    line = first["items"][0]["exercises"][0]
+    assert line["name"] == "Snatch" and line["did"] == "1×1 @ 105 kg"
+
+
+def test_a_new_coach_sees_only_what_the_athlete_allows(athlete, coach, gym, frozen_clock):
+    import datetime
+
+    from apps.accounts import coaching
+
+    from ..factories import CoachFactory
+
+    _log(athlete, gym, 3)
+    coaching.end(athlete)
+    frozen_clock.shift(datetime.timedelta(days=1))
+    new_coach = CoachFactory(gym=gym)
+    coaching.start(new_coach, athlete)
+    _log(athlete, gym, 0)
+    client = Client(HTTP_AUTHORIZATION=f"Bearer {signin.open_session(new_coach.user).access}")
+
+    def count():
+        return len(client.get(f"/api/v1/athletes/{athlete.pk}/sessions?range=all").json()["items"])
+
+    assert count() == 2  # full earlier history by default
+    athlete.hide_history_before_link = True
+    athlete.save()
+    assert count() == 1
+    assert len(client.get(f"/api/v1/athletes/{athlete.pk}/overview").json()["chart"]["points"]) == 1
+
+
+def test_a_pr_waiting_for_the_coach(api, athlete, gym):
+    from apps.accounts.models import MaxEntry
+
+    from ..conftest import ex
+
+    MaxEntry.objects.create(
+        athlete=athlete, exercise=ex(gym, "sn"), date=athlete.today(), kg=100, source="coach"
+    )
+    _log(athlete, gym, 0, load=110)
+    (pending,) = api.get(f"/api/v1/athletes/{athlete.pk}/prs").json()
+    assert pending["lift"] == "110 kg ×1" and pending["current_max"] == "100 kg"
+    assert post(api, f"/athletes/{athlete.pk}/prs/{pending['set_id']}", {"use": True}).status_code == 204
+    assert api.get(f"/api/v1/athletes/{athlete.pk}/prs").json() == []
+    again = post(api, f"/athletes/{athlete.pk}/prs/{pending['set_id']}", {"use": True})
+    assert again.status_code == 409
+
+
+def test_videos_and_issues(api, athlete, gym, monkeypatch):
+    from django.utils import timezone
+
+    from apps.workouts import issues, videos
+    from apps.workouts.models import FormVideo
+
+    monkeypatch.setattr(videos, "view_url", lambda key: f"https://bucket.example/{key}?signed")
+    log = _log(athlete, gym, 0)
+    video = FormVideo.objects.create(
+        session_log=log,
+        exercise_name="Snatch",
+        key="v1",
+        content_type="video/mp4",
+        size=1,
+        uploaded_at=timezone.now(),
+    )
+    assert api.get(f"/api/v1/athletes/{athlete.pk}/videos/{video.pk}").json()["url"].endswith("v1?signed")
+    assert (
+        post(api, f"/athletes/{athlete.pk}/videos/{video.pk}/review", {"feedback": "Hips late"}).status_code
+        == 204
+    )
+    video.refresh_from_db()
+    assert video.reviewed_at and athlete.threads.get().messages.get().body.endswith("Hips late")
+    issue = issues.report(log, "pain", "Wrist")
+    assert [i["text"] for i in api.get(f"/api/v1/athletes/{athlete.pk}/issues").json()] == ["Wrist"]
+    assert post(api, f"/athletes/{athlete.pk}/issues/{issue.pk}/resolve").status_code == 204
+    assert api.get(f"/api/v1/athletes/{athlete.pk}/issues").json() == []
