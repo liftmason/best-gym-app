@@ -73,6 +73,11 @@ export function SyncProvider({ profile, children }: { profile: TrainingProfile; 
   return <Context.Provider value={{ ...session, profile }}>{children}</Context.Provider>;
 }
 
+/** For tests: screens under a ready session (a Node database and a fake server). */
+export function SyncTestProvider({ value, children }: { value: SyncSession & { profile: TrainingProfile }; children: ReactNode }) {
+  return <Context.Provider value={value}>{children}</Context.Provider>;
+}
+
 export function useSync(): SyncSession & { profile: TrainingProfile } {
   const session = useContext(Context);
   if (!session) throw new Error('useSync outside SyncProvider');

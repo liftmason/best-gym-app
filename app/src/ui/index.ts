@@ -1,3 +1,4 @@
+export { Avatar, initials } from './avatar';
 export { Button } from './button';
 export { Card } from './card';
 export { Field } from './field';

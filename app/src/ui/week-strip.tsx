@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from './text';
-import { colors, fonts } from './theme';
+import { colors, fonts, shadows } from './theme';
 
 export type StripDay = {
   date: string; // YYYY-MM-DD
@@ -9,6 +9,8 @@ export type StripDay = {
   state: 'rest' | 'planned' | 'done' | 'missed';
   mark?: string; // a short line under the date, e.g. "2 ex" or "✓"
   today?: boolean;
+  /** The day shown below the strip (today shows as today whatever is selected). */
+  selected?: boolean;
 };
 
 /** The mockup's .week-strip: the training week, one box a day. */
@@ -24,7 +26,8 @@ export function WeekStrip({ days, onSelect }: { days: StripDay[]; onSelect?: (da
             accessibilityRole="button"
             accessibilityLabel={`${d.weekday} ${d.date}, ${d.state}`}
             onPress={onSelect ? () => onSelect(d.date) : undefined}
-            style={[styles.day, look, d.state === 'rest' && !d.today && styles.rest]}
+            accessibilityState={{ selected: Boolean(d.selected) }}
+            style={[styles.day, look, d.state === 'rest' && !d.today && styles.rest, d.selected && !d.today && styles.selected]}
           >
             <Text style={[styles.weekday, light ? { color: light } : null]}>{d.weekday}</Text>
             <Text style={[styles.date, light ? { color: light } : null]}>{Number(d.date.slice(8))}</Text>
@@ -51,7 +54,8 @@ const styles = StyleSheet.create({
   rest: { opacity: 0.45 },
   done: { borderColor: colors.good, backgroundColor: colors.goodLight },
   missed: { borderColor: colors.badLight, backgroundColor: colors.badLight },
-  today: { borderColor: colors.brand, backgroundColor: colors.brand },
+  today: { borderColor: colors.brand, backgroundColor: colors.brand, ...shadows.s1 },
+  selected: { borderColor: colors.brand, opacity: 1, boxShadow: `0 0 0 2px ${colors.brandLight}` },
   weekday: { fontSize: 9.5, color: colors.ink4, textTransform: 'uppercase', fontFamily: fonts.bold },
   date: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.ink },
   mark: { fontSize: 9.5, marginTop: 1, color: colors.ink3, fontFamily: fonts.medium },

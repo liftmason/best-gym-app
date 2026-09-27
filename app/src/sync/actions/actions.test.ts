@@ -5,7 +5,7 @@
 import parity from '../../../../shared/parity.json';
 
 import { ApiError } from '@/api/errors';
-import { makeDatabase, type Database } from '@/db/database';
+import { makeDatabase } from '@/db/database';
 import { openNodeDriver } from '@/db/node-driver';
 import { prepare, setState, STATE } from '@/db/setup';
 import { resumePoint, setCounts } from '@/domain/player';
