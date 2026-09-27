@@ -39,5 +39,5 @@ fmt:
 
 check:
 	$(B) $(PY) manage.py makemigrations --check --dry-run
-	$(B) DJANGO_SETTINGS_MODULE=config.settings.production ALLOWED_HOSTS=gymtrainer.onrender.com SECRET_KEY=check-only-$$(date +%s)-not-a-real-key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
+	$(B) DJANGO_SETTINGS_MODULE=config.settings.production ALLOWED_HOSTS=gymtrainer.onrender.com SITE_URL=https://gymtrainer.onrender.com EMAIL_PROVIDER=console SECRET_KEY=check-only-$$(date +%s)-not-a-real-key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
 		$(PY) manage.py check --deploy --fail-level WARNING

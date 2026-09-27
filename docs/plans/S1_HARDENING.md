@@ -74,8 +74,8 @@ Each step is one or more commits on `s1-hardening`, with tests passing at the en
 **Step 7: operations (H9, H10, H14, M32, C6).**
 - Sentry per decision B, the digest per decision C, and the cron's steps and coaches each isolated.
 - Timeouts: email 10 s; storage 3 s to connect, 10 s to read, 2 attempts.
-- Production settings refuse to start with an unknown `EMAIL_PROVIDER`, a missing key, a `localhost` `SITE_URL` or `DEFAULT_FROM_EMAIL`, or a missing `DEMO_PASSWORD`.
-- `seed_demo --if-empty` also checks for users.
+- Production settings refuse to start with an unknown or missing `EMAIL_PROVIDER` ("console" is allowed on purpose), a provider without its key, a `localhost` `SITE_URL`, or a `localhost` `DEFAULT_FROM_EMAIL` with a real provider. *As built:* `DEMO_PASSWORD` stays checked by `seed_demo` only, since production doesn't seed.
+- *As built:* `seed_demo --if-empty` keeps checking for gyms only. `ensure_admin` creates the admin user before any seeding, so "any user" would never seed; every coach and athlete belongs to a gym.
 - Both blueprints and `.env.example` updated.
 - Tests: the digest after a missed 7 am run; a failed send is retried next hour; one coach failing doesn't block the next.
 

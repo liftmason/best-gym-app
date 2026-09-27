@@ -34,7 +34,14 @@ def client():
         aws_access_key_id=c["access_key"],
         aws_secret_access_key=c["secret"],
         region_name=c["region"],
-        config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
+        # Short timeouts: a slow bucket mustn't hold a web worker for a minute (audit H14).
+        config=Config(
+            signature_version="s3v4",
+            s3={"addressing_style": "path"},
+            connect_timeout=3,
+            read_timeout=10,
+            retries={"max_attempts": 2},
+        ),
     )
 
 
