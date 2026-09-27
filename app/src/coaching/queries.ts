@@ -58,3 +58,7 @@ export function useOverview(id: string, lift: string | null) {
       ok(api.client.GET('/api/v1/athletes/{athlete_id}/overview', { params: { path: { athlete_id: id }, query: lift ? { lift } : {} } })),
   });
 }
+
+export function useThreads() {
+  return useQuery({ queryKey: keys.threads, queryFn: () => ok(api.client.GET('/api/v1/threads')), refetchInterval: 30_000 });
+}

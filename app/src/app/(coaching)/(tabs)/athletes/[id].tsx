@@ -7,6 +7,9 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { api, ApiError, ok } from '@/api';
 import { useMe } from '@/auth/me';
 import { AthleteHeader } from '@/coaching/athlete/header';
+import { Messages } from '@/coaching/athlete/messages';
+import { Metrics } from '@/coaching/athlete/metrics';
+import { Sessions } from '@/coaching/athlete/sessions';
 import { Overview, WeekGlance } from '@/coaching/athlete/overview';
 import { CoachScreen, Loading } from '@/coaching/layout';
 import { useAthlete, useOverview } from '@/coaching/queries';
@@ -43,7 +46,7 @@ function ProgramGlance({ id, name }: { id: string; name: string }) {
 
 /** One athlete (the mockup's #panel-client): header, tabs, and what's in each. */
 export default function AthleteScreen() {
-  const { id, tab: wanted } = useLocalSearchParams<{ id: string; tab?: string; focus?: string }>();
+  const { id, tab: wanted, focus, range } = useLocalSearchParams<{ id: string; tab?: string; focus?: string; range?: string }>();
   const tab: Tab = (TABS.find(([t]) => t === wanted)?.[0] ?? 'overview') as Tab;
   const athlete = useAthlete(id);
   const me = useMe();
@@ -105,11 +108,9 @@ export default function AthleteScreen() {
           ) : null}
           {tab === 'overview' ? <Overview id={id} unit={unit} /> : null}
           {tab === 'program' ? <ProgramGlance id={id} name={first} /> : null}
-          {tab === 'sessions' || tab === 'metrics' || tab === 'messages' ? (
-            <Card>
-              <Text tone="muted">This tab comes in the next step.</Text>
-            </Card>
-          ) : null}
+          {tab === 'sessions' ? <Sessions key={`${id}-${focus ?? ''}`} id={id} first={first} focus={focus} range={range} /> : null}
+          {tab === 'metrics' ? <Metrics id={id} first={first} unit={unit} maxUpdates={athlete.data.max_updates} focus={focus} /> : null}
+          {tab === 'messages' ? <Messages id={id} first={first} /> : null}
         </>
       ) : (
         <Loading error={athlete.error} retry={() => athlete.refetch()} />

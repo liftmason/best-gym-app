@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useMe } from '@/auth/me';
 import { WIDE } from '@/coaching/layout';
-import { useDashboard } from '@/coaching/queries';
+import { useDashboard, useThreads } from '@/coaching/queries';
 import { Avatar, colors, fonts, Text } from '@/ui';
 
 const TABS: Record<string, { label: string; wide: string; icon: keyof typeof Feather.glyphMap }> = {
@@ -30,7 +30,11 @@ function Bar({ state, navigation }: BottomTabBarProps) {
   const wide = useWindowDimensions().width >= WIDE;
   const me = useMe();
   const dashboard = useDashboard();
-  const counts: Record<string, number> = { dashboard: dashboard.data?.unread ?? 0 };
+  const threads = useThreads();
+  const counts: Record<string, number> = {
+    dashboard: dashboard.data?.unread ?? 0,
+    inbox: (threads.data ?? []).reduce((n, t) => n + t.unread, 0),
+  };
   const current = state.routes[state.index]?.name;
   const items = state.routes.filter((r) => TABS[r.name]);
 

@@ -2294,6 +2294,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/threads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Threads
+         * @description The coach's conversations with their current athletes that have messages, the latest
+         *     first, with how many of the athlete's are unread. A fixed number of queries.
+         */
+        get: operations["apps_messaging_api_threads"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/trackable-lifts": {
         parameters: {
             query?: never;
@@ -4306,6 +4327,21 @@ export interface components {
             /** Sessions */
             sessions: components["schemas"]["TemplateSession"][];
             week_type: components["schemas"]["WeekTypeRef"];
+        };
+        /** ThreadRow */
+        ThreadRow: {
+            athlete: components["schemas"]["AthleteRef"];
+            /**
+             * Last At
+             * Format: date-time
+             */
+            last_at: string;
+            /** Last Body */
+            last_body: string;
+            /** Last From */
+            last_from: string;
+            /** Unread */
+            unread: number;
         };
         /** TodayItem */
         TodayItem: {
@@ -8044,6 +8080,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Editor"];
+                };
+            };
+        };
+    };
+    apps_messaging_api_threads: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThreadRow"][];
                 };
             };
         };
