@@ -93,3 +93,17 @@ def test_a_double_tap_on_a_habit_is_harmless(athlete):
     today = athlete.today()
     assert at_once(lambda: habits.toggle(Habit.objects.get(pk=habit.pk), today), times=2) == []
     assert not habit.logs.exists()  # on, then off
+
+
+def test_parallel_video_uploads_respect_the_cap(athlete, gym):
+    # M22: four uploads started at once for one exercise; at most three get a place.
+    from apps.workouts import form_videos
+    from apps.workouts.models import FormVideo, SessionExercise
+
+    log = SessionLog.objects.create(athlete=athlete, date=athlete.today())
+    se = SessionExercise.objects.create(session_log=log, exercise=ex(gym, "sn"), exercise_name="Snatch")
+    errors = at_once(
+        lambda: form_videos.start_upload(SessionExercise.objects.get(pk=se.pk), 1000, "video/mp4")
+    )
+    assert FormVideo.objects.count() == 3
+    assert [type(e).__name__ for e in errors] == ["VideoRefused"]

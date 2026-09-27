@@ -27,9 +27,15 @@ def email(provider, key):
     return backend, {setting: key, "REQUESTS_TIMEOUT": EMAIL_TIMEOUT}
 
 
-def production_problems(*, email_provider, from_email, site_url):
+def production_problems(
+    *, email_provider, from_email, site_url, review_email="", review_code="", demo_code=""
+):
     """What's wrong with a production configuration, as sentences (empty when fine)."""
     problems = []
+    if demo_code:
+        problems.append("fixed demo sign-in codes are for development only")
+    if review_code and (not review_email or not (review_code.isdigit() and len(review_code) == 6)):
+        problems.append("REVIEW_ACCOUNT_CODE needs REVIEW_ACCOUNT_EMAIL and six digits")
     if not email_provider:
         problems.append('set EMAIL_PROVIDER (resend, postmark, or "console" to send no email)')
     elif email_provider != "console" and "localhost" in from_email:

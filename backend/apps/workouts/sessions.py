@@ -12,6 +12,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.accounts import units
+from apps.core import errors
 from apps.core import models as core
 from apps.programs.models import LoadBasis
 from apps.programs.prescriptions import layout
@@ -27,19 +28,19 @@ MAX_RIR = 5  # 5 means "5 or more"
 MAX_COMMENT = 2000
 
 
-class SessionClosed(Exception):
+class SessionClosed(errors.Conflict):
     """Finished more than 24 hours ago: the log can't change any more."""
 
 
-class InvalidSet(Exception):
+class InvalidSet(errors.Invalid):
     """A set with numbers out of range."""
 
 
-class InvalidFinish(Exception):
+class InvalidFinish(errors.Invalid):
     """A session RPE outside 1-10, or an overlong comment."""
 
 
-class NotYetUnlocked(Exception):
+class NotYetUnlocked(errors.Conflict):
     """A planned session opens on its day; `date` says when."""
 
     def __init__(self, date):
@@ -238,7 +239,7 @@ def step_done(step):
 def check_warmup(se, checked):
     """Tick or untick a warm-up drill while the session can still change."""
     if not se.warmup:
-        raise ValueError("Only warm-up drills are ticked off; lifts log sets.")
+        raise errors.Invalid("Only warm-up drills are ticked off; lifts log sets.")
     _open(se.session_log)
     se.checked_at = timezone.now() if checked else None
     se.save(update_fields=["checked_at"])

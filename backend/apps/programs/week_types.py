@@ -7,6 +7,7 @@ every model that points at WeekType, so new ones are covered automatically."""
 from django.db import transaction
 from django.db.models import Max
 
+from apps.core import errors
 from apps.exercises import services as library
 
 from .models import HEX_COLOUR, WeekType
@@ -16,7 +17,7 @@ DESCRIPTION_LENGTH = WeekType._meta.get_field("description").max_length
 DEFAULT_COLOUR = "#6B7280"
 
 
-class InvalidWeekType(Exception):
+class InvalidWeekType(errors.Invalid):
     """With the message to show."""
 
 
@@ -89,7 +90,7 @@ def save_pending_edits(gym, post):
 
 @transaction.atomic
 def move(gym, pk, direction):
-    """Swap an active week type with its neighbour. ValueError if it isn't one."""
+    """Swap an active week type with its neighbour. NotFound if it isn't one of the gym's."""
     library.move_in_order(
         list(WeekType.objects.select_for_update().filter(gym=gym, archived=False)), pk, direction
     )

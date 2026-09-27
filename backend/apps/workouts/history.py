@@ -97,8 +97,9 @@ def duration_text(seconds):
     return f"{seconds} s"
 
 
-def _entries(athlete, exercise_ids=None, exclude_log=None):
-    """Every exercise the athlete did in a finished session, newest first."""
+def _entries(athlete, exercise_ids=None, exclude_log=None, since=None):
+    """Every exercise the athlete did in a finished session, newest first; from `since` only
+    when given (a coach the athlete hides earlier history from: accounts.coaching)."""
     sets = (
         SetLog.objects.filter(
             done=True,
@@ -110,6 +111,8 @@ def _entries(athlete, exercise_ids=None, exclude_log=None):
             "-session_exercise__session_log__date", "-session_exercise__session_log__started_at", "set_number"
         )
     )
+    if since is not None:
+        sets = sets.filter(session_exercise__session_log__date__gte=since)
     if exercise_ids is not None:
         sets = sets.filter(session_exercise__exercise_id__in=exercise_ids)
     if exclude_log is not None:
@@ -131,10 +134,10 @@ def _entries(athlete, exercise_ids=None, exclude_log=None):
     return list(entries.values())  # dicts keep insertion order: newest first
 
 
-def exercise_history(athlete, exercise_ids=None, exclude_log=None, limit=10):
+def exercise_history(athlete, exercise_ids=None, exclude_log=None, limit=10, since=None):
     """{exercise_id: [Entry, ...]} newest first, at most `limit` each."""
     history = {}
-    for entry in _entries(athlete, exercise_ids, exclude_log):
+    for entry in _entries(athlete, exercise_ids, exclude_log, since):
         if entry.exercise_id is None:
             continue
         items = history.setdefault(entry.exercise_id, [])
@@ -174,10 +177,10 @@ def last_line(entry, unit, today):
 # ---------------------------------------------------------------- PRs
 
 
-def lifetime_prs(athlete):
+def lifetime_prs(athlete, since=None):
     """Per loaded exercise: heaviest set and best e1RM with their dates, most recent PR first."""
     best = {}
-    for entry in reversed(_entries(athlete)):  # oldest first, so ties keep the first time
+    for entry in reversed(_entries(athlete, since=since)):  # oldest first, so ties keep the first time
         if entry.exercise_id is None:
             continue
         top = entry.top
@@ -199,7 +202,7 @@ def lifetime_prs(athlete):
     return sorted(items, key=lambda p: (p["date"], p["name"]), reverse=True)
 
 
-def pr_session_exercises(athlete):
+def pr_session_exercises(athlete, since=None):
     """SessionExercise ids whose top set beat every earlier logged set of that exercise
     and the working max recorded before it. The first time doing a lift is not a PR
     unless it beats a recorded max."""
@@ -207,7 +210,7 @@ def pr_session_exercises(athlete):
     for m in athlete.maxes.filter(set_log__isnull=True).order_by("date", "id"):
         maxes.setdefault(m.exercise_id, []).append(m)
     best, prs = {}, set()
-    for entry in reversed(_entries(athlete)):
+    for entry in reversed(_entries(athlete, since=since)):
         top = entry.top
         if entry.exercise_id is None or not top or not top.load_kg:
             continue

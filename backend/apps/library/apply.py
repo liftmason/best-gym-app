@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from django.db import transaction
 from django.db.models import F
 
+from apps.core import errors
 from apps.core import models as core
 from apps.exercises.models import Exercise
 from apps.programs import services as program_services
@@ -37,7 +38,7 @@ WEEK = datetime.timedelta(days=7)
 RECENT, DEFAULTS = "recent", "default"
 
 
-class CannotApply(Exception):
+class CannotApply(errors.Conflict):
     pass
 
 
@@ -125,10 +126,6 @@ class Placement:
     moved: list = field(default_factory=list)  # weeks with work that move after the new ones
 
 
-def _has_work(week):
-    return ProgramSession.objects.filter(day__week=week).exists()
-
-
 def placements(athlete):
     today = athlete.today()
     gym = athlete.gym
@@ -137,6 +134,10 @@ def placements(athlete):
     program = athlete.programs.active().first()
     if program:
         weeks = list(program.weeks.select_related("week_type"))
+        # Which weeks have sessions, in one query (audit H7: it was one per later week, per week).
+        worked = set(
+            ProgramSession.objects.filter(day__week__program=program).values_list("day__week_id", flat=True)
+        )
         if weeks and weeks[-1].end_date >= this_week:
             last = weeks[-1]
             options.append(
@@ -152,11 +153,11 @@ def placements(athlete):
             if week.start_date <= today:
                 continue
             later = weeks[i:]
-            work = [w for w in later if _has_work(w)]
-            empty = [w for w in later if w not in work]
+            work = [w for w in later if w.pk in worked]
+            empty = [w for w in later if w.pk not in worked]
             label = (
                 f"Insert before {week.label} (it moves later)"
-                if _has_work(week)
+                if week.pk in worked
                 else f"Start at {week.label} (empty — replaced)"
             )
             options.append(

@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "anymail",
+    "corsheaders",
     "apps.core",
     "apps.accounts",
     "apps.exercises",
@@ -33,12 +34,15 @@ INSTALLED_APPS = [
     "apps.messaging",
     "apps.dashboard",
     "apps.ratelimit",
+    "apps.signin",
+    "apps.api",
 ]
 
 MIDDLEWARE = [
     "apps.dashboard.middleware.HealthCheckMiddleware",  # first: see its docstring
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -128,6 +132,21 @@ LOG_CLIENT_IP = os.environ.get("LOG_CLIENT_IP") == "1"
 # seed_demo: the password its new demo users get, and whether the demo coach is an admin.
 DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD", "demo-password-123")
 DEMO_STAFF = True
+
+# The web app calls the API from its own origin (docs/plans/S2_API.md, decision C): list it
+# here, comma-separated. Only /api/ answers cross-origin requests, with credentials so the
+# web app's refresh cookie is sent.
+CORS_ALLOWED_ORIGINS = [o.strip() for o in os.environ.get("WEB_APP_ORIGINS", "").split(",") if o.strip()]
+CORS_URLS_REGEX = r"^/api/.*$"
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = ["authorization", "content-type", "x-client"]
+
+# Sign-in codes (apps/signin). The app-review account (App Store, Play) gets a fixed code;
+# in development the seeded demo users (@DEMO_EMAIL_DOMAIN) do (local settings).
+REVIEW_ACCOUNT_EMAIL = os.environ.get("REVIEW_ACCOUNT_EMAIL", "").strip().lower()
+REVIEW_ACCOUNT_CODE = os.environ.get("REVIEW_ACCOUNT_CODE", "").strip()
+DEMO_SIGNIN_CODE = ""
+DEMO_EMAIL_DOMAIN = "ironridge.example"
 
 # Email: invites, reminders and the digest. EMAIL_PROVIDER is "resend" or "postmark" (with
 # EMAIL_API_KEY) to send for real, or blank / "console" to print email instead. Anything

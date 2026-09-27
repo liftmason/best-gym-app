@@ -63,4 +63,8 @@ NOT_SYNCED = [
     "dashboard.Notification",
     "dashboard.BugReport",
     "ratelimit.Counter",
+    "signin.LinkedIdentity",
+    "signin.EmailCode",
+    "signin.DeviceSession",
+    "signin.RefreshToken",
 ]

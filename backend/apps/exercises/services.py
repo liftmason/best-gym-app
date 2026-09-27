@@ -9,7 +9,7 @@ from django.db import transaction
 from django.db.models import Max, Q
 from django.db.models.functions import Lower
 
-from apps.core import ids
+from apps.core import errors, ids
 
 from .models import MAX_TRACKED_LIFTS, TAG_MAX_LENGTH, Category, Exercise, Measure, Tag, TrackedLift
 
@@ -18,11 +18,11 @@ TAG_NAME_LENGTH = TAG_MAX_LENGTH
 EXERCISE_NAME_LENGTH = Exercise._meta.get_field("name").max_length
 
 
-class InvalidName(Exception):
+class InvalidName(errors.Invalid):
     """With the message to show."""
 
 
-class InvalidExercise(Exception):
+class InvalidExercise(errors.Invalid):
     """With the field it's about (`field`) and the message to show."""
 
     def __init__(self, field, message):
@@ -30,11 +30,11 @@ class InvalidExercise(Exception):
         self.field = field
 
 
-class NeedsTarget(Exception):
+class NeedsTarget(errors.Invalid):
     """A category with exercises can only be deleted once they have somewhere to go."""
 
 
-class TrackingRefused(Exception):
+class TrackingRefused(errors.Invalid):
     """With the message to show."""
 
 
@@ -83,19 +83,21 @@ def save_pending_names(model, gym, post, max_length):
 
 
 def move_in_order(rows, pk, direction):
-    """Swap one row of an ordered list with its neighbour and renumber. ValueError if the row
-    isn't in the list or the direction isn't up/down."""
+    """Swap one row of an ordered list with its neighbour and renumber, in one update.
+    NotFound if the row isn't in the list (someone else's); Invalid for a direction other
+    than up or down."""
+    keys = [r.pk for r in rows]
+    if pk not in keys:  # whose it is before anything else: not found, not "invalid"
+        raise errors.NotFound()
     if direction not in ("up", "down"):
-        raise ValueError(direction)
-    ids = [r.pk for r in rows]
-    i = ids.index(pk)
+        raise errors.Invalid(f"Move up or down, not {direction!r}.")
+    i = keys.index(pk)
     j = i - 1 if direction == "up" else i + 1
     if 0 <= j < len(rows):
         rows[i], rows[j] = rows[j], rows[i]
         for order, row in enumerate(rows):
-            if row.order != order:
-                row.order = order
-                row.save(update_fields=["order"])
+            row.order = order
+        type(rows[0]).objects.bulk_update(rows, ["order"])
 
 
 # ---------------------------------------------------------------- exercises

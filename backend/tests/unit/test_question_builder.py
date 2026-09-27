@@ -78,7 +78,7 @@ def test_one_owners_questions_are_not_anothers(gym, athlete, coach):
     q = questions.add(athlete, QuestionType.TEXT)
     with pytest.raises(CheckinQuestion.DoesNotExist):
         questions.get(gym, q.pk)
-    with pytest.raises(ValueError):
+    with pytest.raises(CheckinQuestion.DoesNotExist):  # someone else's: not found
         questions.move(AthleteFactory(coach=coach), q.pk, "up")
 
 

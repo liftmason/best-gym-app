@@ -13,6 +13,7 @@ from decimal import Decimal, InvalidOperation
 from django.db import transaction
 
 from apps.accounts import units
+from apps.core import errors
 
 from .models import LoadBasis
 from .prescriptions import keep_warmups_first, parse_rep_scheme, parse_rir
@@ -44,7 +45,7 @@ FIELDS = [
 ]
 
 
-class InvalidDose(Exception):
+class InvalidDose(errors.Invalid):
     def __init__(self, errors):
         super().__init__(errors)
         self.errors = errors  # {field or None: message}
@@ -159,6 +160,37 @@ def validate(raw, unit):
                 }
             )
     return dose
+
+
+def _shown(value, basis, unit):
+    """A stored load as the coach types it: a weight in their unit, % and RPE as they are."""
+    if value is None:
+        return ""
+    shown = units.from_kg(value, unit) if basis == LoadBasis.WEIGHT else value
+    return format(shown.normalize(), "f")
+
+
+def values(rx, unit):
+    """A Prescription's or TemplateSlot's dose as `validate` takes it (weights in `unit`, RIR
+    as "2" or "1-2"), so an editor can show it and send it back unchanged."""
+    overrides = list(rx.set_overrides.all())
+    return {
+        "sets": rx.sets,
+        "rep_scheme": rx.rep_scheme,
+        "load_basis": rx.load_basis,
+        "load_value": _shown(rx.load_value, rx.load_basis, unit),
+        "rir": "" if rx.rir is None else f"{rx.rir}-{rx.rir_max}" if rx.rir_max is not None else str(rx.rir),
+        "note": rx.note,
+        "warmup": rx.warmup,
+        "section": rx.section,
+        "section_note": rx.section_note,
+        "superset": rx.superset,
+        "custom_fields": list(rx.custom_fields or []),
+        "vary": bool(overrides),
+        "set_rows": [
+            {"reps": o.rep_scheme, "load": _shown(o.load_value, rx.load_basis, unit)} for o in overrides
+        ],
+    }
 
 
 @transaction.atomic

@@ -3,6 +3,7 @@ that looks wrong, or something else; the coach resolves it. Each report alerts t
 
 from django.utils import timezone
 
+from apps.core import errors
 from apps.dashboard import alerts
 
 from .models import IssueKind, IssueReport
@@ -10,7 +11,7 @@ from .models import IssueKind, IssueReport
 MAX_TEXT = 2000
 
 
-class InvalidIssue(Exception):
+class InvalidIssue(errors.Invalid):
     pass
 
 

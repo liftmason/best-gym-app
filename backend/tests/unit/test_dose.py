@@ -138,3 +138,43 @@ def test_apply_works_on_template_slots(coach, gym):
     dose.apply(slot, valid(sets=5, rep_scheme="2", load_basis="percent", load_value="80", rir="1"))
     slot.refresh_from_db()
     assert (slot.sets, slot.reps, slot.load_value, slot.rir) == (5, 2, Decimal("80"), 1)
+
+
+def test_a_dose_shown_for_editing_comes_back_unchanged(athlete, coach, gym):
+    # The API's editor shows dose.values and sends them back: nothing may drift (a weight in
+    # pounds, RIR ranges, per-set rows).
+    from decimal import Decimal
+
+    from apps.programs import dose as dose_rules
+    from apps.programs import services as program_services
+    from apps.programs.models import WeekType
+
+    from ..conftest import ex
+
+    week_type = WeekType.objects.get(gym=gym, name="Accumulation")
+    program = program_services.start_program(athlete, "P", athlete.today(), 1, week_type, by=coach.user)
+    rx = program_services.add_prescription(program.weeks.get().days.first(), ex(gym, "bsq"), athlete)
+    raw = {
+        "sets": 3,
+        "rep_scheme": "5",
+        "load_basis": "weight",
+        "load_value": "225",
+        "rir": "1-2",
+        "note": "Pause",
+        "custom_fields": [{"key": "Tempo", "value": "3-1-0"}],
+        "vary": True,
+        "set_rows": [
+            {"reps": "5", "load": "215"},
+            {"reps": "5", "load": "225"},
+            {"reps": "3", "load": "235"},
+        ],
+    }
+    dose_rules.apply(rx, dose_rules.validate(raw, "lb"))
+    rx.refresh_from_db()
+    before = (rx.load_value, rx.rir, rx.rir_max, [o.load_value for o in rx.set_overrides.all()])
+    shown = dose_rules.values(rx, "lb")
+    assert shown["load_value"] == "225" and shown["rir"] == "1-2" and shown["set_rows"][2]["load"] == "235"
+    dose_rules.apply(rx, dose_rules.validate(shown, "lb"))
+    rx.refresh_from_db()
+    assert (rx.load_value, rx.rir, rx.rir_max, [o.load_value for o in rx.set_overrides.all()]) == before
+    assert rx.load_value == Decimal("102.06")

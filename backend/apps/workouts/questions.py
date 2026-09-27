@@ -5,6 +5,8 @@ it, so past answers keep their question."""
 from django.db import transaction
 from django.db.models import Max
 
+from apps.core import errors
+
 from .models import CheckinQuestion, QuestionType, copy_defaults_to
 
 MAX_OPTIONS = 12
@@ -19,7 +21,7 @@ NEW_QUESTION = {
 }
 
 
-class InvalidQuestion(Exception):
+class InvalidQuestion(errors.Invalid):
     pass
 
 
@@ -93,14 +95,17 @@ def move(owner, question_id, direction):
     """Swap a question with its neighbour ("up" or "down"); renumbers the list."""
     questions = list(active(owner).select_for_update())
     ids = [q.pk for q in questions]
-    i = ids.index(question_id)  # ValueError if it isn't the owner's
+    if question_id not in ids:  # whose it is before anything else: not found, not "invalid"
+        raise CheckinQuestion.DoesNotExist()
+    if direction not in ("up", "down"):
+        raise InvalidQuestion("Move a question up or down.")
+    i = ids.index(question_id)
     j = i - 1 if direction == "up" else i + 1
     if 0 <= j < len(questions):
         questions[i], questions[j] = questions[j], questions[i]
         for order, q in enumerate(questions):
-            if q.order != order:
-                q.order = order
-                q.save(update_fields=["order"])
+            q.order = order
+        CheckinQuestion.objects.bulk_update(questions, ["order"])
 
 
 def add_option(question, option):

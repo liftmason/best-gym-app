@@ -7,6 +7,7 @@ import zoneinfo
 
 from django.db import transaction
 
+from apps.core import errors
 from apps.exercises.starter import PACKS, install_pack
 from apps.workouts.models import install_default_questions
 
@@ -14,11 +15,11 @@ from . import coaching
 from .models import Coach, Gym, GymRole, MaxUpdates, Units, User, WeekStart
 
 
-class AccountExists(Exception):
+class AccountExists(errors.Conflict):
     """Someone already has an account with this email (emails match regardless of case)."""
 
 
-class InvalidAccount(Exception):
+class InvalidAccount(errors.Invalid):
     """With the message to show (a weak password, a missing or overlong name)."""
 
 
@@ -56,13 +57,13 @@ def sign_up_coach(*, name, email, gym_name, units, starter, timezone, password=N
     """A new coach with their own gym: the chosen starter pack, the default check-in
     questions, and the gym's zone from the coach's device (UTC if it isn't a real zone)."""
     if units not in Units.values:
-        raise ValueError(f"Unknown units: {units!r}")
+        raise InvalidAccount(f"Unknown units: {units!r}")
     name = check_new_account(name, email, password)
     gym_name = " ".join((gym_name or "").split())
     if not gym_name or len(gym_name) > MAX_GYM_NAME:
         raise InvalidAccount(f"Enter a gym name of up to {MAX_GYM_NAME} characters.")
     if starter not in PACKS:
-        raise ValueError(f"Unknown starter pack: {starter!r}")
+        raise InvalidAccount(f"Unknown starter pack: {starter!r}")
     if email_taken(email):
         raise AccountExists(email)
     tz = valid_timezone(timezone, "UTC")
@@ -78,13 +79,13 @@ def sign_up_coach(*, name, email, gym_name, units, starter, timezone, password=N
 def set_units(athlete, value):
     """Kilograms or pounds in the athlete's own app (loads are stored in kg either way)."""
     if value not in Units.values:
-        raise ValueError(f"Unknown units: {value!r}")
+        raise errors.Invalid(f"Unknown units: {value!r}")
     athlete.units = value
     athlete.save(update_fields=["units"])
     return athlete
 
 
-class InvalidSettings(Exception):
+class InvalidSettings(errors.Invalid):
     """With the message to show."""
 
 
@@ -113,12 +114,36 @@ def update_gym_settings(coach, *, gym_name, coach_title, digest, timezone, units
     return coach
 
 
+def update_profile(user, *, name=None, timezone=None):
+    """A person's own name and time zone ("today" for an athlete is worked out in it)."""
+    fields = []
+    if name is not None:
+        user.name = check_new_account(name, user.email)
+        fields.append("name")
+    if timezone is not None:
+        if timezone not in zoneinfo.available_timezones():
+            raise InvalidAccount("Pick a real time zone.")
+        user.timezone = timezone
+        fields.append("timezone")
+    if fields:
+        user.save(update_fields=fields)
+    return user
+
+
+def set_hide_history(athlete, hide):
+    """Whether a new coach sees training from before their coaching link started
+    (accounts.coaching.visible_from)."""
+    athlete.hide_history_before_link = bool(hide)
+    athlete.save(update_fields=["hide_history_before_link"])
+    return athlete
+
+
 def set_max_updates(athlete, value):
     """Whether session PRs update the athlete's maxes automatically or wait for the coach."""
     from apps.dashboard import alerts
 
     if value not in MaxUpdates.values:
-        raise ValueError(f"Unknown choice: {value!r}")
+        raise errors.Invalid(f"Unknown choice: {value!r}")
     athlete.max_updates = value
     athlete.save(update_fields=["max_updates"])
     alerts.sync_prs(athlete)

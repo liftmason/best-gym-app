@@ -20,11 +20,12 @@ of silently cascading.
 from django.db import transaction
 
 from apps.accounts.models import MaxEntry
+from apps.core import errors
 
 from .models import Exercise, TrackedLift
 
 
-class CannotDelete(Exception):
+class CannotDelete(errors.Conflict):
     pass
 
 

@@ -8,11 +8,12 @@ does a batch in three queries (audit M15).
 """
 
 import uuid
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from django.db import transaction
 from django.db.models import F, Max
 
+from apps.core import errors
 from apps.programs.models import LoadBasis, WeekType
 from apps.programs.prescriptions import COPIED_FIELDS, keep_warmups_first, new_dose
 
@@ -27,7 +28,7 @@ from .models import (
 )
 
 
-class InvalidTemplate(Exception):
+class InvalidTemplate(errors.Invalid):
     """With the message to show."""
 
 
@@ -260,10 +261,9 @@ def move_slot(slot, target, index):
     index = max(0, min(index, len(siblings)))
     siblings.insert(index, slot)
     slot.session = target
-    slot.save(update_fields=["session"])
     for order, item in enumerate(siblings):
-        if item.order != order:
-            TemplateSlot.objects.filter(pk=item.pk).update(order=order)
+        item.order = order
+    TemplateSlot.objects.bulk_update(siblings, ["session", "order"])
     keep_warmups_first(target)
     if old.pk != target.pk:
         _renumber(old.slots.all())
@@ -482,7 +482,10 @@ def check_points(points):
     """A bump for percentage loads when adding a week: -50 to +50 points, or none."""
     if points in (None, ""):
         return None
-    points = Decimal(str(points))
+    try:
+        points = Decimal(str(points))
+    except InvalidOperation:
+        raise InvalidTemplate("Bump percentages by a number of points, e.g. 2.5.") from None
     if not -MAX_POINTS <= points <= MAX_POINTS:
         raise InvalidTemplate("Bump percentages by -50 to +50 points.")
     return points
@@ -494,6 +497,13 @@ def set_week_type(week, week_type):
         raise InvalidTemplate("Pick one of your week types.")
     week.week_type = week_type
     week.save(update_fields=["week_type"])
+    return week
+
+
+def set_focus_note(week, note):
+    """The template week's focus note (copied to the athlete's week when applied)."""
+    week.focus_note = (note or "").strip()[:MAX_NOTE]
+    week.save(update_fields=["focus_note"])
     return week
 
 

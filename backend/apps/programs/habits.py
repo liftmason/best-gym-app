@@ -14,6 +14,7 @@ import datetime
 from django.db import transaction
 from django.utils import timezone
 
+from apps.core import errors
 from apps.core import models as core
 
 from .models import Habit, HabitLog, ProgramDay
@@ -140,7 +141,7 @@ def for_day(athlete, date):
     return items
 
 
-class CannotTick(Exception):
+class CannotTick(errors.Invalid):
     pass
 
 
@@ -163,7 +164,7 @@ EMOJI = ["🍎", "😴", "💧", "🧘", "🚶", "🥩", "🥗", "⚖️", "💪
 MAX_NAME, MAX_NOTE = 80, 120
 
 
-class InvalidHabit(Exception):
+class InvalidHabit(errors.Invalid):
     """With the message to show."""
 
 

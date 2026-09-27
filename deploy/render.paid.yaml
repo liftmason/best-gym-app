@@ -16,6 +16,14 @@ envVarGroups:
       # Error reporting: the DSN of a Sentry project (blank leaves it off).
       - key: SENTRY_DSN
         sync: false
+      # The web app's address(es), comma-separated, allowed to call the API from a browser.
+      - key: WEB_APP_ORIGINS
+        sync: false
+      # The App Store / Play review account's fixed sign-in code (six digits); blank: none.
+      - key: REVIEW_ACCOUNT_EMAIL
+        sync: false
+      - key: REVIEW_ACCOUNT_CODE
+        sync: false
       - key: PYTHON_VERSION
         value: 3.14.7
 

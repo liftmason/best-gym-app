@@ -1,5 +1,7 @@
 """Bug reports from the "Report a bug" button in both apps; read in the Django admin."""
 
+from apps.core import errors
+
 from .models import BugReport
 
 MAX_DESCRIPTION = 4000
@@ -8,7 +10,7 @@ MAX_SCREEN = 40
 MAX_USER_AGENT = 400
 
 
-class InvalidReport(Exception):
+class InvalidReport(errors.Invalid):
     pass
 
 
