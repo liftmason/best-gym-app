@@ -11,7 +11,10 @@ yesterday (TICKABLE_DAYS).
 
 import datetime
 
+from django.db import transaction
 from django.utils import timezone
+
+from apps.core import models as core
 
 from .models import Habit, HabitLog, ProgramDay
 
@@ -119,7 +122,10 @@ class CannotTick(Exception):
     pass
 
 
+@transaction.atomic
 def toggle(habit, date):
+    """Tick or untick a day. Taps run one at a time: a double tap is on, then off."""
+    core.lock(habit)
     today = habit.athlete.today()
     if not today - (TICKABLE_DAYS - 1) * DAY <= date <= today:
         raise CannotTick("Only today and yesterday can be ticked.")

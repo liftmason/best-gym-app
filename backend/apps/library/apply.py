@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from django.db import transaction
 from django.db.models import F
 
+from apps.core import models as core
 from apps.exercises.models import Exercise
 from apps.programs import services as program_services
 from apps.programs.models import Prescription, ProgramDay, ProgramSession, ProgramWeek
@@ -196,6 +197,7 @@ def _write_week(program, order, start_date, planned, publish):
 def confirm(athlete, template, days, mode, placement_value, publish, by):
     """Write the planned weeks and prescribe the template's habits (skipping ones the
     athlete already has); returns (program, first new week, habits added)."""
+    core.lock(athlete)  # one program change at a time per athlete (audit M7)
     planned = plan(template, athlete, days, mode)
     if not planned:
         raise CannotApply(

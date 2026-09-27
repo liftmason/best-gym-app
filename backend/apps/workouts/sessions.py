@@ -12,6 +12,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.accounts import units
+from apps.core import models as core
 from apps.programs.models import LoadBasis
 from apps.programs.prescriptions import layout
 
@@ -49,6 +50,15 @@ class NotYetUnlocked(Exception):
 def _open(log):
     if not log.editable():
         raise SessionClosed()
+
+
+def _locked(log):
+    """Lock the log's row and re-read it, so a double submit or a retried request waits for
+    the first and then sees what it wrote (audit H13). Checks it's still editable."""
+    core.lock(log)
+    log.refresh_from_db()
+    _open(log)
+    return log
 
 
 def _dec(value):
@@ -316,7 +326,9 @@ def log_set(se, number, *, load=None, reps=None, time=None, time_unit="s", rir=N
     )
 
 
+@transaction.atomic
 def save_set(se, set_number, *, load_kg, reps, duration_seconds, rir, done):
+    log = _locked(se.session_log)
     row, _ = SetLog.objects.update_or_create(
         session_exercise=se,
         set_number=set_number,
@@ -328,7 +340,6 @@ def save_set(se, set_number, *, load_kg, reps, duration_seconds, rir, done):
             "done": done,
         },
     )
-    log = se.session_log
     if log.finished:
         prs.apply(log)  # an edit within the 24 hours can change what the session set
     return row
@@ -338,7 +349,7 @@ def save_set(se, set_number, *, load_kg, reps, duration_seconds, rir, done):
 def finish(log, rpe, comment=""):
     """Finish (or, within 24 hours, change) a session: RPE 1-10 and an optional comment.
     Session PRs are worked out again from the logged sets."""
-    _open(log)
+    _locked(log)
     try:
         rpe = int(rpe)
     except TypeError, ValueError:

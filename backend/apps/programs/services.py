@@ -13,6 +13,8 @@ from django.db import transaction
 from django.db.models import F, Max, Q
 from django.utils import timezone
 
+from apps.core import models as core
+
 from . import undo
 from .models import PrescribedSet, Prescription, Program, ProgramDay, ProgramSession, ProgramWeek
 from .prescriptions import default_dose, keep_warmups_first
@@ -162,6 +164,7 @@ def _create_week(program, order, week_type):
 def start_program(athlete, name, first_day, weeks, week_type, by):
     """Start a new program; the athlete's current one ends and is kept for history.
     `first_day` is snapped back to the gym's week-start day."""
+    core.lock(athlete)  # program changes for one athlete run one at a time (audit M7)
     start = athlete.gym.week_start_for(first_day)
     athlete.programs.active().update(active=False, ended_at=timezone.now())
     program = Program.objects.create(athlete=athlete, name=name, start_date=start, created_by=by)
@@ -180,6 +183,7 @@ def _shift_weeks(program, from_order, by_weeks):
 
 @transaction.atomic
 def add_week(program, week_type):
+    core.lock(program.athlete)
     next_order = (program.weeks.aggregate(m=Max("order"))["m"] if program.weeks.exists() else -1) + 1
     return _create_week(program, next_order, week_type)
 
@@ -188,6 +192,7 @@ def add_week(program, week_type):
 def duplicate_week(week):
     """Insert a copy right after `week`; later weeks shift a week later. The copy is
     unpublished, so the coach can review it before the athlete sees it."""
+    core.lock(week.program.athlete)
     if _has_logs(week.program, week.order + 1):
         raise HasLoggedSessions("Later weeks have logged sessions, so they can't move back a week.")
     _shift_weeks(week.program, week.order + 1, 1)
@@ -242,6 +247,7 @@ def _copy_prescription(rx, session):
 @transaction.atomic
 def delete_week(week):
     """Delete a week; every later week moves a week earlier so there's no gap."""
+    core.lock(week.program.athlete)
     program, order = week.program, week.order
     if _has_logs(program, order):
         raise HasLoggedSessions(
