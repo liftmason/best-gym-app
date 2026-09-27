@@ -19,7 +19,13 @@ Nothing is deployed: the free-tier Render blueprint is disconnected. The offline
 
 **Sub-project 2 is done** (PR #4 for S2a; S2b on branch `s2b`; plan in `docs/plans/S2_API.md`). It covers the API at `/api/v1/`, sign-in with email codes, Apple and Google, device sessions, every coach endpoint, billing that allows everything until it's turned on, and the permission sweep.
 
-**Next step:** once S2b is merged, write the plan for sub-project 3 (the sync backend).
+**Sub-project 3 is done** (branch `s3-sync`; plan in `docs/plans/S3_SYNC.md`):
+- a trigger-fed change log, with pull on a cursor that can't skip a late commit;
+- bootstrap with 12 months of history;
+- push with the eleven actions, stored per action id;
+- schema versions, and the shared rules cases.
+
+**Next step:** once S3 is merged, write the plan for sub-project 4 (the Expo app foundation).
 
 **How to work.** Each sub-project in "Order of work" gets its own short spec (only where this document leaves real decisions open), then an implementation plan, then the build, one branch and PR per sub-project. Keep the Django service tests passing throughout; write tests before fixes for the audit items. When this document and the code disagree, raise it rather than silently diverging; update this document when a decision changes.
 
@@ -275,7 +281,7 @@ Each row is its own sub-project with a spec, a plan and a build.
 | 0 ✓ | **Done 26 September 2026.** Restructure and fresh schema: move Django to `backend/`; UUIDs; coaching and gym link tables; `athlete_id`/`gym_id` on synced tables; constraints; fresh migrations; carry the service tests over. Delete the HTML views, templates, HTMX/Alpine static files and their tests (git history and the mockup remain the reference). | M |
 | 1 ✓ | **Done 26 September 2026.** Backend hardening: the audit fixes in section 2. | S–M |
 | 2 ✓ | **Done 27 September 2026.** API and sign-in: Django Ninja; generated TypeScript types; email codes; Apple and Google; tokens and device sessions; entitlements and Stripe; the permission sweep. | L |
-| 3 | Sync backend: change-log triggers; bootstrap, pull and push; the action registry; idempotency; visibility rules. | M–L |
+| 3 ✓ | **Done 27 September 2026.** Sync backend: change-log triggers; bootstrap, pull and push; the action registry; idempotency; visibility rules. | M–L |
 | 4 | App foundation: Expo project; database layer; sync engine; sign-in screens; theme and component kit; push notification setup; web hosting headers. | L |
 | 5 | Athlete app: all training screens; offline end-to-end tests. | L |
 | 6 | Coach phone screens (scope B). | M |

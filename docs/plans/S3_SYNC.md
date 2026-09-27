@@ -58,6 +58,15 @@ changed (pull). Coaches stay online-only (the S2 API). The app half is S4–S5.
 
 ## 3. Steps
 
+**Done (27 September 2026).** As built:
+- **Decisions:** A–E accepted as recommended.
+- **Check-ins:** `checkin.finish` joins the action list (finishing or skipping the check-in), which the design's list didn't cover.
+- **Where an action happened:** each action carries the time the athlete did it (`at`). Rules about "today", like which habit days can be ticked, use that day, if it's within the last 30 days.
+- **Trimming the log:** the change log keeps 90 days. A phone with an older cursor gets 410 and bootstraps again.
+- **Sync tests:** these run with real transactions (`transaction=True`), because the cursor reads which transactions have committed.
+- **What was proved:** the late-commit test was checked to fail with a naive cursor.
+
+
 1. The change log, its triggers and their guard test; publishing and unpublishing mark their rows.
 2. Pull: scope and visibility, deletion markers, the cursor window and paging, the late-commit test, the library refetch when the athlete's gym changes.
 3. Bootstrap, the 12-month limit, older history on demand.
