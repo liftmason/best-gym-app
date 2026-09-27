@@ -19,7 +19,7 @@ Each S1 item was checked against the code after S0 (26 September).
 
 | # | Question | Recommendation | Why |
 |---|---|---|---|
-| A | **M12:** should "program runs out" count unpublished (draft) weeks? *Owner's call (open question in the design doc).* | **Count published weeks only**, and have the alert say when drafts exist ("Maya's published program ends Sunday; 2 draft weeks not yet published") | The athlete runs out of training they can see, so that's what should alert the coach. The draft note tells the coach the fix is one click. |
+| A | **M12:** should "program runs out" count unpublished (draft) weeks? **Decided 26 September: published weeks only.** | **Count published weeks only**, and have the alert say when drafts exist ("Maya's published program ends Sunday; 2 draft weeks not yet published") | The athlete runs out of training they can see, so that's what should alert the coach. The draft note tells the coach the fix is one click. |
 | B | **H9:** error reporting | Add `sentry-sdk`, switched on only when `SENTRY_DSN` is set. Creating the Sentry account waits for launch (S8). Until then, `ADMINS` gets error emails when email is configured. | Costs nothing until it's used, and nobody needs an account now. |
 | C | **H10:** when the morning digest goes out | Send once per coach per gym-local day, **any time from 7 am onwards** if it hasn't gone yet. Record the send only after the email succeeds. One coach's failure doesn't stop the others. | A missed 7 am cron run (a deploy, a crash) today loses the whole day's digest. |
 

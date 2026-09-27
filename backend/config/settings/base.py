@@ -109,9 +109,6 @@ FORM_VIDEOS = {
     "keep_days": 90,  # deleted this long after upload
 }
 
-# The database cache holds rate-limit counts (apps/ratelimit.py), shared by every web worker.
-# Its table is created by a migration (dashboard 0002_cache_table).
-CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache", "LOCATION": "cache"}}
 
 # The site's address for links in emails sent outside a request (the coach digest).
 SITE_URL = os.environ.get("SITE_URL", os.environ.get("RENDER_EXTERNAL_URL", "http://localhost:8000")).rstrip(

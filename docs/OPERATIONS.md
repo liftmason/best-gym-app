@@ -176,8 +176,10 @@ athletes' data goes in.
 
 ## Rate limits
 
-Counts live in the database cache (table `cache`, created by a migration), shared by all
-workers. Over a limit a request gets "Slow down" (429).
+Counts live in the `ratelimit_counter` table, one row per key, shared by all workers; the
+hourly cron deletes expired rows. Only the admin's sign-in is limited until the API
+(sub-project 2) re-applies the rest (`docs/plans/S0_TEST_TRIAGE.md`). Over a limit a request
+gets "Slow down" (429).
 
 | What | Limit |
 | --- | --- |
@@ -187,6 +189,7 @@ workers. Over a limit a request gets "Slow down" (429).
 | Invites | 30 per hour per coach |
 | Messages | 30 per minute per person |
 | Form-video uploads | 20 per hour per athlete |
+| Metrics reminder emails | 1 per day per athlete |
 
 ## Installing the athlete app
 
