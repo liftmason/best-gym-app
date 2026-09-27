@@ -63,6 +63,9 @@ def test_program_running_out_clears_when_weeks_are_added(coach, athlete, gym, pr
     week_type = WeekType.objects.get(gym=gym, name="Accumulation")
     week = program_services.add_week(program, week_type)
     program_services.add_prescription(week.days.last(), ex(gym, "cj"), athlete)
+    alerts.sync_athlete(athlete)  # a new week is a draft: the athlete can't see it yet
+    assert "1 draft week not yet published" in alerts.feed(coach).get(kind="program_ending").text
+    program_services.set_published(week, True)
     alerts.sync_athlete(athlete)
     assert not alerts.feed(coach).filter(kind="program_ending").exists()
 

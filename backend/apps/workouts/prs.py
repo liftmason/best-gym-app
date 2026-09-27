@@ -66,9 +66,8 @@ def apply(log):
     created = []
     if log.finished and log.athlete.max_updates == MaxUpdates.AUTO:
         for c in session_candidates(log):
-            entry = _use(log.athlete, c.set_log, MeasurementSource.SESSION)
-            alerts.max_updated(entry)
-            created.append(entry)
+            created.append(_use(log.athlete, c.set_log, MeasurementSource.SESSION))
+    alerts.max_updates(log, created)
     alerts.sync_prs(log.athlete)  # PRs waiting for the coach, in their feed
     return created
 

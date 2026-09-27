@@ -2,7 +2,7 @@
 
 Events call these as they happen: `message_sent`, `thread_read`, `issue_reported`,
 `issue_resolved`, `sync_prs` (after a session is finished or edited, and after the
-coach decides on a PR) and `max_updated`.
+coach decides on a PR) and `max_updates`.
 
 Conditions are checked by `sync_athlete` (dashboard load and the nightly job):
 a program running out within PROGRAM_WARNING_DAYS (or no program at all), missing
@@ -40,13 +40,14 @@ def notify(athlete, kind, key, text, link, reopen=True):
     now = timezone.now()
     row, created = Notification.objects.get_or_create(
         recipient=recipient,
+        athlete=athlete,
         kind=kind,
         dedupe_key=key,
-        defaults={"athlete": athlete, "text": text[:300], "link": link, "created_at": now},
+        defaults={"text": text[:300], "link": link, "created_at": now},
     )
     if created:
         return row
-    row.text, row.link, row.athlete = text[:300], link, athlete
+    row.text, row.link = text[:300], link
     if reopen:
         row.created_at, row.read_at, row.cleared_at = now, None, None
     row.save()
@@ -115,7 +116,10 @@ def video_reviewed(video):
 def video_removed(video):
     athlete = video.session_log.athlete
     Notification.objects.filter(
-        recipient=athlete.coach.user, kind=NotificationKind.VIDEO, dedupe_key=f"video:{video.pk}"
+        recipient=athlete.coach.user,
+        athlete=athlete,
+        kind=NotificationKind.VIDEO,
+        dedupe_key=f"video:{video.pk}",
     ).delete()
 
 
@@ -134,7 +138,7 @@ def sync_prs(athlete):
             f"{units.display(c.current.kg, unit)} working max. Use it, or keep the max?"
         )
         existing = Notification.objects.filter(
-            recipient=athlete.coach.user, kind=NotificationKind.PR, dedupe_key=key
+            recipient=athlete.coach.user, athlete=athlete, kind=NotificationKind.PR, dedupe_key=key
         ).first()
         notify(
             athlete,
@@ -155,29 +159,59 @@ def sync_prs(athlete):
     stale.update(cleared_at=now, read_at=now)
 
 
-def max_updated(entry):
-    """A session PR that updated a max automatically: for the coach's information."""
+def max_updates(log, entries):
+    """The maxes a session updated automatically, for the coach's information: one row per
+    session and exercise, so editing the session updates its row, and an exercise it no
+    longer sets (a typo fixed) loses its row."""
     from apps.accounts import units
 
-    athlete = entry.athlete
-    text = (
-        f"{entry.exercise.name} max updated to {units.display(entry.kg, athlete.gym.units)} from a session PR"
-    )
-    notify(athlete, NotificationKind.PR, f"auto:{entry.pk}", text, _tab(athlete, "metrics"))
+    athlete = log.athlete
+    prefix = f"auto:{log.pk}:"
+    keys = []
+    for entry in entries:
+        key = f"{prefix}{entry.exercise_id}"
+        keys.append(key)
+        kg = units.display(entry.kg, athlete.gym.units)
+        text = f"{entry.exercise.name} max updated to {kg} from a session PR"
+        existing = Notification.objects.filter(
+            recipient=athlete.coach.user, athlete=athlete, kind=NotificationKind.PR, dedupe_key=key
+        ).first()
+        reopen = existing is None or existing.text != text
+        notify(athlete, NotificationKind.PR, key, text, _tab(athlete, "metrics"), reopen=reopen)
+    if athlete.coach is not None:
+        Notification.objects.filter(
+            recipient=athlete.coach.user,
+            athlete=athlete,
+            kind=NotificationKind.PR,
+            dedupe_key__startswith=prefix,
+        ).exclude(dedupe_key__in=keys).delete()
 
 
 # ---------------------------------------------------------------- conditions
 
 
 def program_end_date(athlete):
-    """The last day with a session in the athlete's active program (None: nothing planned)."""
+    """The last day with a session in a published week of the athlete's active program
+    (None: nothing published). Draft weeks don't count: the athlete can't see them."""
     from apps.programs.models import ProgramDay
 
     program = athlete.programs.active().first()
     if program is None:
         return None, None
-    day = ProgramDay.objects.filter(week__program=program, sessions__isnull=False).order_by("-date").first()
+    day = (
+        ProgramDay.objects.filter(week__program=program, week__published=True, sessions__isnull=False)
+        .order_by("-date")
+        .first()
+    )
     return program, day.date if day else None
+
+
+def _drafts(program):
+    """ " (N draft weeks not yet published)" when the program has drafts with sessions."""
+    count = program.weeks.filter(published=False, days__sessions__isnull=False).distinct().count()
+    if not count:
+        return ""
+    return f"; {count} draft week{'s' if count != 1 else ''} not yet published"
 
 
 def _sync_program(athlete, today):
@@ -187,16 +221,23 @@ def _sync_program(athlete, today):
     if program is None:
         key, text = "none", "No program yet — build one or apply a template"
     elif last is None:
-        key, text = f"program:{program.pk}", f"“{program.name}” has no sessions yet"
+        drafts = _drafts(program)
+        key = f"program:{program.pk}"
+        text = (
+            f"“{program.name}” has nothing published yet{drafts}"
+            if drafts
+            else f"“{program.name}” has no sessions yet"
+        )
     elif last < today:
         key, text = (
             f"program:{program.pk}",
-            f"“{program.name}” ended {last:%a %-d %b} — nothing scheduled after",
+            f"“{program.name}” ended {last:%a %-d %b} — nothing scheduled after{_drafts(program)}",
         )
     elif (last - today).days < PROGRAM_WARNING_DAYS:
         days = (last - today).days
         when = "today" if days == 0 else "tomorrow" if days == 1 else f"{last:%A} ({days} days)"
-        key, text = f"program:{program.pk}", f"“{program.name}” runs out {when} — nothing scheduled after"
+        key = f"program:{program.pk}"
+        text = f"“{program.name}” runs out {when} — nothing scheduled after{_drafts(program)}"
     else:
         _remove(athlete, kind)
         return
