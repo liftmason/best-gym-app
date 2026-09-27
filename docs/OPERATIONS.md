@@ -98,6 +98,7 @@ Set these on **both** the web service and the cron job, unless marked otherwise.
 | `EMAIL_API_KEY` | | from the provider |
 | `DEFAULT_FROM_EMAIL` | `Platform <coach@yourdomain>` | a sender the provider has verified |
 | `SITE_URL` | `https://gymtrainer.onrender.com` | cron job only: the digest's links |
+| `PUSH_PROVIDER` | `expo` | set by the blueprint; see "Push notifications" |
 | `STORAGE_ENDPOINT` | `https://<account id>.r2.cloudflarestorage.com` | form videos |
 | `STORAGE_BUCKET` | `gymtrainer-videos` | |
 | `STORAGE_ACCESS_KEY` | | R2 API token's access key id |
@@ -191,12 +192,31 @@ shape.
 | Bug reports | 20 per hour per person |
 | Metrics reminder emails | 1 per day per athlete |
 
-## Installing the athlete app
+## The app (Expo)
 
-The athlete app is installable (a PWA): `/manifest.webmanifest`, a service worker at
-`/sw.js` that caches the CSS/JS and shows an offline page when there's no signal, and an
-"Install the app" card on the athlete's Home (a button on Android/Chrome; the Share → Add
-to Home Screen steps on iPhone). Sets are not queued offline yet (build plan, "Still open").
+One Expo app in `app/` for iOS, Android and the web (`app/README.md` has the commands).
+
+- **Expo project:** `spearws-team/best-gym-app` on expo.dev (the id is in `app/app.json`). Builds and store submissions go through EAS (`npx eas-cli@latest build`), once the Apple and Google developer accounts exist.
+- **Web hosting:** Cloudflare Pages serving the export (`npm run export:web`, output `app/dist/`).
+  - `app/public/_headers` sets the headers. The local database needs its cross-origin isolation headers on every page.
+  - Pages treats a site without a `404.html` as a single-page app, so links like `/join/<token>` work.
+  - Set `EXPO_PUBLIC_API_URL` to the API's address when building.
+  - Add the site's address to the API's `WEB_APP_ORIGINS`.
+- **Trying the export locally:** `npm run serve:web` serves `dist/` on :8082 with the same headers.
+
+## Push notifications
+
+The API sends pushes through Expo's push service: athletes hear of coach messages and published weeks; coaches of athlete messages, issues and form videos. Every push also makes the app sync.
+
+| Variable | Notes |
+| --- | --- |
+| `PUSH_PROVIDER` | `expo` to send; `console` logs them. Production refuses to start without it (the blueprint sets `expo`). |
+| `EXPO_ACCESS_TOKEN` | only if the Expo project turns on "enhanced push security" |
+
+- **Needs a build:** pushes reach phones running a build of our app, not Expo Go on Android.
+- **Android:** it also needs Firebase (FCM) credentials uploaded to the Expo project.
+- **iOS:** it needs the Apple push key, which EAS sets up during the first iOS build.
+- **Failures:** a failed push is logged and never fails the request. A token Expo reports as gone is forgotten.
 
 ## Sign in with Apple and Google
 
@@ -225,6 +245,6 @@ A failed payment gives the gym 7 days of full access, then coach programming is 
 
 **The change log.** Every write to a synced table adds a row to `sync_change`, through a Postgres trigger. The hourly cron deletes rows older than 90 days. A phone that hasn't synced for that long downloads everything again.
 
-**Schema version.** The sync endpoints need `X-Schema-Version` to be the current version (`SCHEMA_VERSION` in `apps/sync/api.py`) or the one before. Bump it, with a note in the release, when a synced table changes shape.
+**Schema version.** The sync endpoints need `X-Schema-Version` to be the current version (`SCHEMA_VERSION` in `apps/sync/schema.py`) or the one before. Bump it, with a note in the release, when a synced table changes shape. The phone's tables come from `shared/sync-schema.json` (`manage.py sync_schema`, then `npm run db:schema` in `app/`); a phone on the new version drops its copy and downloads it again, keeping what it hasn't sent.
 
 **Checking a trigger.** A new synced table needs its trigger (a migration calling `apps.sync.triggers.install` for it); a test fails until it has one.
