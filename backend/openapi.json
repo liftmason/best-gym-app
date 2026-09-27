@@ -610,6 +610,19 @@
         "title": "Checkin",
         "type": "object"
       },
+      "CheckoutIn": {
+        "properties": {
+          "plan_code": {
+            "title": "Plan Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan_code"
+        ],
+        "title": "CheckoutIn",
+        "type": "object"
+      },
       "Choices": {
         "properties": {
           "days": {
@@ -2770,6 +2783,32 @@
             "title": "Code",
             "type": "string"
           },
+          "form_videos": {
+            "title": "Form Videos",
+            "type": "boolean"
+          },
+          "max_athletes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Athletes"
+          },
+          "max_coaches": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Coaches"
+          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -2777,7 +2816,10 @@
         },
         "required": [
           "code",
-          "name"
+          "name",
+          "max_athletes",
+          "max_coaches",
+          "form_videos"
         ],
         "title": "PlanOut",
         "type": "object"
@@ -4288,6 +4330,19 @@
           "content_type"
         ],
         "title": "UploadOut",
+        "type": "object"
+      },
+      "Url": {
+        "properties": {
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "Url",
         "type": "object"
       },
       "UseSaved": {
@@ -7716,6 +7771,103 @@
         "summary": "Link Social",
         "tags": [
           "Sign-in"
+        ]
+      }
+    },
+    "/api/v1/billing/checkout": {
+      "post": {
+        "description": "A Stripe Checkout page to subscribe the gym (its owner only).",
+        "operationId": "apps_billing_api_checkout",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Url"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Checkout",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/api/v1/billing/plans": {
+      "get": {
+        "operationId": "apps_billing_api_plans",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlanOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Plans",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/api/v1/billing/portal": {
+      "post": {
+        "description": "Stripe's Customer Portal: cards, invoices, changing or cancelling the plan.",
+        "operationId": "apps_billing_api_portal",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Url"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Portal",
+        "tags": [
+          "Billing"
         ]
       }
     },

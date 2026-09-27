@@ -15,6 +15,7 @@ dependencies = [
     "django-ninja>=1.7",
     "django-cors-headers>=4.6",
     "pyjwt[crypto]>=2.9",
+    "stripe>=12",
 ]
 
 [dependency-groups]

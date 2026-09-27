@@ -159,6 +159,8 @@ GOOGLE_CLIENT_IDS = [c.strip() for c in os.environ.get("GOOGLE_CLIENT_IDS", "").
 # means setting DEFAULT_PLAN to the plan new gyms get, and the Stripe keys.
 BILLING_ENABLED = os.environ.get("BILLING_ENABLED") == "1"
 DEFAULT_PLAN = os.environ.get("DEFAULT_PLAN", "unlimited")
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
 # Email: invites, reminders and the digest. EMAIL_PROVIDER is "resend" or "postmark" (with
 # EMAIL_API_KEY) to send for real, or blank / "console" to print email instead. Anything
