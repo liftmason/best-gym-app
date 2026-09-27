@@ -7,6 +7,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, useWindowDimens
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, radius, shadows, space, Text } from '@/ui';
+import { APP_NAME } from '@/name';
 
 const WIDE = 760;
 
@@ -19,7 +20,7 @@ function Logo({ onDark }: { onDark?: boolean }) {
         </Text>
       </View>
       <Text variant="h3" tone={onDark ? 'white' : 'ink'}>
-        GymTrainer
+        {APP_NAME}
       </Text>
     </View>
   );

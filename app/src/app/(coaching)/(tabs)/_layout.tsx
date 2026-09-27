@@ -7,6 +7,7 @@ import { useMe } from '@/auth/me';
 import { WIDE } from '@/coaching/layout';
 import { useDashboard, useThreads } from '@/coaching/queries';
 import { Avatar, colors, fonts, Text } from '@/ui';
+import { APP_NAME } from '@/name';
 
 const TABS: Record<string, { label: string; wide: string; icon: keyof typeof Feather.glyphMap }> = {
   dashboard: { label: 'Today', wide: 'Dashboard', icon: 'home' },
@@ -73,7 +74,7 @@ function Bar({ state, navigation }: BottomTabBarProps) {
           <View style={styles.mark}>
             <Text style={{ color: colors.white, fontFamily: fonts.bold, fontSize: 12 }}>GT</Text>
           </View>
-          <Text variant="h4">GymTrainer</Text>
+          <Text variant="h4">{APP_NAME}</Text>
         </View>
         <View style={{ gap: 2 }}>{items.map(item)}</View>
         <View style={styles.foot}>

@@ -33,7 +33,7 @@ def test_production_needs_real_addresses():
     assert checks.production_problems(**good) == []
     assert checks.production_problems(**good | {"email_provider": ""})
     assert checks.production_problems(**good | {"site_url": "http://localhost:8000"})
-    assert checks.production_problems(**good | {"from_email": "Platform <no-reply@localhost>"})
+    assert checks.production_problems(**good | {"from_email": "Coach <no-reply@localhost>"})
     # Saying "console" on purpose is allowed (no email yet); the sender then doesn't matter.
     assert (
         checks.production_problems(**good | {"email_provider": "console", "from_email": "x@localhost"}) == []

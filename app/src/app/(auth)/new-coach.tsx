@@ -9,6 +9,7 @@ import { SignInFrame } from '@/auth/frame';
 import { Option } from '@/auth/option';
 import { signUp } from '@/auth/pending';
 import { Button, Field, Text } from '@/ui';
+import { APP_NAME } from '@/name';
 
 /** A new coach sets up their gym, for an email just verified on sign-in. */
 export default function NewCoach() {
@@ -57,7 +58,7 @@ export default function NewCoach() {
     <SignInFrame>
       <Text variant="h2">Set up your gym</Text>
       <Text variant="small" tone="muted">
-        New to GymTrainer as {pending.email}. Athletes join later through invite links.
+        New to {APP_NAME} as {pending.email}. Athletes join later through invite links.
       </Text>
       <Field label="Your name" value={name} onChangeText={setName} autoComplete="name" textContentType="name" />
       <Field label="Gym name" value={gym} onChangeText={setGym} textContentType="organizationName" />

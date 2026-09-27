@@ -9,6 +9,7 @@ import { SignInFrame } from '@/auth/frame';
 import { ME, useMe } from '@/auth/me';
 import { signOut } from '@/auth/sign-out';
 import { Button, Field, Text } from '@/ui';
+import { APP_NAME } from '@/name';
 
 /**
  * An invite link from a coach. Signed in, the account joins as it is. Otherwise the email is
@@ -31,7 +32,7 @@ export default function Join() {
         <Text variant="h2">{status === 410 ? 'This invite has been used' : "This invite link doesn't work"}</Text>
         <Text variant="small" tone="muted">
           {status === 0
-            ? "Can't reach GymTrainer. Check your connection."
+            ? `Can't reach ${APP_NAME}. Check your connection.`
             : status === 410
               ? 'It may have expired. Ask your coach to send a new one.'
               : 'Check the link, or ask your coach to send a new one.'}
@@ -47,7 +48,7 @@ export default function Join() {
     <SignInFrame>
       <Text variant="h2">Join {coach_name}</Text>
       <Text variant="small" tone="muted">
-        {coach_name} invited you to train with {gym_name} on GymTrainer.
+        {coach_name} invited you to train with {gym_name} on {APP_NAME}.
       </Text>
       {auth === 'signedIn' ? <Accept token={token} /> : <NewOrReturning token={token} email={email} />}
     </SignInFrame>

@@ -8,6 +8,7 @@
 - The web app sends `X-Client: web`; see apps/signin/api.py for its refresh cookie.
 """
 
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import Http404
@@ -31,7 +32,7 @@ class Bearer(HttpBearer):
 
 
 api = NinjaAPI(
-    title="GymTrainer API",
+    title=f"{settings.APP_NAME} API",
     version="1",
     urls_namespace="api",
     auth=Bearer(),

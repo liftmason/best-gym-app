@@ -3,6 +3,8 @@
  * tab). The tab that opens it holds a Web Lock for as long as it lives; another tab finds
  * the lock taken and says so, rather than failing somewhere inside SQLite.
  */
+import { APP_NAME } from '@/name';
+
 type Locks = {
   request(
     name: string,
@@ -15,7 +17,7 @@ export const LOCK = 'gymtrainer-database';
 
 export class OtherTab extends Error {
   constructor() {
-    super('GymTrainer is open in another tab.');
+    super(`${APP_NAME} is open in another tab.`);
     this.name = 'OtherTab';
   }
 }

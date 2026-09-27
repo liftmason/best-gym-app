@@ -6,6 +6,7 @@ import { HOME, rememberMode } from '@/auth/mode';
 import { signOut } from '@/auth/sign-out';
 import { CoachScreen } from '@/coaching/layout';
 import { Avatar, Button, Card, space, Text } from '@/ui';
+import { APP_NAME } from '@/name';
 
 /** The coach's account, and where the rest of coaching is for now. */
 export default function More() {
@@ -25,7 +26,7 @@ export default function More() {
       <Card style={{ gap: space.s }}>
         <Text variant="h4">Programming, the library and settings</Text>
         <Text variant="small" tone="muted">
-          These are on the web for now: open GymTrainer on a computer. Programming on a phone is planned.
+          These are on the web for now: open {APP_NAME} on a computer. Programming on a phone is planned.
         </Text>
       </Card>
       {me.data?.athlete ? (

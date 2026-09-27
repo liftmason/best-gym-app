@@ -11,6 +11,7 @@ import { Platform } from 'react-native';
 
 import type { Api } from '@/api/client';
 import { ok } from '@/api/errors';
+import { APP_NAME } from '@/name';
 
 export type Registered = 'registered' | 'unavailable' | 'refused';
 
@@ -30,7 +31,7 @@ export async function registerForPush(api: Api, available = pushAvailable()): Pr
   if (!available) return 'unavailable';
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(CHANNEL, {
-      name: 'GymTrainer',
+      name: APP_NAME,
       importance: Notifications.AndroidImportance.HIGH,
     });
   }

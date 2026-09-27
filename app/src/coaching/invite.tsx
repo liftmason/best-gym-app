@@ -9,12 +9,13 @@ import { dayMonth } from '@/training/format';
 import { Button, colors, Field, fonts, radius, Sheet, space, Text } from '@/ui';
 
 import { useInvites, useInviteTemplates } from './queries';
+import { APP_NAME } from '@/name';
 
 type Created = components['schemas']['InviteCreated'];
 
 async function share(link: string) {
   try {
-    await Share.share({ message: `Join me on GymTrainer: ${link}` });
+    await Share.share({ message: `Join me on ${APP_NAME}: ${link}` });
   } catch {
     await Clipboard.setStringAsync(link);
   }

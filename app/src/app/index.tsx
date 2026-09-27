@@ -8,6 +8,7 @@ import { useMe } from '@/auth/me';
 import { signOut } from '@/auth/sign-out';
 import { HOME, lastMode, modeFor, type Mode } from '@/auth/mode';
 import { Button, colors, Text } from '@/ui';
+import { APP_NAME } from '@/name';
 
 /** Signed in: /me decides coaching, training, or (with both) the mode last used. */
 export default function Index() {
@@ -32,7 +33,7 @@ export default function Index() {
     if (offline && last === 'training') return <Redirect href={HOME.training} />;
     return (
       <SignInFrame>
-        <Text variant="h2">{offline ? "Can't reach GymTrainer" : 'Something went wrong'}</Text>
+        <Text variant="h2">{offline ? `Can't reach ${APP_NAME}` : 'Something went wrong'}</Text>
         <Text variant="small" tone="muted">
           {offline ? 'Check your connection and try again.' : 'Try again in a moment.'}
         </Text>

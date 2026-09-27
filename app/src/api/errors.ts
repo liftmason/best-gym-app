@@ -2,6 +2,8 @@
  * The API's errors (`{"error": {"code", "message", "fields"}}`, see backend apps/core/errors.py)
  * as one exception for screens to show. No connection is status 0, code "offline".
  */
+import { APP_NAME } from '@/name';
+
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -18,7 +20,7 @@ export class ApiError extends Error {
   }
 
   static offline(): ApiError {
-    return new ApiError(0, 'offline', "Can't reach GymTrainer. Check your connection.");
+    return new ApiError(0, 'offline', `Can't reach ${APP_NAME}. Check your connection.`);
   }
 
   /** From an error body, or a status alone when the body isn't the API's shape. */
