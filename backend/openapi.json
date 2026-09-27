@@ -29,6 +29,31 @@
         "title": "Answer",
         "type": "object"
       },
+      "Applied": {
+        "properties": {
+          "first_week_id": {
+            "format": "uuid",
+            "title": "First Week Id",
+            "type": "string"
+          },
+          "habits_added": {
+            "title": "Habits Added",
+            "type": "integer"
+          },
+          "program_id": {
+            "format": "uuid",
+            "title": "Program Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "program_id",
+          "first_week_id",
+          "habits_added"
+        ],
+        "title": "Applied",
+        "type": "object"
+      },
       "Archived": {
         "properties": {
           "percent_users": {
@@ -307,6 +332,63 @@
         "title": "BoardOut",
         "type": "object"
       },
+      "Card": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "exercises": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Exercises",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "sessions_per_week": {
+            "title": "Sessions Per Week",
+            "type": "integer"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/Stats"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "used": {
+            "title": "Used",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name",
+          "description",
+          "sessions_per_week",
+          "stats",
+          "exercises",
+          "used",
+          "updated_at"
+        ],
+        "title": "Card",
+        "type": "object"
+      },
       "CategoryOut": {
         "properties": {
           "exercises": {
@@ -467,6 +549,49 @@
           "rpe"
         ],
         "title": "Checkin",
+        "type": "object"
+      },
+      "Choices": {
+        "properties": {
+          "days": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days"
+          },
+          "mode": {
+            "default": "recent",
+            "title": "Mode",
+            "type": "string"
+          },
+          "publish": {
+            "default": false,
+            "title": "Publish",
+            "type": "boolean"
+          },
+          "start": {
+            "default": "",
+            "title": "Start",
+            "type": "string"
+          },
+          "template_id": {
+            "format": "uuid",
+            "title": "Template Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "template_id"
+        ],
+        "title": "Choices",
         "type": "object"
       },
       "Cleared": {
@@ -816,6 +941,65 @@
         "title": "Dose",
         "type": "object"
       },
+      "Editor": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "habits": {
+            "items": {
+              "$ref": "#/components/schemas/Habit"
+            },
+            "title": "Habits",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "program_note": {
+            "title": "Program Note",
+            "type": "string"
+          },
+          "sessions_per_week": {
+            "title": "Sessions Per Week",
+            "type": "integer"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/Stats"
+          },
+          "weeks": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateWeek"
+            },
+            "title": "Weeks",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name",
+          "description",
+          "program_note",
+          "sessions_per_week",
+          "stats",
+          "weeks",
+          "habits"
+        ],
+        "title": "Editor",
+        "type": "object"
+      },
       "EmailIn": {
         "properties": {
           "email": {
@@ -1163,6 +1347,40 @@
           "week_start"
         ],
         "title": "GymOut",
+        "type": "object"
+      },
+      "Habit": {
+        "properties": {
+          "cadence": {
+            "title": "Cadence",
+            "type": "string"
+          },
+          "emoji": {
+            "title": "Emoji",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "emoji",
+          "cadence",
+          "note"
+        ],
+        "title": "Habit",
         "type": "object"
       },
       "HabitIn": {
@@ -1833,6 +2051,56 @@
         "title": "MessagesOut",
         "type": "object"
       },
+      "Meta": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "program_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Program Note"
+          },
+          "sessions_per_week": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sessions Per Week"
+          }
+        },
+        "title": "Meta",
+        "type": "object"
+      },
       "MetricIn": {
         "properties": {
           "date": {
@@ -2054,6 +2322,83 @@
         "title": "NewQuestion",
         "type": "object"
       },
+      "NewSession": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "NewSession",
+        "type": "object"
+      },
+      "NewSlot": {
+        "properties": {
+          "exercise_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exercise Id"
+          },
+          "index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Index"
+          },
+          "tag_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Tag Ids",
+            "type": "array"
+          }
+        },
+        "title": "NewSlot",
+        "type": "object"
+      },
+      "NewTemplate": {
+        "properties": {
+          "kind": {
+            "default": "program",
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "title": "NewTemplate",
+        "type": "object"
+      },
+      "NewWeek": {
+        "properties": {
+          "points": {
+            "default": "",
+            "title": "Points",
+            "type": "string"
+          }
+        },
+        "title": "NewWeek",
+        "type": "object"
+      },
       "Note": {
         "properties": {
           "note": {
@@ -2159,6 +2504,79 @@
         "title": "PendingPr",
         "type": "object"
       },
+      "Placement": {
+        "properties": {
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "label"
+        ],
+        "title": "Placement",
+        "type": "object"
+      },
+      "PlannedDay": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "exercises": {
+            "items": {
+              "$ref": "#/components/schemas/PlannedExercise"
+            },
+            "title": "Exercises",
+            "type": "array"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "session": {
+            "title": "Session",
+            "type": "string"
+          }
+        },
+        "required": [
+          "offset",
+          "date",
+          "session",
+          "exercises"
+        ],
+        "title": "PlannedDay",
+        "type": "object"
+      },
+      "PlannedExercise": {
+        "properties": {
+          "exercise": {
+            "title": "Exercise",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "tag_slot": {
+            "title": "Tag Slot",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "exercise",
+          "tag_slot",
+          "summary"
+        ],
+        "title": "PlannedExercise",
+        "type": "object"
+      },
       "PlannedSession": {
         "properties": {
           "id": {
@@ -2184,6 +2602,44 @@
           "items"
         ],
         "title": "PlannedSession",
+        "type": "object"
+      },
+      "PlannedWeek": {
+        "properties": {
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/PlannedDay"
+            },
+            "title": "Days",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "start": {
+            "format": "date",
+            "title": "Start",
+            "type": "string"
+          },
+          "week_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WeekTypeRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "label",
+          "start",
+          "week_type",
+          "days"
+        ],
+        "title": "PlannedWeek",
         "type": "object"
       },
       "Point": {
@@ -2273,6 +2729,38 @@
           "swaps"
         ],
         "title": "PrescriptionOut",
+        "type": "object"
+      },
+      "Preview": {
+        "properties": {
+          "choices": {
+            "$ref": "#/components/schemas/Choices"
+          },
+          "placements": {
+            "items": {
+              "$ref": "#/components/schemas/Placement"
+            },
+            "title": "Placements",
+            "type": "array"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Summary"
+          },
+          "weeks": {
+            "items": {
+              "$ref": "#/components/schemas/PlannedWeek"
+            },
+            "title": "Weeks",
+            "type": "array"
+          }
+        },
+        "required": [
+          "choices",
+          "placements",
+          "weeks",
+          "summary"
+        ],
+        "title": "Preview",
         "type": "object"
       },
       "ProgramOut": {
@@ -2649,6 +3137,22 @@
         "title": "RosterRow",
         "type": "object"
       },
+      "SaveIn": {
+        "properties": {
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "title": "SaveIn",
+        "type": "object"
+      },
       "SessionName": {
         "properties": {
           "name": {
@@ -2834,6 +3338,263 @@
         "title": "SetRow",
         "type": "object"
       },
+      "Slot": {
+        "properties": {
+          "exercise": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "heading": {
+            "title": "Heading",
+            "type": "string"
+          },
+          "heading_note": {
+            "title": "Heading Note",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/Ref"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "warmup": {
+            "title": "Warmup",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "exercise",
+          "tags",
+          "summary",
+          "heading",
+          "heading_note",
+          "label",
+          "warmup"
+        ],
+        "title": "Slot",
+        "type": "object"
+      },
+      "SlotIn": {
+        "properties": {
+          "default_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Id"
+          },
+          "dose": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Dose"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "exercise_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exercise Id"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "tag_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Tag Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "SlotIn",
+        "type": "object"
+      },
+      "SlotOut": {
+        "properties": {
+          "dose": {
+            "$ref": "#/components/schemas/Dose"
+          },
+          "exercise": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/Ref"
+            },
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "exercise",
+          "tags",
+          "dose",
+          "summary"
+        ],
+        "title": "SlotOut",
+        "type": "object"
+      },
+      "Source": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name"
+        ],
+        "title": "Source",
+        "type": "object"
+      },
+      "Stats": {
+        "properties": {
+          "calendar_weeks": {
+            "title": "Calendar Weeks",
+            "type": "integer"
+          },
+          "habits": {
+            "title": "Habits",
+            "type": "integer"
+          },
+          "sessions": {
+            "title": "Sessions",
+            "type": "integer"
+          },
+          "slots": {
+            "title": "Slots",
+            "type": "integer"
+          },
+          "tag_slots": {
+            "title": "Tag Slots",
+            "type": "integer"
+          },
+          "weeks": {
+            "title": "Weeks",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "weeks",
+          "sessions",
+          "slots",
+          "tag_slots",
+          "habits",
+          "calendar_weeks"
+        ],
+        "title": "Stats",
+        "type": "object"
+      },
+      "Summary": {
+        "properties": {
+          "habits": {
+            "title": "Habits",
+            "type": "integer"
+          },
+          "moved": {
+            "title": "Moved",
+            "type": "integer"
+          },
+          "new_program": {
+            "title": "New Program",
+            "type": "boolean"
+          },
+          "replaced": {
+            "title": "Replaced",
+            "type": "integer"
+          },
+          "sessions": {
+            "title": "Sessions",
+            "type": "integer"
+          },
+          "tag_slots": {
+            "title": "Tag Slots",
+            "type": "integer"
+          },
+          "weeks": {
+            "title": "Weeks",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "weeks",
+          "sessions",
+          "tag_slots",
+          "habits",
+          "replaced",
+          "moved",
+          "new_program"
+        ],
+        "title": "Summary",
+        "type": "object"
+      },
       "Swap": {
         "properties": {
           "exercise_id": {
@@ -2889,6 +3650,69 @@
           "kind"
         ],
         "title": "TemplateChoice",
+        "type": "object"
+      },
+      "TemplateSession": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slots": {
+            "items": {
+              "$ref": "#/components/schemas/Slot"
+            },
+            "title": "Slots",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slots"
+        ],
+        "title": "TemplateSession",
+        "type": "object"
+      },
+      "TemplateWeek": {
+        "properties": {
+          "focus_note": {
+            "title": "Focus Note",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "sessions": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateSession"
+            },
+            "title": "Sessions",
+            "type": "array"
+          },
+          "week_type": {
+            "$ref": "#/components/schemas/WeekTypeRef"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "week_type",
+          "focus_note",
+          "sessions"
+        ],
+        "title": "TemplateWeek",
         "type": "object"
       },
       "TodayItem": {
@@ -2991,6 +3815,37 @@
           "undone"
         ],
         "title": "Undone",
+        "type": "object"
+      },
+      "UseSaved": {
+        "properties": {
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "source_id": {
+            "format": "uuid",
+            "title": "Source Id",
+            "type": "string"
+          },
+          "template_week_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Week Id"
+          }
+        },
+        "required": [
+          "kind",
+          "source_id"
+        ],
+        "title": "UseSaved",
         "type": "object"
       },
       "VerifyIn": {
@@ -3271,17 +4126,6 @@
             ],
             "title": "Focus Note"
           },
-          "published": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Published"
-          },
           "week_type_id": {
             "anyOf": [
               {
@@ -3463,6 +4307,147 @@
         "summary": "Athlete",
         "tags": [
           "Athletes"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/apply": {
+      "post": {
+        "description": "Write the planned weeks. 409 if the chosen start isn't on offer any more (preview\nagain) or the weeks it would move have logged sessions.",
+        "operationId": "apps_library_apply_api_confirm",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Choices"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Applied"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Confirm",
+        "tags": [
+          "Apply a template"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/apply/preview": {
+      "post": {
+        "description": "What applying would add, week by week, and where it could go. Writes nothing.",
+        "operationId": "apps_library_apply_api_preview",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Choices"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preview"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Preview",
+        "tags": [
+          "Apply a template"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/apply/sources": {
+      "get": {
+        "description": "What can be applied: the gym's templates and saved weeks.",
+        "operationId": "apps_library_apply_api_sources",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Source"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Sources",
+        "tags": [
+          "Apply a template"
         ]
       }
     },
@@ -4241,6 +5226,64 @@
         ]
       }
     },
+    "/api/v1/athletes/{athlete_id}/planned-sessions/{session_id}/save": {
+      "post": {
+        "operationId": "apps_library_api_save_board_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Save Board Session",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
     "/api/v1/athletes/{athlete_id}/prescriptions/{rx_id}": {
       "delete": {
         "operationId": "apps_programs_board_api_remove_prescription",
@@ -4636,6 +5679,55 @@
         "summary": "Program Note",
         "tags": [
           "Program board"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/program/save": {
+      "post": {
+        "description": "The athlete's whole program as a template.",
+        "operationId": "apps_library_api_save_board_program",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Save Board Program",
+        "tags": [
+          "Templates"
         ]
       }
     },
@@ -5668,6 +6760,65 @@
         "summary": "Duplicate Week",
         "tags": [
           "Program board"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/weeks/{week_id}/save": {
+      "post": {
+        "description": "A week of an athlete's program as a saved week.",
+        "operationId": "apps_library_api_save_board_week",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "week_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Week Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Save Board Week",
+        "tags": [
+          "Templates"
         ]
       }
     },
@@ -7150,6 +8301,1142 @@
         "summary": "Rename Tag",
         "tags": [
           "Exercise library"
+        ]
+      }
+    },
+    "/api/v1/templates": {
+      "get": {
+        "description": "The gym's templates, saved weeks and saved sessions (or one kind of them).",
+        "operationId": "apps_library_api_library",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Kind",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Card"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Library",
+        "tags": [
+          "Templates"
+        ]
+      },
+      "post": {
+        "operationId": "apps_library_api_new_template",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewTemplate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "New Template",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}": {
+      "delete": {
+        "operationId": "apps_library_api_delete_template",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Delete Template",
+        "tags": [
+          "Templates"
+        ]
+      },
+      "get": {
+        "operationId": "apps_library_api_editor",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Editor",
+        "tags": [
+          "Templates"
+        ]
+      },
+      "patch": {
+        "operationId": "apps_library_api_update_meta",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Meta"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Update Meta",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/habits": {
+      "post": {
+        "operationId": "apps_library_api_add_habit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HabitIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Add Habit",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/habits/{template_habit_id}": {
+      "delete": {
+        "operationId": "apps_library_api_remove_habit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "template_habit_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Habit Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Remove Habit",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/saved": {
+      "get": {
+        "description": "Saved weeks (kind \"week\") or saved sessions to drop into this template.",
+        "operationId": "apps_library_api_saved",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "default": "week",
+              "title": "Kind",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Card"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Saved",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/slots/{slot_id}": {
+      "delete": {
+        "operationId": "apps_library_api_remove_slot",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slot_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Slot Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Remove Slot",
+        "tags": [
+          "Templates"
+        ]
+      },
+      "get": {
+        "operationId": "apps_library_api_slot",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slot_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Slot Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SlotOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Slot",
+        "tags": [
+          "Templates"
+        ]
+      },
+      "put": {
+        "description": "Change what the slot is (a fixed exercise, or tags with a default) and its dose.",
+        "operationId": "apps_library_api_edit_slot",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slot_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Slot Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SlotIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SlotOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Edit Slot",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/slots/{slot_id}/move": {
+      "post": {
+        "operationId": "apps_library_api_move_slot",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slot_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Slot Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Move"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Move Slot",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/template-sessions/{template_session_id}": {
+      "delete": {
+        "operationId": "apps_library_api_remove_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "template_session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Remove Session",
+        "tags": [
+          "Templates"
+        ]
+      },
+      "patch": {
+        "operationId": "apps_library_api_rename_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "template_session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionName"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Rename Session",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/template-sessions/{template_session_id}/save": {
+      "post": {
+        "operationId": "apps_library_api_save_template_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "template_session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Save Template Session",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/template-sessions/{template_session_id}/slots": {
+      "post": {
+        "operationId": "apps_library_api_add_slot",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "template_session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSlot"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Add Slot",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/use-saved": {
+      "post": {
+        "description": "Copy a saved week in as the last week, or a saved session into `template_week_id`.",
+        "operationId": "apps_library_api_use_saved",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UseSaved"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Use Saved",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/weeks": {
+      "post": {
+        "description": "A new last week: a copy of the previous one, percentages bumped by `points`.",
+        "operationId": "apps_library_api_add_week",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewWeek"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Add Week",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/weeks/{template_week_id}": {
+      "delete": {
+        "operationId": "apps_library_api_remove_week",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "template_week_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Week Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Remove Week",
+        "tags": [
+          "Templates"
+        ]
+      },
+      "patch": {
+        "operationId": "apps_library_api_week_settings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "template_week_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Week Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeekSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Week Settings",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/weeks/{template_week_id}/duplicate": {
+      "post": {
+        "operationId": "apps_library_api_duplicate_week",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "template_week_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Week Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Duplicate Week",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/weeks/{template_week_id}/save": {
+      "post": {
+        "description": "A copy of this week as a saved week.",
+        "operationId": "apps_library_api_save_template_week",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "template_week_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Week Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Save Template Week",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/weeks/{template_week_id}/sessions": {
+      "post": {
+        "operationId": "apps_library_api_add_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "template_week_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Week Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSession"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Editor"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Add Session",
+        "tags": [
+          "Templates"
         ]
       }
     }

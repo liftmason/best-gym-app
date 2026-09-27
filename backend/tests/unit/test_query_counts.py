@@ -138,3 +138,18 @@ def test_pending_prs_read_one_row_per_exercise(athlete, gym):
         ("Snatch", 130),
     ]
     assert "DISTINCT ON" in ctx.captured_queries[-1]["sql"]  # one row per exercise, not every set
+
+
+def test_where_a_template_can_go_reads_a_fixed_number_of_queries(athlete, coach, week_type):
+    # H7: placements asked, for every week, whether each later week had sessions.
+    from apps.library import apply
+
+    def count(weeks):
+        program = program_services.start_program(
+            athlete, "P", athlete.today(), weeks, week_type, by=coach.user
+        )
+        return queries(lambda: apply.placements(athlete)), program
+
+    few, _ = count(3)
+    many, _ = count(12)
+    assert many == few

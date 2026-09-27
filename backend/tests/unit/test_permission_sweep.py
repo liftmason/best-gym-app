@@ -20,6 +20,7 @@ from django.test.utils import CaptureQueriesContext
 
 from apps.accounts import coaching, invites
 from apps.api.main import api as ninja_api
+from apps.library import services as library
 from apps.programs import habits
 from apps.programs import services as program_services
 from apps.signin import services as signin
@@ -50,6 +51,11 @@ PARAMS = {
     "exercise_id": ("gym", lambda w: w["archived_exercise"].pk),
     "category_id": ("gym", lambda w: w["gym"].categories.first().pk),
     "tag_id": ("gym", lambda w: w["gym"].tags.first().pk),
+    "template_id": ("gym", lambda w: w["template"].pk),
+    "template_week_id": ("gym", lambda w: w["template"].weeks.first().pk),
+    "template_session_id": ("gym", lambda w: w["template"].weeks.first().sessions.first().pk),
+    "slot_id": ("gym", lambda w: w["slot"].pk),
+    "template_habit_id": ("gym", lambda w: w["template_habit"].pk),
 }
 
 # Endpoints whose path parameter is itself the credential, so anyone holding it may use it.
@@ -159,6 +165,7 @@ def world(gym):
     se = SessionExercise.objects.create(session_log=log, exercise=snatch, exercise_name="Snatch")
     week_type = gym.week_types.get(name="Accumulation")
     program = program_services.start_program(athlete, "Block", today, 2, week_type, by=owner.user)
+    template = library.new_template(gym, "program", owner.user)
     return {
         "gym": gym,
         "coach": owner,
@@ -181,6 +188,9 @@ def world(gym):
         "question": questions.add(athlete, "choice"),
         "week": program.weeks.first(),
         "archived_exercise": _archived(ex(gym, "hsn")),
+        "template": template,
+        "slot": library.add_slot(template.weeks.first().sessions.first(), snatch),
+        "template_habit": library.add_habit(template, "Sleep", "😴", "daily"),
         "rx": program_services.add_prescription(program.weeks.first().days.first(), snatch, athlete),
     }
 
