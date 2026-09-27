@@ -357,6 +357,37 @@
         "title": "BoardOut",
         "type": "object"
       },
+      "BootstrapOut": {
+        "properties": {
+          "cursor": {
+            "title": "Cursor",
+            "type": "string"
+          },
+          "history_from": {
+            "format": "date",
+            "title": "History From",
+            "type": "string"
+          },
+          "tables": {
+            "additionalProperties": {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "title": "Tables",
+            "type": "object"
+          }
+        },
+        "required": [
+          "tables",
+          "cursor",
+          "history_from"
+        ],
+        "title": "BootstrapOut",
+        "type": "object"
+      },
       "BugIn": {
         "properties": {
           "description": {
@@ -1605,6 +1636,38 @@
           "hide"
         ],
         "title": "HistoryIn",
+        "type": "object"
+      },
+      "HistoryOut": {
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "tables": {
+            "additionalProperties": {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "title": "Tables",
+            "type": "object"
+          }
+        },
+        "required": [
+          "tables",
+          "next"
+        ],
+        "title": "HistoryOut",
         "type": "object"
       },
       "HistoryRow": {
@@ -9336,6 +9399,55 @@
         ]
       }
     },
+    "/api/v1/me/history": {
+      "get": {
+        "description": "Sessions older than the phone's copy, a page at a time (online only).",
+        "operationId": "apps_sync_api_older_history",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Before",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Older History",
+        "tags": [
+          "My training"
+        ]
+      }
+    },
     "/api/v1/me/history-visibility": {
       "put": {
         "description": "Hide training from before a coach's link from that coach (a new coach sees it all\nby default).",
@@ -9756,6 +9868,34 @@
         "summary": "Update Settings",
         "tags": [
           "Settings"
+        ]
+      }
+    },
+    "/api/v1/sync/bootstrap": {
+      "get": {
+        "description": "A new device's first copy of the athlete's scope (12 months of history).",
+        "operationId": "apps_sync_api_bootstrap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BootstrapOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Bootstrap",
+        "tags": [
+          "Sync"
         ]
       }
     },

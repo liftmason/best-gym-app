@@ -1,6 +1,7 @@
 """Sync for an athlete's phone (/api/v1/sync/...): pull, bootstrap and push. Coaches don't
 sync; their screens use the API online. The rules are in pull.py, bootstrap.py and push.py."""
 
+import datetime
 from typing import Any
 
 from ninja import Router, Schema
@@ -31,3 +32,31 @@ class PullOut(Schema):
 def pull(request, cursor: str):
     """What changed since `cursor` (from bootstrap or the last pull), a page at a time."""
     return pulling.pull(athlete_of(request), cursor)
+
+
+class BootstrapOut(Schema):
+    tables: dict[str, list[dict[str, Any]]]  # table -> rows
+    cursor: str  # pull from here next
+    history_from: datetime.date  # older sessions: GET /me/history
+
+
+@router.get("/sync/bootstrap", response=BootstrapOut)
+def bootstrap(request):
+    """A new device's first copy of the athlete's scope (12 months of history)."""
+    from . import bootstrap as booting
+
+    return booting.snapshot(athlete_of(request))
+
+
+class HistoryOut(Schema):
+    tables: dict[str, list[dict[str, Any]]]
+    next: str | None
+
+
+@router.get("/me/history", response=HistoryOut, tags=["My training"])
+def older_history(request, before: str = "", limit: int = 20):
+    """Sessions older than the phone's copy, a page at a time (online only)."""
+    from . import bootstrap as booting
+
+    tables, cursor = booting.older_sessions(athlete_of(request), before, limit)
+    return {"tables": tables, "next": cursor}
