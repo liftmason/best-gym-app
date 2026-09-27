@@ -2,10 +2,14 @@
 it and sends feedback. The rules live here; the bucket is behind videos.py (Cloudflare R2
 in production), and the bytes never pass through Django."""
 
+import datetime
+
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from apps.core import errors
+from apps.core import models as core
 from apps.dashboard import alerts
 
 from . import videos
@@ -20,12 +24,31 @@ class VideoRefused(errors.Conflict):
     """With the message to show the athlete or coach."""
 
 
+PENDING_WINDOW = datetime.timedelta(minutes=30)  # an upload started this recently still counts
+
+
+def _taken(se):
+    """Videos counting against the per-exercise cap: finished uploads, and uploads started
+    in the last PENDING_WINDOW (parallel uploads can't slip past the cap; an abandoned one
+    stops counting soon, and the hourly clean-up deletes it)."""
+    recent = timezone.now() - PENDING_WINDOW
+    return (
+        se.videos.filter(deleted_at__isnull=True)
+        .filter(Q(uploaded_at__isnull=False) | Q(created_at__gte=recent))
+        .count()
+    )
+
+
 def can_upload(se, editable):
-    return editable and videos.enabled() and se.videos.uploaded().count() < MAX_PER_EXERCISE
+    return editable and videos.enabled() and _taken(se) < MAX_PER_EXERCISE
 
 
+@transaction.atomic
 def start_upload(se, size, content_type):
-    """A pending video row and the signed URL the browser or phone PUTs the file to."""
+    """A pending video row and the signed URL the browser or phone PUTs the file to. The
+    exercise's row is locked while counting, so two uploads at once can't both take the
+    last place (audit M22)."""
+    core.lock(se)
     log = se.session_log
     if not videos.enabled() or not log.editable():
         raise VideoRefused("Videos can't be added to this session.")
@@ -38,7 +61,7 @@ def start_upload(se, size, content_type):
         )
     if not content_type.startswith("video/") or len(content_type) > 60:
         raise VideoRefused("That file isn't a video.")
-    if se.videos.uploaded().count() >= MAX_PER_EXERCISE:
+    if _taken(se) >= MAX_PER_EXERCISE:
         raise VideoRefused(f"Up to {MAX_PER_EXERCISE} videos per exercise.")
     key = videos.new_key(log.athlete, content_type)
     video = FormVideo.objects.create(

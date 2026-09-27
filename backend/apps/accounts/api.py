@@ -3,7 +3,7 @@ services.py, invites.py and coaching.py."""
 
 import uuid
 
-from ninja import Router, Schema
+from ninja import Router, Schema, Status
 
 from apps.api.main import limit
 from apps.core import errors
@@ -81,6 +81,20 @@ def me(request):
         if athlete
         else None,
     }
+
+
+class Profile(Schema):
+    name: str | None = None
+    timezone: str | None = None
+
+
+@router.patch("/me", response={204: None})
+def update_profile(request, data: Profile):
+    """Change one's own name or time zone (next to GET /me: one path, one router)."""
+    from . import services
+
+    services.update_profile(request.user, name=data.name, timezone=data.timezone)
+    return Status(204, None)
 
 
 # ---------------------------------------------------------------- invites

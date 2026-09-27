@@ -190,3 +190,19 @@ def test_no_route_hides_behind_another():
 
     found = clashes(list(ninja_api.get_openapi_schema()["paths"]))
     assert not found, "\n".join(found)
+
+
+def test_each_path_lives_in_one_router():
+    # Django routes a path to the first router that has it, so GET /me in one router and
+    # PATCH /me in another makes PATCH a 405.
+    from apps.api.main import api as ninja_api
+
+    seen, split = {}, []
+    for prefix, router in ninja_api._routers:
+        for path in router.path_operations:
+            full = (prefix.rstrip("/") + "/" + path.lstrip("/")).rstrip("/")
+            if full in seen and seen[full] is not router:
+                split.append(full)
+            seen[full] = router
+    assert len(seen) > 50, "the check found too few paths: has Ninja's router list moved?"
+    assert not split, split

@@ -114,6 +114,30 @@ def update_gym_settings(coach, *, gym_name, coach_title, digest, timezone, units
     return coach
 
 
+def update_profile(user, *, name=None, timezone=None):
+    """A person's own name and time zone ("today" for an athlete is worked out in it)."""
+    fields = []
+    if name is not None:
+        user.name = check_new_account(name, user.email)
+        fields.append("name")
+    if timezone is not None:
+        if timezone not in zoneinfo.available_timezones():
+            raise InvalidAccount("Pick a real time zone.")
+        user.timezone = timezone
+        fields.append("timezone")
+    if fields:
+        user.save(update_fields=fields)
+    return user
+
+
+def set_hide_history(athlete, hide):
+    """Whether a new coach sees training from before their coaching link started
+    (accounts.coaching.visible_from)."""
+    athlete.hide_history_before_link = bool(hide)
+    athlete.save(update_fields=["hide_history_before_link"])
+    return athlete
+
+
 def set_max_updates(athlete, value):
     """Whether session PRs update the athlete's maxes automatically or wait for the coach."""
     from apps.dashboard import alerts

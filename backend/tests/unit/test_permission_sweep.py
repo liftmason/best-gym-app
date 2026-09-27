@@ -59,6 +59,7 @@ PARAMS = {
     "week_type_id": ("gym", lambda w: w["gym"].week_types.first().pk),
     "tracked_id": ("gym", lambda w: w["gym"].tracked_lifts.first().pk),
     "default_question_id": ("gym", lambda w: w["default_question"].pk),
+    "log_id": ("athlete", lambda w: w["video"].session_log_id),
 }
 
 # Endpoints whose path parameter is itself the credential, so anyone holding it may use it.

@@ -332,6 +332,40 @@
         "title": "BoardOut",
         "type": "object"
       },
+      "BugIn": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "page": {
+            "default": "",
+            "title": "Page",
+            "type": "string"
+          },
+          "screen": {
+            "default": "",
+            "title": "Screen",
+            "type": "string"
+          },
+          "side": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Side"
+          }
+        },
+        "required": [
+          "description"
+        ],
+        "title": "BugIn",
+        "type": "object"
+      },
       "Card": {
         "properties": {
           "description": {
@@ -1291,6 +1325,22 @@
         "title": "FeedRow",
         "type": "object"
       },
+      "Filled": {
+        "properties": {
+          "filled": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Filled",
+            "type": "array"
+          }
+        },
+        "required": [
+          "filled"
+        ],
+        "title": "Filled",
+        "type": "object"
+      },
       "GlanceDay": {
         "properties": {
           "date": {
@@ -1456,6 +1506,19 @@
           "last_seven"
         ],
         "title": "HabitOut",
+        "type": "object"
+      },
+      "HistoryIn": {
+        "properties": {
+          "hide": {
+            "title": "Hide",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "hide"
+        ],
+        "title": "HistoryIn",
         "type": "object"
       },
       "HistoryRow": {
@@ -2186,6 +2249,22 @@
         "title": "MetricOut",
         "type": "object"
       },
+      "MetricsIn": {
+        "properties": {
+          "values": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Values",
+            "type": "object"
+          }
+        },
+        "required": [
+          "values"
+        ],
+        "title": "MetricsIn",
+        "type": "object"
+      },
       "MetricsOut": {
         "properties": {
           "history": {
@@ -2227,6 +2306,46 @@
           "index"
         ],
         "title": "Move",
+        "type": "object"
+      },
+      "MyMetric": {
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "missing": {
+            "title": "Missing",
+            "type": "boolean"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "kind",
+          "value",
+          "missing"
+        ],
+        "title": "MyMetric",
         "type": "object"
       },
       "Name": {
@@ -2434,6 +2553,19 @@
           "note"
         ],
         "title": "Note",
+        "type": "object"
+      },
+      "NoteIn": {
+        "properties": {
+          "note": {
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "note"
+        ],
+        "title": "NoteIn",
         "type": "object"
       },
       "OptionIn": {
@@ -2785,6 +2917,34 @@
           "summary"
         ],
         "title": "Preview",
+        "type": "object"
+      },
+      "Profile": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          }
+        },
+        "title": "Profile",
         "type": "object"
       },
       "ProgramOut": {
@@ -3940,6 +4100,67 @@
           "undone"
         ],
         "title": "Undone",
+        "type": "object"
+      },
+      "UnitsIn": {
+        "properties": {
+          "units": {
+            "title": "Units",
+            "type": "string"
+          }
+        },
+        "required": [
+          "units"
+        ],
+        "title": "UnitsIn",
+        "type": "object"
+      },
+      "UploadIn": {
+        "properties": {
+          "content_type": {
+            "title": "Content Type",
+            "type": "string"
+          },
+          "session_exercise_id": {
+            "format": "uuid",
+            "title": "Session Exercise Id",
+            "type": "string"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "session_exercise_id",
+          "size",
+          "content_type"
+        ],
+        "title": "UploadIn",
+        "type": "object"
+      },
+      "UploadOut": {
+        "properties": {
+          "content_type": {
+            "title": "Content Type",
+            "type": "string"
+          },
+          "upload_url": {
+            "title": "Upload Url",
+            "type": "string"
+          },
+          "video_id": {
+            "format": "uuid",
+            "title": "Video Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "video_id",
+          "upload_url",
+          "content_type"
+        ],
+        "title": "UploadOut",
         "type": "object"
       },
       "UseSaved": {
@@ -7264,6 +7485,36 @@
         ]
       }
     },
+    "/api/v1/bug-reports": {
+      "post": {
+        "operationId": "apps_dashboard_bug_api_report",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BugIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Report",
+        "tags": [
+          "Bug reports"
+        ]
+      }
+    },
     "/api/v1/categories": {
       "get": {
         "operationId": "apps_exercises_api_categories",
@@ -8585,6 +8836,315 @@
         "summary": "Me",
         "tags": [
           "Account"
+        ]
+      },
+      "patch": {
+        "description": "Change one's own name or time zone (next to GET /me: one path, one router).",
+        "operationId": "apps_accounts_api_update_profile",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Profile"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Update Profile",
+        "tags": [
+          "Account"
+        ]
+      }
+    },
+    "/api/v1/me/history-visibility": {
+      "put": {
+        "description": "Hide training from before a coach's link from that coach (a new coach sees it all\nby default).",
+        "operationId": "apps_accounts_me_api_history_visibility",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HistoryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "History Visibility",
+        "tags": [
+          "My account"
+        ]
+      }
+    },
+    "/api/v1/me/metrics": {
+      "get": {
+        "operationId": "apps_accounts_me_api_my_metrics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MyMetric"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "My Metrics",
+        "tags": [
+          "My account"
+        ]
+      },
+      "post": {
+        "description": "Fill in numbers that are still missing (ones already there are left alone).",
+        "operationId": "apps_accounts_me_api_fill_metrics",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetricsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Filled"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Fill Metrics",
+        "tags": [
+          "My account"
+        ]
+      }
+    },
+    "/api/v1/me/sessions/{log_id}/videos": {
+      "post": {
+        "description": "Start uploading a video of one exercise in the session (up to three each).",
+        "operationId": "apps_workouts_athlete_api_start_upload",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "log_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Log Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadOut"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Start Upload",
+        "tags": [
+          "My training"
+        ]
+      }
+    },
+    "/api/v1/me/units": {
+      "put": {
+        "operationId": "apps_accounts_me_api_set_units",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnitsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Set Units",
+        "tags": [
+          "My account"
+        ]
+      }
+    },
+    "/api/v1/me/videos/{video_id}": {
+      "delete": {
+        "description": "Take a video back (until the coach has reviewed it).",
+        "operationId": "apps_workouts_athlete_api_remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "video_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Video Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Remove",
+        "tags": [
+          "My training"
+        ]
+      },
+      "patch": {
+        "operationId": "apps_workouts_athlete_api_set_note",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "video_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Video Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Set Note",
+        "tags": [
+          "My training"
+        ]
+      }
+    },
+    "/api/v1/me/videos/{video_id}/confirm": {
+      "post": {
+        "description": "The upload finished: the stored file is checked, then the coach is told.",
+        "operationId": "apps_workouts_athlete_api_confirm",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "video_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Video Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Confirm",
+        "tags": [
+          "My training"
         ]
       }
     },

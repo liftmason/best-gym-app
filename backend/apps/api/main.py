@@ -106,8 +106,10 @@ def limit(request, name, count, seconds, key=None):
 def _routers():
     from apps.accounts.api import router as accounts
     from apps.accounts.coach_api import router as athletes
+    from apps.accounts.me_api import router as me
     from apps.accounts.settings_api import router as settings
     from apps.dashboard.api import router as dashboard
+    from apps.dashboard.bug_api import router as bugs
     from apps.exercises.api import router as library
     from apps.library.api import router as templates
     from apps.library.apply_api import router as applying
@@ -115,6 +117,7 @@ def _routers():
     from apps.programs.board_api import router as board
     from apps.programs.habits_api import router as habits
     from apps.signin.api import router as signin
+    from apps.workouts.athlete_api import router as my_training
     from apps.workouts.coach_api import router as training
     from apps.workouts.questions_api import router as questions
 
@@ -131,6 +134,9 @@ def _routers():
     api.add_router("", templates)
     api.add_router("", applying)
     api.add_router("", settings)
+    api.add_router("", me)
+    api.add_router("", my_training)
+    api.add_router("", bugs)
 
 
 def coach_of(request):
