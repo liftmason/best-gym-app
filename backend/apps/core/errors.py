@@ -43,6 +43,12 @@ class Gone(Exception):
     status = 410
 
 
+class UpgradeRequired(Exception):
+    """The app is too old for this server: 426. The app asks the person to update."""
+
+    status = 426
+
+
 class TooMany(Exception):
     """Too many attempts for now: 429."""
 
@@ -56,6 +62,7 @@ DEFAULT_MESSAGES = {
     404: "Not found.",
     409: "That can't be done right now.",
     410: "That link can't be used any more.",
+    426: "Update the app to carry on.",
     429: "Too many attempts. Try again later.",
 }
 

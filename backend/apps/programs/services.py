@@ -167,7 +167,12 @@ def start_program(athlete, name, first_day, weeks, week_type, by):
     `first_day` is snapped back to the gym's week-start day."""
     core.lock(athlete)  # program changes for one athlete run one at a time (audit M7)
     start = athlete.gym.week_start_for(first_day)
+    ending = list(athlete.programs.active().values_list("pk", flat=True))
     athlete.programs.active().update(active=False, ended_at=timezone.now())
+    # The ended program's weeks leave the phone (sync): touch them so the change log says so.
+    for week in ProgramWeek.objects.filter(program__in=ending):
+        week.save(update_fields=["published"])
+        touch_week(week)
     program = Program.objects.create(athlete=athlete, name=name, start_date=start, created_by=by)
     for order in range(weeks):
         _create_week(program, order, week_type)
@@ -286,10 +291,26 @@ def set_focus_note(week, note, by=None):
     return week
 
 
+@transaction.atomic
 def set_published(week, published):
+    """Show the week to the athlete, or take it back. Every row under it is touched so the
+    change log records it: its days, sessions and prescriptions reach the phone (or leave
+    it) now, not whenever each was last edited."""
     week.published = published
     week.published_at = timezone.now() if published else None
     week.save(update_fields=["published", "published_at"])
+    touch_week(week)
+
+
+def touch_week(week):
+    """A no-op update of every row under the week, so the sync triggers log each one."""
+    from .models import PrescriptionTag
+
+    ProgramDay.objects.filter(week=week).update(id=F("id"))
+    ProgramSession.objects.filter(day__week=week).update(id=F("id"))
+    Prescription.objects.filter(session__day__week=week).update(id=F("id"))
+    PrescribedSet.objects.filter(prescription__session__day__week=week).update(id=F("id"))
+    PrescriptionTag.objects.filter(prescription__session__day__week=week).update(id=F("id"))
 
 
 # ---------------------------------------------------------------- sessions and prescriptions

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "apps.signin",
     "apps.api",
     "apps.billing",
+    "apps.sync",
 ]
 
 MIDDLEWARE = [

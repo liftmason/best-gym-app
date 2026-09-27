@@ -17,6 +17,7 @@ from django.core.management.base import BaseCommand, CommandError
 from apps import ratelimit
 from apps.accounts.models import Coach
 from apps.dashboard import digest
+from apps.sync import purge as sync_purge
 from apps.workouts import videos
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ class Command(BaseCommand):
         self.step("alerts", lambda: call_command("nightly", stdout=self.stdout))
         expired, abandoned = self.step("form videos", videos.expire) or (0, 0)
         self.step("rate-limit counters", ratelimit.purge)
+        self.step("sync change log", sync_purge.purge)
         sent = 0
         for coach in Coach.objects.select_related("user"):
             if self.step(f"digest for coach {coach.pk}", lambda coach=coach: digest.send(coach)):

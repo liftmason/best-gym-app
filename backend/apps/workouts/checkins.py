@@ -38,24 +38,27 @@ def clean_answer(question, value, other=""):
     return value, other[:MAX_DETAIL] if value == OTHER_OPTION else ""
 
 
-def answer(log, question, value, other=""):
-    """Save (or change) the answer to one of the log's athlete's active questions."""
+def answer(log, question, value, other="", answer_id=None):
+    """Save (or change) the answer to one of the log's athlete's active questions
+    (`answer_id`: the id a phone chose for a new one)."""
     if log.finished:
         raise SessionClosed()
     active = questions(log.athlete)
     if question not in active:
         raise InvalidAnswer("That isn't one of this athlete's questions.")
     value, other = clean_answer(question, value, other)
+    fields = {
+        "order": active.index(question),
+        "question_text": question.text,
+        "type": question.type,
+        "value": value,
+        "other_text": other,
+    }
     answer_row, _ = CheckinAnswer.objects.update_or_create(
         session_log=log,
         question=question,
-        defaults={
-            "order": active.index(question),
-            "question_text": question.text,
-            "type": question.type,
-            "value": value,
-            "other_text": other,
-        },
+        create_defaults={"id": answer_id, **fields} if answer_id else None,
+        defaults=fields,
     )
     return answer_row
 

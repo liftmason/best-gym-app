@@ -58,6 +58,7 @@ for category in (
     errors.Conflict,
     errors.Gone,
     errors.TooMany,
+    errors.UpgradeRequired,
 ):
     api.add_exception_handler(category, _service_error)
 
@@ -119,6 +120,7 @@ def _routers():
     from apps.programs.board_api import router as board
     from apps.programs.habits_api import router as habits
     from apps.signin.api import router as signin
+    from apps.sync.api import router as sync
     from apps.workouts.athlete_api import router as my_training
     from apps.workouts.coach_api import router as training
     from apps.workouts.questions_api import router as questions
@@ -140,6 +142,7 @@ def _routers():
     api.add_router("", my_training)
     api.add_router("", bugs)
     api.add_router("", billing)
+    api.add_router("", sync)
 
 
 def coach_of(request):

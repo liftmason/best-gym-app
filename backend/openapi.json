@@ -1,6 +1,43 @@
 {
   "components": {
     "schemas": {
+      "Action": {
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Payload",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Action",
+        "type": "object"
+      },
       "Answer": {
         "properties": {
           "other": {
@@ -355,6 +392,37 @@
           "week_types"
         ],
         "title": "BoardOut",
+        "type": "object"
+      },
+      "BootstrapOut": {
+        "properties": {
+          "cursor": {
+            "title": "Cursor",
+            "type": "string"
+          },
+          "history_from": {
+            "format": "date",
+            "title": "History From",
+            "type": "string"
+          },
+          "tables": {
+            "additionalProperties": {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "title": "Tables",
+            "type": "object"
+          }
+        },
+        "required": [
+          "tables",
+          "cursor",
+          "history_from"
+        ],
+        "title": "BootstrapOut",
         "type": "object"
       },
       "BugIn": {
@@ -1607,6 +1675,38 @@
         "title": "HistoryIn",
         "type": "object"
       },
+      "HistoryOut": {
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "tables": {
+            "additionalProperties": {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "title": "Tables",
+            "type": "object"
+          }
+        },
+        "required": [
+          "tables",
+          "next"
+        ],
+        "title": "HistoryOut",
+        "type": "object"
+      },
       "HistoryRow": {
         "properties": {
           "date": {
@@ -2680,6 +2780,48 @@
         "title": "OptionIn",
         "type": "object"
       },
+      "Outcome": {
+        "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ],
+        "title": "Outcome",
+        "type": "object"
+      },
       "OverviewOut": {
         "properties": {
           "chart": {
@@ -3123,6 +3265,84 @@
         "title": "ProgramOut",
         "type": "object"
       },
+      "PullOut": {
+        "properties": {
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/Row"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "cursor": {
+            "title": "Cursor",
+            "type": "string"
+          },
+          "library": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Row"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Library"
+          },
+          "library_reset": {
+            "title": "Library Reset",
+            "type": "boolean"
+          },
+          "more": {
+            "title": "More",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "changes",
+          "cursor",
+          "more",
+          "library_reset",
+          "library"
+        ],
+        "title": "PullOut",
+        "type": "object"
+      },
+      "PushIn": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/Action"
+            },
+            "title": "Actions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "actions"
+        ],
+        "title": "PushIn",
+        "type": "object"
+      },
+      "PushOut": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/Outcome"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "title": "PushOut",
+        "type": "object"
+      },
       "Pushed": {
         "properties": {
           "athletes": {
@@ -3496,6 +3716,42 @@
           "missing_metrics"
         ],
         "title": "RosterRow",
+        "type": "object"
+      },
+      "Row": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "op": {
+            "title": "Op",
+            "type": "string"
+          },
+          "row": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Row"
+          },
+          "table": {
+            "title": "Table",
+            "type": "string"
+          }
+        },
+        "required": [
+          "table",
+          "id",
+          "op",
+          "row"
+        ],
+        "title": "Row",
         "type": "object"
       },
       "SaveIn": {
@@ -9254,6 +9510,55 @@
         ]
       }
     },
+    "/api/v1/me/history": {
+      "get": {
+        "description": "Sessions older than the phone's copy, a page at a time (online only).",
+        "operationId": "apps_sync_api_older_history",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Before",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Older History",
+        "tags": [
+          "My training"
+        ]
+      }
+    },
     "/api/v1/me/history-visibility": {
       "put": {
         "description": "Hide training from before a coach's link from that coach (a new coach sees it all\nby default).",
@@ -9674,6 +9979,110 @@
         "summary": "Update Settings",
         "tags": [
           "Settings"
+        ]
+      }
+    },
+    "/api/v1/sync/bootstrap": {
+      "get": {
+        "description": "A new device's first copy of the athlete's scope (12 months of history).",
+        "operationId": "apps_sync_api_bootstrap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BootstrapOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Bootstrap",
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
+    "/api/v1/sync/pull": {
+      "get": {
+        "description": "What changed since `cursor` (from bootstrap or the last pull), a page at a time.",
+        "operationId": "apps_sync_api_pull",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": true,
+            "schema": {
+              "title": "Cursor",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PullOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Pull",
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
+    "/api/v1/sync/push": {
+      "post": {
+        "description": "The athlete's actions, in the order they happened. Push before pulling.",
+        "operationId": "apps_sync_api_push",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Push",
+        "tags": [
+          "Sync"
         ]
       }
     },

@@ -220,3 +220,11 @@ Billing is off until `BILLING_ENABLED=1`; everything is allowed until then. Prod
 3. **Local testing:** `stripe listen --forward-to localhost:8000/api/v1/billing/webhook` prints a signing secret to use.
 
 A failed payment gives the gym 7 days of full access, then coach programming is read-only until it's paid. Athletes are never affected.
+
+## Sync (athletes' phones)
+
+**The change log.** Every write to a synced table adds a row to `sync_change`, through a Postgres trigger. The hourly cron deletes rows older than 90 days. A phone that hasn't synced for that long downloads everything again.
+
+**Schema version.** The sync endpoints need `X-Schema-Version` to be the current version (`SCHEMA_VERSION` in `apps/sync/api.py`) or the one before. Bump it, with a note in the release, when a synced table changes shape.
+
+**Checking a trigger.** A new synced table needs its trigger (a migration calling `apps.sync.triggers.install` for it); a test fails until it has one.
