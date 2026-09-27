@@ -7,8 +7,9 @@ Phase 5 adds the mockup's templates, saved weeks and saved sessions (_seed_libra
 Phase 4 adds the mockup's logged sessions and check-ins (_seed_sessions.py).
 Phase 1: Iron Ridge Weightlifting, coach Dana, six athletes with their profiles,
 bodyweight history and maxes, and the starter exercise library.
-Safe to run repeatedly: rows are updated, and the demo athletes' measurement
-history is rebuilt relative to today so the numbers always look recent.
+Seeds an empty database only: it refuses if any gym exists. `--reset` removes the demo gym
+and its people first (`make seed` passes it); `--if-empty` does nothing if any gym exists.
+Dates are relative to today, so the numbers always look recent.
 """
 
 import datetime
@@ -24,6 +25,7 @@ from apps.accounts.models import (
     BodyweightEntry,
     Coach,
     Gym,
+    GymMembership,
     GymRole,
     MaxEntry,
     MeasurementSource,
@@ -122,6 +124,32 @@ def _next_date(today, month, day):
     return candidate if candidate >= today else datetime.date(today.year + 1, month, day)
 
 
+def remove_demo_gym():
+    """Delete the demo gym, its coaches and athletes and everything they made. Training
+    history is protected from deletion, so this goes leaf-first: athletes through
+    erase_athlete, then the library, then the gym."""
+    from apps.accounts.erase import erase_athlete
+    from apps.exercises.models import Exercise
+    from apps.library.models import Template
+    from apps.programs.models import WeekType
+
+    gym = Gym.objects.filter(name=GYM_NAME).first()
+    if gym is None:
+        return
+    for athlete in Athlete.objects.filter(coachings__gym=gym).distinct():
+        erase_athlete(athlete)
+    coach_users = User.objects.filter(coach__memberships__gym=gym)
+    GymMembership.objects.filter(gym=gym).delete()
+    for user in coach_users:
+        user.coach.delete()
+        if not hasattr(user, "athlete"):
+            user.delete()
+    Template.objects.filter(gym=gym).delete()
+    Exercise.objects.filter(gym=gym).delete()
+    WeekType.objects.filter(gym=gym).delete()
+    gym.delete()
+
+
 def coach_athlete(coach, athlete):
     """Make `coach` the athlete's active coach (the demo may have ended or changed it)."""
     if athlete.coach != coach or athlete.active_coaching is None:
@@ -133,19 +161,22 @@ class Command(BaseCommand):
     help = "Create or refresh the mockup's demo data (Iron Ridge, Dana the coach, six athletes)."
 
     def add_arguments(self, parser):
+        parser.add_argument("--if-empty", action="store_true", help="Do nothing if any gym exists.")
         parser.add_argument(
-            "--if-empty",
-            action="store_true",
-            help="Do nothing if the demo gym already exists (the free-tier trial seeds on start-up).",
+            "--reset", action="store_true", help="Remove the demo gym and its people first, then seed."
         )
 
     @transaction.atomic
     def handle(self, *args, **options):
         if not settings.DEMO_PASSWORD:
             raise CommandError("Set DEMO_PASSWORD: demo users on a public site need their own password.")
-        if options["if_empty"] and Gym.objects.filter(name=GYM_NAME).exists():
-            self.stdout.write("Demo gym already there; not reseeding.")
-            return
+        if options["reset"]:
+            remove_demo_gym()
+        if Gym.objects.exists():
+            if options["if_empty"]:
+                self.stdout.write("The database has data; not seeding.")
+                return
+            raise CommandError("The database already has a gym. Pass --reset to replace the demo gym.")
         gym, _ = Gym.objects.update_or_create(name=GYM_NAME, defaults={"timezone": TZ, "units": "kg"})
         exercises = install_pack(gym, "weightlifting")
         install_default_questions(gym)

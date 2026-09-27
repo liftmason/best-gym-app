@@ -21,7 +21,7 @@ migrate:
 	$(B) $(PY) manage.py migrate
 
 seed:
-	$(B) $(PY) manage.py seed_demo
+	$(B) $(PY) manage.py seed_demo --reset
 
 run:
 	$(B) $(PY) manage.py runserver

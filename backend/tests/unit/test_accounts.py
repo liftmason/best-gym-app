@@ -34,9 +34,13 @@ def test_initials(name, email, expected):
     assert User(name=name, email=email).initials == expected
 
 
-def test_seed_demo_is_idempotent():
+def test_seed_demo_seeds_an_empty_database_or_replaces_the_demo_gym():
+    from django.core.management.base import CommandError
+
     call_command("seed_demo")
-    call_command("seed_demo")
+    with pytest.raises(CommandError):
+        call_command("seed_demo")
+    call_command("seed_demo", "--reset")
     assert User.objects.count() == 8  # Dana, the six mockup athletes and Riley (phase 9)
     dana = User.objects.get(email="dana@ironridge.example")
     assert dana.name == "Dana Whitfield" and dana.is_staff
@@ -68,6 +72,6 @@ def test_seed_demo_on_a_public_site(settings):
     assert dana.check_password("trial-password-456") and not dana.is_staff and not dana.is_superuser
     dana.name = "Changed by the client"
     dana.save()
-    call_command("seed_demo", "--if-empty")  # a restart leaves the trial's data alone
+    call_command("seed_demo", "--if-empty")  # a restart leaves the data alone
     dana.refresh_from_db()
     assert dana.name == "Changed by the client"
