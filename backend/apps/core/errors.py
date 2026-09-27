@@ -19,6 +19,12 @@ class NotSignedIn(Exception):
     status = 401
 
 
+class PaymentRequired(Exception):
+    """The gym's plan doesn't allow it (billing): 402."""
+
+    status = 402
+
+
 class NotFound(Exception):
     """Not there, or not the caller's: 404 (the API never says which)."""
 
@@ -46,6 +52,7 @@ class TooMany(Exception):
 DEFAULT_MESSAGES = {
     400: "Check what you entered.",
     401: "Sign in again.",
+    402: "The gym's plan doesn't include that.",
     404: "Not found.",
     409: "That can't be done right now.",
     410: "That link can't be used any more.",

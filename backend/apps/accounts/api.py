@@ -6,6 +6,7 @@ import uuid
 from ninja import Router, Schema, Status
 
 from apps.api.main import limit
+from apps.billing import entitlements
 from apps.core import errors
 
 from . import invites
@@ -22,11 +23,33 @@ class GymOut(Schema):
     week_start: int
 
 
+class PlanOut(Schema):
+    code: str
+    name: str
+
+
+class AthleteCount(Schema):
+    used: int
+    max: int | None
+
+
+class Entitlements(Schema):
+    """What the gym's plan allows now. Hide upgrade prompts while billing_enabled is false."""
+
+    billing_enabled: bool
+    plan: PlanOut
+    status: str | None
+    athletes: AthleteCount
+    form_videos: bool
+    programming: bool  # false: programming is read-only (a lapsed payment)
+
+
 class CoachProfileOut(Schema):
     id: uuid.UUID
     title: str
     role: str
     gym: GymOut
+    entitlements: Entitlements
 
 
 class AthleteProfileOut(Schema):
@@ -68,7 +91,13 @@ def me(request):
         "email": user.email,
         "name": user.name,
         "timezone": user.timezone,
-        "coach": {"id": coach.pk, "title": coach.title, "role": coach.membership.role, "gym": _gym(coach.gym)}
+        "coach": {
+            "id": coach.pk,
+            "title": coach.title,
+            "role": coach.membership.role,
+            "gym": _gym(coach.gym),
+            "entitlements": entitlements.summary(coach.gym),
+        }
         if coach and coach.membership
         else None,
         "athlete": {

@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
+from apps.billing import entitlements
 from apps.core import errors
 from apps.core import models as core
 from apps.dashboard import alerts
@@ -50,6 +51,7 @@ def start_upload(se, size, content_type):
     last place (audit M22)."""
     core.lock(se)
     log = se.session_log
+    entitlements.require(log.athlete.gym, entitlements.FORM_VIDEOS)
     if not videos.enabled() or not log.editable():
         raise VideoRefused("Videos can't be added to this session.")
     max_bytes = videos.config()["max_bytes"]

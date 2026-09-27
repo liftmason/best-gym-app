@@ -53,6 +53,7 @@ def _service_error(request, exc):
 for category in (
     errors.Invalid,
     errors.NotSignedIn,
+    errors.PaymentRequired,
     errors.NotFound,
     errors.Conflict,
     errors.Gone,
@@ -144,6 +145,17 @@ def coach_of(request):
     coach = request.user.coach_profile
     if coach is None or coach.membership is None or coach.membership.ended_at is not None:
         raise errors.NotFound()
+    return coach
+
+
+def programmer_of(request):
+    """coach_of for programming (board, library, templates, applying): a write is refused
+    while the gym's plan makes programming read-only (a lapsed payment; apps/billing)."""
+    coach = coach_of(request)
+    if request.method not in ("GET", "HEAD", "OPTIONS"):
+        from apps.billing import entitlements
+
+        entitlements.require(coach.gym, entitlements.PROGRAM)
     return coach
 
 

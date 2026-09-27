@@ -6,7 +6,7 @@ import uuid
 
 from ninja import Query, Router, Schema, Status
 
-from apps.api.main import coach_of
+from apps.api.main import programmer_of
 from apps.core import errors
 
 from . import deletion, services
@@ -100,7 +100,7 @@ def _fields(gym, data):
 def exercises(request, q: str = "", tags: list[uuid.UUID] = Query([]), archived: bool = False):
     """The library, by category then name: search by name, tag, cue or category, and filter
     by every tag given. `archived` lists the archived ones instead."""
-    gym = coach_of(request).gym
+    gym = programmer_of(request).gym
     found, _tags = services.search(gym, q, tags, archived)
     tracked = _tracked(gym)
     return [_exercise(e, tracked) for e in found]
@@ -108,19 +108,19 @@ def exercises(request, q: str = "", tags: list[uuid.UUID] = Query([]), archived:
 
 @router.get("/exercises/{exercise_id}", response=ExerciseOut)
 def exercise(request, exercise_id: uuid.UUID):
-    gym = coach_of(request).gym
+    gym = programmer_of(request).gym
     return _exercise(_gym_exercise(gym, exercise_id), _tracked(gym))
 
 
 @router.post("/exercises", response={201: ExerciseOut})
 def create(request, data: ExerciseIn):
-    gym = coach_of(request).gym
+    gym = programmer_of(request).gym
     return Status(201, _exercise(services.save_exercise(gym, **_fields(gym, data)), _tracked(gym)))
 
 
 @router.put("/exercises/{exercise_id}", response=ExerciseOut)
 def update(request, exercise_id: uuid.UUID, data: ExerciseIn):
-    gym = coach_of(request).gym
+    gym = programmer_of(request).gym
     exercise = _gym_exercise(gym, exercise_id)
     return _exercise(services.save_exercise(gym, exercise=exercise, **_fields(gym, data)), _tracked(gym))
 
@@ -128,7 +128,7 @@ def update(request, exercise_id: uuid.UUID, data: ExerciseIn):
 @router.get("/exercises/{exercise_id}/percent-of", response=list[Ref])
 def percent_of_choices(request, exercise_id: uuid.UUID):
     """The lifts this exercise's percentages could be worked from."""
-    gym = coach_of(request).gym
+    gym = programmer_of(request).gym
     return [_ref(e) for e in services.percent_of_choices(gym, _gym_exercise(gym, exercise_id))]
 
 
@@ -139,13 +139,13 @@ class Archived(Schema):
 
 @router.post("/exercises/{exercise_id}/archive", response=Archived)
 def archive(request, exercise_id: uuid.UUID):
-    was_tracked, users = services.archive(_gym_exercise(coach_of(request).gym, exercise_id))
+    was_tracked, users = services.archive(_gym_exercise(programmer_of(request).gym, exercise_id))
     return {"was_tracked": was_tracked, "percent_users": users}
 
 
 @router.post("/exercises/{exercise_id}/restore", response={204: None})
 def restore(request, exercise_id: uuid.UUID):
-    services.restore(_gym_exercise(coach_of(request).gym, exercise_id))
+    services.restore(_gym_exercise(programmer_of(request).gym, exercise_id))
     return Status(204, None)
 
 
@@ -165,7 +165,7 @@ class Impact(Schema):
 @router.get("/exercises/{exercise_id}/deletion", response=Impact)
 def deletion_impact(request, exercise_id: uuid.UUID):
     """What deleting it would remove or change, for the warning (archived exercises only)."""
-    exercise = _gym_exercise(coach_of(request).gym, exercise_id)
+    exercise = _gym_exercise(programmer_of(request).gym, exercise_id)
     deletion.check_deletable(exercise)
     return deletion.deletion_impact(exercise)
 
@@ -173,7 +173,7 @@ def deletion_impact(request, exercise_id: uuid.UUID):
 @router.delete("/exercises/{exercise_id}", response=Impact)
 def delete(request, exercise_id: uuid.UUID):
     """Delete an archived exercise; logged sessions keep its name and sets."""
-    return deletion.delete_exercise(_gym_exercise(coach_of(request).gym, exercise_id))
+    return deletion.delete_exercise(_gym_exercise(programmer_of(request).gym, exercise_id))
 
 
 # ---------------------------------------------------------------- categories and tags
@@ -209,26 +209,26 @@ def _categories(gym):
 
 @router.get("/categories", response=list[CategoryOut])
 def categories(request):
-    return _categories(coach_of(request).gym)
+    return _categories(programmer_of(request).gym)
 
 
 @router.post("/categories", response={201: list[CategoryOut]})
 def add_category(request, data: Name):
-    gym = coach_of(request).gym
+    gym = programmer_of(request).gym
     services.add_category(gym, data.name)
     return Status(201, _categories(gym))
 
 
 @router.patch("/categories/{category_id}", response=list[CategoryOut])
 def rename_category(request, category_id: uuid.UUID, data: Name):
-    gym = coach_of(request).gym
+    gym = programmer_of(request).gym
     services.rename_category(Category.objects.get(pk=category_id, gym=gym), data.name)
     return _categories(gym)
 
 
 @router.post("/categories/{category_id}/move", response=list[CategoryOut])
 def move_category(request, category_id: uuid.UUID, data: Direction):
-    gym = coach_of(request).gym
+    gym = programmer_of(request).gym
     services.move_category(gym, Category.objects.get(pk=category_id, gym=gym).pk, data.direction)
     return _categories(gym)
 
@@ -237,7 +237,7 @@ def move_category(request, category_id: uuid.UUID, data: Direction):
 def delete_category(request, category_id: uuid.UUID, data: DeleteCategory):
     """Delete a category; its exercises move to `move_to_id` first (409 if it has some and
     there's nowhere to go)."""
-    gym = coach_of(request).gym
+    gym = programmer_of(request).gym
     category = Category.objects.get(pk=category_id, gym=gym)
     move_to = Category.objects.filter(pk=data.move_to_id, gym=gym).first() if data.move_to_id else None
     services.delete_category(category, move_to)
@@ -251,21 +251,21 @@ class TagOut(Schema):
 
 @router.get("/tags", response=list[TagOut])
 def tags(request):
-    return [_ref(t) for t in services.tags_for(coach_of(request).gym)]
+    return [_ref(t) for t in services.tags_for(programmer_of(request).gym)]
 
 
 @router.post("/tags", response={201: TagOut})
 def add_tag(request, data: Name):
-    return Status(201, _ref(services.add_tag(coach_of(request).gym, data.name)))
+    return Status(201, _ref(services.add_tag(programmer_of(request).gym, data.name)))
 
 
 @router.patch("/tags/{tag_id}", response=TagOut)
 def rename_tag(request, tag_id: uuid.UUID, data: Name):
-    gym = coach_of(request).gym
+    gym = programmer_of(request).gym
     return _ref(services.rename_tag(Tag.objects.get(pk=tag_id, gym=gym), data.name))
 
 
 @router.delete("/tags/{tag_id}", response={204: None})
 def delete_tag(request, tag_id: uuid.UUID):
-    services.delete_tag(Tag.objects.get(pk=tag_id, gym=coach_of(request).gym))
+    services.delete_tag(Tag.objects.get(pk=tag_id, gym=programmer_of(request).gym))
     return Status(204, None)

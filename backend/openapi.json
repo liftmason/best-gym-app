@@ -72,6 +72,31 @@
         "title": "Archived",
         "type": "object"
       },
+      "AthleteCount": {
+        "properties": {
+          "max": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max"
+          },
+          "used": {
+            "title": "Used",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "used",
+          "max"
+        ],
+        "title": "AthleteCount",
+        "type": "object"
+      },
       "AthleteOut": {
         "properties": {
           "athlete": {
@@ -643,6 +668,9 @@
       },
       "CoachProfileOut": {
         "properties": {
+          "entitlements": {
+            "$ref": "#/components/schemas/Entitlements"
+          },
           "gym": {
             "$ref": "#/components/schemas/GymOut"
           },
@@ -664,7 +692,8 @@
           "id",
           "title",
           "role",
-          "gym"
+          "gym",
+          "entitlements"
         ],
         "title": "CoachProfileOut",
         "type": "object"
@@ -1045,6 +1074,50 @@
           "email"
         ],
         "title": "EmailIn",
+        "type": "object"
+      },
+      "Entitlements": {
+        "description": "What the gym's plan allows now. Hide upgrade prompts while billing_enabled is false.",
+        "properties": {
+          "athletes": {
+            "$ref": "#/components/schemas/AthleteCount"
+          },
+          "billing_enabled": {
+            "title": "Billing Enabled",
+            "type": "boolean"
+          },
+          "form_videos": {
+            "title": "Form Videos",
+            "type": "boolean"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/PlanOut"
+          },
+          "programming": {
+            "title": "Programming",
+            "type": "boolean"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "required": [
+          "billing_enabled",
+          "plan",
+          "status",
+          "athletes",
+          "form_videos",
+          "programming"
+        ],
+        "title": "Entitlements",
         "type": "object"
       },
       "ExerciseIn": {
@@ -2689,6 +2762,24 @@
           "label"
         ],
         "title": "Placement",
+        "type": "object"
+      },
+      "PlanOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ],
+        "title": "PlanOut",
         "type": "object"
       },
       "PlannedDay": {

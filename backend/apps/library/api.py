@@ -8,7 +8,7 @@ import uuid
 from ninja import Router, Schema, Status
 
 from apps.accounts import coaching
-from apps.api.main import coach_of
+from apps.api.main import programmer_of
 from apps.api.schemas import WeekTypeRef, week_type_ref
 from apps.core import errors
 from apps.exercises.models import Exercise, Tag
@@ -164,7 +164,7 @@ def _editor(template, unit):
 
 
 def _template(request, template_id):
-    coach = coach_of(request)
+    coach = programmer_of(request)
     return coach, services.gym_template(coach.gym, template_id)
 
 
@@ -174,7 +174,7 @@ def _template(request, template_id):
 @router.get("/templates", response=list[Card])
 def library(request, kind: str = ""):
     """The gym's templates, saved weeks and saved sessions (or one kind of them)."""
-    templates = _templates(coach_of(request).gym)
+    templates = _templates(programmer_of(request).gym)
     if kind:
         templates = templates.filter(kind=kind)
     return [_card(t) for t in templates]
@@ -186,7 +186,7 @@ class NewTemplate(Schema):
 
 @router.post("/templates", response={201: Editor})
 def new_template(request, data: NewTemplate):
-    coach = coach_of(request)
+    coach = programmer_of(request)
     if data.kind not in TemplateKind.values:
         raise errors.Invalid({"kind": "A template, a saved week or a saved session."})
     return Status(201, _editor(services.new_template(coach.gym, data.kind, request.user), coach.gym.units))
@@ -478,7 +478,7 @@ def save_template_session(request, template_id: uuid.UUID, template_session_id: 
 
 
 def _athlete(request, athlete_id):
-    coach = coach_of(request)
+    coach = programmer_of(request)
     return coach, coaching.athlete_for(coach, athlete_id)
 
 
