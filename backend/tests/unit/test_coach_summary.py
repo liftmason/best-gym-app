@@ -61,6 +61,7 @@ def test_session_items(program, athlete, gym):
     assert item["rpe_class"] == "mid"  # RPE 8
     line = item["exercises"][0]
     assert (line["did"], line["planned"], line["done_count"]) == ("1×2 @ 80 kg", 1, 1)
+    assert line["e1rm"]  # worked out from the done sets
 
 
 def test_session_list_filters_by_range_and_exercise(program, athlete, gym):

@@ -10,6 +10,7 @@
 """
 
 import datetime
+import uuid
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
 
@@ -29,10 +30,11 @@ class Entry:
     """One exercise in one finished session, as the history strip and PRs read it."""
 
     date: datetime.date
-    log_id: int
-    session_exercise_id: int
-    exercise_id: int | None
+    log_id: uuid.UUID
+    session_exercise_id: uuid.UUID
+    exercise_id: uuid.UUID | None
     name: str
+    started_at: datetime.datetime | None = None  # the session's; orders same-day entries
     sets: list = field(default_factory=list)  # done SetLogs, in order
 
     @property
@@ -118,7 +120,12 @@ def _entries(athlete, exercise_ids=None, exclude_log=None):
         entry = entries.get(se.pk)
         if entry is None:
             entry = entries[se.pk] = Entry(
-                se.session_log.date, se.session_log_id, se.pk, se.exercise_id, se.exercise_name
+                se.session_log.date,
+                se.session_log_id,
+                se.pk,
+                se.exercise_id,
+                se.exercise_name,
+                se.session_log.started_at,
             )
         entry.sets.append(s)
     return list(entries.values())  # dicts keep insertion order: newest first

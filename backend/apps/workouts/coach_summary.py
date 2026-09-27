@@ -28,7 +28,7 @@ def asked_text(se, unit):
 def exercise_line(se, unit, pr_ids):
     done = [s for s in se.sets.all() if s.done]
     entry = history.Entry(
-        se.session_log.date, se.session_log_id, se.pk, se.exercise_id, se.exercise_name, done
+        se.session_log.date, se.session_log_id, se.pk, se.exercise_id, se.exercise_name, sets=done
     )
     e1rm = entry.best_e1rm
     return {

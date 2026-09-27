@@ -1,7 +1,9 @@
 """Template editor and apply-preview rules (apps/library/services.py, apply.py), tested
 directly."""
 
+import datetime
 from decimal import Decimal
+from types import SimpleNamespace
 
 import pytest
 
@@ -172,3 +174,41 @@ def test_sources_are_programs_and_saved_weeks(template, coach, gym):
     week = services.new_template(gym, TemplateKind.WEEK, coach.user)
     assert set(apply.sources(gym)) == {template, week}
     assert apply.first_source(gym, "week") == week
+
+
+# ---------------------------------------------------------------- tag slots and placements (S1: M8-M10)
+
+
+def _slot(exercise, tag_ids):
+    tags = [SimpleNamespace(pk=t) for t in tag_ids]
+    return SimpleNamespace(is_tag=True, exercise=exercise, tags=SimpleNamespace(all=lambda: tags))
+
+
+def test_a_tag_slot_with_no_tags_keeps_its_default():
+    # M8: an empty tag set is a subset of every exercise's tags, so anything matched.
+    default, other = SimpleNamespace(pk=1, tag_ids=set()), SimpleNamespace(pk=2, tag_ids={9})
+    recent = {2: (datetime.date(2026, 9, 20), None)}
+    assert apply.resolve(_slot(default, []), recent, apply.RECENT, [default, other]) is default
+
+
+def test_a_same_day_tie_goes_to_the_later_session(athlete, gym):
+    # M9: recency kept only the date, so two lifts done the same day tied.
+    from apps.workouts.models import SessionExercise, SessionLog, SetLog
+
+    day = athlete.today() - datetime.timedelta(days=2)
+    for hour, key in ((7, "sn"), (18, "psn")):
+        at = datetime.datetime.combine(day, datetime.time(hour), tzinfo=datetime.UTC)
+        log = SessionLog.objects.create(athlete=athlete, date=day, started_at=at, finished_at=at)
+        se = SessionExercise.objects.create(session_log=log, exercise=ex(gym, key), exercise_name=key)
+        SetLog.objects.create(session_exercise=se, set_number=1, load_kg=50, reps=2, done=True)
+    recent = apply._recent_by_exercise(athlete)
+    assert recent[ex(gym, "psn").pk] > recent[ex(gym, "sn").pk]
+
+
+def test_confirming_a_placement_that_no_longer_exists_is_refused(template, athlete, coach, gym):
+    # M10: it silently fell back to the first option.
+    services.add_slot(session(template), ex(gym, "sn"))
+    with pytest.raises(apply.CannotApply):
+        apply.confirm(athlete, template, [0], apply.DEFAULTS, "at:gone", False, coach.user)
+    draft = apply.new_draft(template, athlete) | {"start": "at:gone"}
+    assert apply.preview(template, athlete, draft)["placement"].value == apply.placements(athlete)[0].value
