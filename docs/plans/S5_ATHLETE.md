@@ -102,6 +102,26 @@ That means the phone runs the rules the server runs for what the athlete sees: t
 
 ## 3. Steps
 
+**S5a as built:**
+- **The parity file** (`shared/parity.json`):
+  - A backend test builds a realistic scenario with fixed ids and a still clock, and records what the server's rules show: week views, the player, history and PRs, habits, in kg and lb.
+  - The app's tests must produce the same from the same rows: 55 checks.
+  - Breaking any of several rules on purpose fails them.
+  - Small pure rules (entered numbers, check-in answers) are also in `shared/rules-cases.json`.
+- **Offline end to end** (decision C):
+  - `flow.test.tsx` logs a whole session through the real screens with no connection, and keeps the phone's outbox (`shared/offline-session.json`).
+  - `test_offline_parity.py` pushes that batch to the real server on the same scenario. Every action is accepted, and the server shows what the phone showed.
+  - `docs/OFFLINE_CHECKLIST.md` is the manual check for a real phone.
+- **Server changes:**
+  - `/me` carries the gym's week start and the athlete's max-update setting.
+  - Bootstrap sends each lift's best from before the phone's 12 months (`baselines`), so PRs count everything. Habit ticks come for 400 days, as far back as a streak counts.
+  - History's order within a session is pinned, where the database's order was unspecified.
+- **Server bugs fixed:**
+  - Timed sets over 24 minutes were refused: the limit was 1440 in whatever unit, and phones send seconds.
+  - Sets queued offline for a session another device had started were rejected as not found. The server now rewrites the rest of the batch to its ids, and the phone its outbox.
+- **Training profile** (decision D): kept on the device from `/me`, so training mode opens offline.
+- **Development build:** `eas.json` and `expo-dev-client` are ready. The build waits for the Android package name, which is permanent once the app is in the Play Store.
+
 **S5a**
 1. The rules: week, sessions and player, history and PRs, habits, check-ins. Cases shared with pytest.
 2. The session actions and their local effects; the engine adopting server ids.

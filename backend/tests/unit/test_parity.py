@@ -14,20 +14,15 @@ everything, the older part through the snapshot's baselines.
 """
 
 import datetime
-import itertools
 import json
 import os
 import pathlib
-import uuid
 from decimal import Decimal
 
 import pytest
-import time_machine
-from django.apps import apps as django_apps
 from django.utils import timezone
 
 from apps.accounts.models import MaxEntry, MeasurementSource
-from apps.core.models import Model as BaseModel
 from apps.programs import dose as doses
 from apps.programs import habits
 from apps.programs import services as program_services
@@ -42,29 +37,6 @@ PATH = pathlib.Path(__file__).resolve().parents[3] / "shared" / "parity.json"
 DAY = datetime.timedelta(days=1)
 MONDAY = datetime.date(2026, 9, 14)  # the program's first day; today is Thursday 24 September
 pytestmark = pytest.mark.django_db(transaction=True)
-
-
-@pytest.fixture
-def still_clock(frozen_clock):
-    """The frozen time, not ticking: every timestamp the same on every run."""
-    with time_machine.travel(timezone.now().replace(microsecond=0), tick=False) as traveller:
-        yield traveller
-
-
-@pytest.fixture
-def fixed_ids(monkeypatch):
-    """Ids 00000000-0000-7000-8000-000000000001, …: the same on every run."""
-    counter = itertools.count(1)
-
-    def next_id():
-        return uuid.UUID(f"00000000-0000-7000-8000-{next(counter):012d}")
-
-    monkeypatch.setattr(uuid, "uuid7", next_id)
-    for model in django_apps.get_models():
-        if issubclass(model, BaseModel):
-            field = model._meta.pk
-            monkeypatch.setattr(field, "default", next_id)
-            field.__dict__.pop("_get_default", None)
 
 
 def at(date, hour):

@@ -1,6 +1,8 @@
 /**
  * A whole session through the real screens, offline, on the parity scenario: today's second
- * session, from the check-in to done.
+ * session, from the check-in to done. What the phone would then send is kept in
+ * shared/offline-session.json, which the backend pushes to the real server on the same
+ * scenario (backend/tests/unit/test_offline_parity.py): run with UPDATE_OFFLINE=1 to rewrite it.
  */
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
@@ -25,6 +27,16 @@ jest.mock('expo-router', () => {
   };
 });
 jest.mock('expo-keep-awake', () => ({ useKeepAwake: () => {} }));
+// Ids the phone makes, the same on every run.
+let mockIds = 0;
+jest.mock('@/domain/ids', () => ({ uuid7: () => `00000000-0000-7000-a000-${String(++mockIds).padStart(12, '0')}` }));
+// Node's file access, for this test only (the app itself has no Node types).
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { readFileSync, writeFileSync } = require('node:fs') as {
+  readFileSync(path: string, encoding: 'utf8'): string;
+  writeFileSync(path: string, text: string): void;
+};
+const OFFLINE_FILE = `${process.cwd()}/../shared/offline-session.json`;
 jest.mock('expo-haptics', () => ({ impactAsync: async () => {}, ImpactFeedbackStyle: { Light: 'light' } }));
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual('react-native');
@@ -34,6 +46,7 @@ jest.mock('react-native-safe-area-context', () => {
 const mockRouter = jest.requireMock('expo-router').router as Record<string, jest.Mock>;
 
 beforeEach(() => {
+  mockIds = 0;
   Object.values(mockRouter).forEach((f) => f.mockClear());
   jest.useFakeTimers({ now: new Date(now), doNotFake: ['setTimeout', 'setInterval', 'setImmediate', 'nextTick', 'queueMicrotask'] });
 });
@@ -127,6 +140,15 @@ test('check-in, lifts, finish, done', async () => {
   expect(screen.getByText('7/7')).toBeTruthy();
   expect(screen.getByText('Your results and notes have been shared with Dana.')).toBeTruthy();
   expect(session.engine.status.pending).toBeGreaterThan(10);
+
+  // What the phone sends when it's back online.
+  const outbox = (await session.database.query('SELECT id, name, at, payload FROM outbox ORDER BY seq')).map(
+    ([id, name, at, payload]) => ({ id, name, at, payload: JSON.parse(payload as string) }),
+  );
+  const shown = { counts: [2, 7, 7], rpe: 8, answers: 2, issues: 1 };
+  const text = `${JSON.stringify({ about: 'Written by app/src/training/session/flow.test.tsx (UPDATE_OFFLINE=1); pushed by backend/tests/unit/test_offline_parity.py.', log, shown, actions: outbox }, null, 1)}\n`;
+  if (process.env.UPDATE_OFFLINE) writeFileSync(OFFLINE_FILE, text);
+  expect(readFileSync(OFFLINE_FILE, 'utf8')).toBe(text);
 });
 
 test('a session finished long ago opens read only', async () => {

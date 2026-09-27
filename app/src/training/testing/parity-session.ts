@@ -46,7 +46,9 @@ export async function paritySession(overrides: Partial<TrainingProfile> = {}) {
   });
   const who = { ...profile, ...overrides };
   let n = 0;
-  const engine = makeSyncEngine({ database, transport: offline, who: () => who, newId: () => `action-${++n}` });
+  // Action ids as the server expects them (UUIDs), and the same on every run.
+  const newId = () => `00000000-0000-7000-9000-${String(++n).padStart(12, '0')}`;
+  const engine = makeSyncEngine({ database, transport: offline, who: () => who, newId });
   return { database, engine, profile: who };
 }
 
