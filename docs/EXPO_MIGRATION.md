@@ -39,8 +39,8 @@ Nothing is deployed: the free-tier Render blueprint is disconnected. The offline
 
 **Sub-project 5 (the athlete's app)** is in progress (plan in `docs/plans/S5_ATHLETE.md`):
 - **S5a (the training loop):** the rules ported to the phone and checked against the server's (`shared/parity.json`); the session actions; home and week; check-in, player, finish and done; offline end-to-end checks.
-- **S5a is merged** (PR #10).
-- **S5b (branch `s5b-athlete`):** progress charts, messages (with the new `message.read` action), profile and metrics, onboarding after an invite, and form videos with an upload queue.
+- **S5a and S5b are merged** (PRs #10, #11).
+- S5b covered: progress charts, messages (with the new `message.read` action), profile and metrics, onboarding after an invite, and form videos with an upload queue.
 
 **How to work.** Each sub-project in "Order of work" gets its own short spec (only where this document leaves real decisions open), then an implementation plan, then the build, one branch and PR per sub-project. Keep the Django service tests passing throughout; write tests before fixes for the audit items. When this document and the code disagree, raise it rather than silently diverging; update this document when a decision changes.
 
@@ -431,3 +431,5 @@ function useLive<T>(run: () => Promise<T>, tables: string[]): T | undefined {
 ```
 
 **Checks the spike ran** (all passed on web and iOS with the code above): migrations on first launch; one set plus outbox entry (~10 ms); 13,500-row insert in one transaction (0.8 s web, 1.2 s iOS dev build); indexed history query (3–4 ms); a transaction whose second insert fails leaves the count unchanged; a read issued during an uncommitted transaction doesn't see its rows; data survives reload (web) and force-quit (iOS); a second browser tab fails to open the database (expected; see rule 5).
+
+**Sub-project 6 (the coach on a phone)** is built (plan in `docs/plans/S6_COACH_PHONE.md`, branch `s6-coach`): Today and the attention feed, the roster and invites, an athlete's overview, sessions, metrics and messages, form-video review, and a Messages inbox.

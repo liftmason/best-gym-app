@@ -81,6 +81,19 @@ The same screens serve the web. S7 adds the desktop-first programming screens (t
 
 ## 3. Steps
 
+**As built:**
+- **Navigation:** bottom tabs on a phone (Today, Athletes, Messages, More). At 960 px and wider, the mockup's sidebar. An athlete's page is a hidden tab, so the sidebar stays beside it on the web.
+- **Links to items:** the feed and digest emails link to the app's routes, `/athletes/<id>?tab=…&focus=…` (`alerts.link_for`), and the feed API returns each row's link.
+  - This fixed a bug: an alert key that wasn't a UUID made the whole feed fail. Keys are now parsed with `ids.parse`.
+- **Backend additions:**
+  - `GET /threads` (decision D), a fixed number of queries.
+  - The athlete endpoint carries the header's week, compliance with its band, and streak, from the roster's own summary.
+- **Where PR decisions are:** on the Metrics tab, as "Session PRs" (as the old app had it), with "When a session beats a max". The feed's PR links point there.
+- **Form videos** play in the app with expo-video (Expo Go and the web).
+- **Tests:**
+  - A fake API client typed by the generated schema, spied onto the app's real client.
+  - Every coach endpoint was checked by hand against the local backend's demo data.
+
 1. The coaching shell (tabs and sidebar); API hooks; Today (the key numbers, the feed, sessions today, recent sessions).
 2. Athletes: the roster, sorting and filtering, invites.
 3. An athlete: header, Overview (charts, check-ins, the week, PRs and decisions), Program glance, archiving.
