@@ -86,10 +86,6 @@ jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true, setParams: jest.fn() },
   useLocalSearchParams: () => mockParams,
 }));
-jest.mock('expo-video', () => {
-  const { View } = jest.requireActual('react-native');
-  return { useVideoPlayer: () => ({}), VideoView: () => <View accessibilityLabel="Video player" /> };
-});
 jest.mock('@/auth/me', () => ({ useMe: () => ({ data: { coach: { gym: { units: 'kg' } } } }) }));
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual('react-native');
