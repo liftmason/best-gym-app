@@ -65,6 +65,7 @@ PARAMS = {
 # Endpoints whose path parameter is itself the credential, so anyone holding it may use it.
 EXEMPT = {
     ("post", "/api/v1/join/{token}/accept"): "the invite link is the credential",
+    ("post", "/api/v1/auth/social/{provider}/link"): "names a provider; it changes only the caller's account",
 }
 
 # Writes a refused request may still make: counting it for rate limits, and noting when

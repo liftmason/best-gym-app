@@ -2542,6 +2542,19 @@
         "title": "NewWeekType",
         "type": "object"
       },
+      "NonceOut": {
+        "properties": {
+          "nonce": {
+            "title": "Nonce",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nonce"
+        ],
+        "title": "NonceOut",
+        "type": "object"
+      },
       "Note": {
         "properties": {
           "note": {
@@ -3741,6 +3754,29 @@
           "summary"
         ],
         "title": "SlotOut",
+        "type": "object"
+      },
+      "SocialIn": {
+        "properties": {
+          "device": {
+            "default": "",
+            "title": "Device",
+            "type": "string"
+          },
+          "id_token": {
+            "title": "Id Token",
+            "type": "string"
+          },
+          "nonce": {
+            "title": "Nonce",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id_token",
+          "nonce"
+        ],
+        "title": "SocialIn",
         "type": "object"
       },
       "Source": {
@@ -7399,6 +7435,29 @@
         ]
       }
     },
+    "/api/v1/auth/nonce": {
+      "get": {
+        "description": "A one-time value for an Apple or Google sign-in (10 minutes).",
+        "operationId": "apps_signin_api_nonce",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NonceOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Nonce",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
     "/api/v1/auth/refresh": {
       "post": {
         "description": "New tokens for a refresh token (from the body, or the web app's cookie).",
@@ -7480,6 +7539,90 @@
           }
         },
         "summary": "Coach Sign Up",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
+    "/api/v1/auth/social/{provider}": {
+      "post": {
+        "description": "Sign in with an identity token from Apple or Google. A new person gets a sign-up\nticket, as with an email code; the sign-in method is linked when they finish.",
+        "operationId": "apps_signin_api_social_sign_in",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "title": "Provider",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Social Sign In",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
+    "/api/v1/auth/social/{provider}/link": {
+      "post": {
+        "description": "Add Apple or Google sign-in to the signed-in account (e.g. an Apple relay address).",
+        "operationId": "apps_signin_api_link_social",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "title": "Provider",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Link Social",
         "tags": [
           "Sign-in"
         ]

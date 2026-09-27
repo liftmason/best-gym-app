@@ -148,6 +148,12 @@ REVIEW_ACCOUNT_CODE = os.environ.get("REVIEW_ACCOUNT_CODE", "").strip()
 DEMO_SIGNIN_CODE = ""
 DEMO_EMAIL_DOMAIN = "ironridge.example"
 
+# Sign in with Apple and Google: the client ids tokens must be issued to (the iOS bundle id
+# and the web Services ID for Apple; the iOS, Android and web client ids for Google),
+# comma-separated. Blank turns that provider off.
+APPLE_CLIENT_IDS = [c.strip() for c in os.environ.get("APPLE_CLIENT_IDS", "").split(",") if c.strip()]
+GOOGLE_CLIENT_IDS = [c.strip() for c in os.environ.get("GOOGLE_CLIENT_IDS", "").split(",") if c.strip()]
+
 # Email: invites, reminders and the digest. EMAIL_PROVIDER is "resend" or "postmark" (with
 # EMAIL_API_KEY) to send for real, or blank / "console" to print email instead. Anything
 # else stops the site from starting (config/settings/checks.py).

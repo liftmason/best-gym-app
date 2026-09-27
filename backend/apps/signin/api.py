@@ -133,7 +133,7 @@ def coach_sign_up(request, data: CoachSignUpIn):
         starter=data.starter,
         timezone=data.timezone,
     )
-    services.link_email(coach.user, email)
+    services.link_ticket(coach.user, data.ticket)
     return signed_in(request, services.open_session(coach.user, data.device), status=201)
 
 
@@ -172,4 +172,47 @@ def devices(request):
 @router.post("/devices/{device_id}/signout", response={204: None})
 def sign_out_device(request, device_id: uuid.UUID):
     services.sign_out_device(request.user, device_id)
+    return Status(204, None)
+
+
+# ---------------------------------------------------------------- Apple and Google
+
+
+class NonceOut(Schema):
+    nonce: str  # give the provider its SHA-256 (hex); send it back with the token
+
+
+class SocialIn(Schema):
+    id_token: str
+    nonce: str
+    device: str = ""
+
+
+@router.get("/nonce", auth=None, response=NonceOut)
+def nonce(request):
+    """A one-time value for an Apple or Google sign-in (10 minutes)."""
+    from . import social
+
+    return {"nonce": social.new_nonce()}
+
+
+@router.post("/social/{provider}", auth=None, response=VerifyOut)
+def social_sign_in(request, provider: str, data: SocialIn):
+    """Sign in with an identity token from Apple or Google. A new person gets a sign-up
+    ticket, as with an email code; the sign-in method is linked when they finish."""
+    from . import social
+
+    limit(request, "social", 30, 15 * 60)
+    user, ticket = social.sign_in(provider, data.id_token, data.nonce)
+    if user is None:
+        return {"signed_in": False, "tokens": None, "ticket": ticket}
+    return signed_in(request, services.open_session(user, data.device), wrap=True)
+
+
+@router.post("/social/{provider}/link", response={204: None})
+def link_social(request, provider: str, data: SocialIn):
+    """Add Apple or Google sign-in to the signed-in account (e.g. an Apple relay address)."""
+    from . import social
+
+    social.link_signed_in(request.user, provider, data.id_token, data.nonce)
     return Status(204, None)

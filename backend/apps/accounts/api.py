@@ -157,5 +157,5 @@ def join_new(request, token: str, data: JoinNewIn):
     limit(request, "join", 10, 3600)
     email = signin.ticket_email(data.ticket)
     athlete = invites.accept(_invite(token).pk, name=data.name, email=email, timezone_name=data.timezone)
-    signin.link_email(athlete.user, email)
+    signin.link_ticket(athlete.user, data.ticket)
     return signed_in(request, signin.open_session(athlete.user, data.device), status=201)
