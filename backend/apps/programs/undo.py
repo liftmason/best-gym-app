@@ -17,7 +17,7 @@ from django.db import transaction
 
 from apps.exercises.models import Exercise, Tag
 
-from .models import EditHistory, PrescribedSet, Prescription, ProgramSession, WeekType
+from .models import EditHistory, PrescribedSet, Prescription, PrescriptionTag, ProgramSession, WeekType
 from .prescriptions import COPIED_FIELDS
 
 UNDO_DEPTH = 50
@@ -109,48 +109,66 @@ def restore(week, snap):
 
     days = {(d.date - week.start_date).days: d for d in week.days.all()}
     gym = week.program.athlete.gym
-    restored_sessions, restored_rx, left = set(), set(), set()
+    wanted = [r for s in snap["sessions"] for r in s["prescriptions"]]
+    # Everything restoring reads, loaded up front (audit M15): sessions, exercises, tags and
+    # the prescriptions themselves, from anywhere in the program (one may have moved week).
+    sessions = {str(x.pk): x for x in ProgramSession.objects.filter(day__week=week)}
+    exercises = {
+        str(e.pk): e for e in Exercise.objects.filter(gym=gym, pk__in={r["exercise"] for r in wanted})
+    }
+    tags = {str(t.pk): t for t in Tag.objects.filter(gym=gym, pk__in={t for r in wanted for t in r["tags"]})}
+    existing = {
+        str(rx.pk): rx
+        for rx in Prescription.objects.filter(
+            pk__in=[r["id"] for r in wanted], session__day__week__program=week.program
+        ).select_related("session__day")
+    }
+    restored_sessions, left, updated, created, overrides, tagged = set(), set(), [], [], [], []
     # Put sessions and exercises back first, then delete what the snapshot didn't have:
     # deleting a session first would cascade to exercises that are about to move back.
     for s in snap["sessions"]:
         day = days.get(s["day"])
         if day is None:
             continue
-        session = ProgramSession.objects.filter(pk=s["id"], day__week=week).first() or ProgramSession(day=day)
+        session = sessions.get(s["id"]) or ProgramSession(pk=s["id"], day=day)
         session.day, session.order, session.name = day, s["order"], s["name"]
         session.save()
         restored_sessions.add(session.pk)
         for r in s["prescriptions"]:
-            exercise = Exercise.objects.filter(pk=r["exercise"], gym=gym).first()
+            exercise = exercises.get(r["exercise"])
             if exercise is None:
                 continue  # deleted from the library since
-            # Anywhere in the program: it may have been moved to another week since.
-            rx = (
-                Prescription.objects.filter(pk=r["id"], session__day__week__program=week.program).first()
-                or Prescription()
-            )
-            # (A new row already has its UUID, so ask whether it's saved, not whether it has an id.)
-            if not rx._state.adding and rx.session_id != session.pk and rx.session.day.week_id != week.pk:
-                left.add(rx.session)
+            rx = existing.get(r["id"])
+            if rx is None:
+                rx = Prescription(pk=r["id"])  # removed since: back with the same id
+                created.append(rx)
+            else:
+                if rx.session.day.week_id != week.pk:
+                    left.add(rx.session)
+                updated.append(rx)
             rx.session, rx.order, rx.exercise = session, r["order"], exercise
             for field, value in r["fields"].items():
                 setattr(rx, field, Decimal(value) if field == "load_value" and value is not None else value)
-            rx.save()
-            restored_rx.add(rx.pk)
-            rx.tag_slot_tags.set(Tag.objects.filter(gym=gym, pk__in=r["tags"]))
-            rx.set_overrides.all().delete()
-            PrescribedSet.objects.bulk_create(
-                [
-                    PrescribedSet(
-                        prescription=rx,
-                        set_number=o["set_number"],
-                        rep_scheme=o["rep_scheme"],
-                        reps=o["reps"],
-                        load_value=Decimal(o["load_value"]) if o["load_value"] is not None else None,
-                    )
-                    for o in r["overrides"]
-                ]
-            )
+            tagged.append((rx, [tags[t] for t in r["tags"] if t in tags]))
+            overrides += [
+                PrescribedSet(
+                    prescription=rx,
+                    set_number=o["set_number"],
+                    rep_scheme=o["rep_scheme"],
+                    reps=o["reps"],
+                    load_value=Decimal(o["load_value"]) if o["load_value"] is not None else None,
+                )
+                for o in r["overrides"]
+            ]
+    Prescription.objects.bulk_update(updated, ["session", "order", "exercise", *COPIED_FIELDS])
+    Prescription.objects.bulk_create(created)
+    restored_rx = {rx.pk for rx in updated + created}
+    PrescribedSet.objects.filter(prescription__in=restored_rx).delete()
+    PrescribedSet.objects.bulk_create(overrides)
+    PrescriptionTag.objects.filter(prescription__in=restored_rx).delete()
+    PrescriptionTag.objects.bulk_create(
+        [PrescriptionTag(prescription=rx, tag=t) for rx, ts in tagged for t in ts]
+    )
     logged = set(
         ProgramSession.objects.filter(day__week=week, logs__isnull=False).values_list("pk", flat=True)
     )

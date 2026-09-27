@@ -395,10 +395,9 @@ def move_prescription(rx, target_session, index, by=None):
     index = max(0, min(index, len(siblings)))
     siblings.insert(index, rx)
     rx.session = target_session
-    rx.save(update_fields=["session"])
     for order, item in enumerate(siblings):
-        if item.order != order:
-            Prescription.objects.filter(pk=item.pk).update(order=order)
+        item.order = order
+    Prescription.objects.bulk_update(siblings, ["session", "order"])  # one query (audit M15)
     keep_warmups_first(target_session)
     if old_session.pk != target_session.pk:
         if _empty_and_unused(old_session):
@@ -408,8 +407,11 @@ def move_prescription(rx, target_session, index, by=None):
 
 
 def _renumber(session):
-    for order, pk in enumerate(session.prescriptions.values_list("pk", flat=True)):
-        Prescription.objects.filter(pk=pk).exclude(order=order).update(order=order)
+    items = list(session.prescriptions.only("pk", "order"))
+    changed = [item for order, item in enumerate(items) if item.order != order]
+    for item in changed:
+        item.order = items.index(item)
+    Prescription.objects.bulk_update(changed, ["order"])
 
 
 def swap_candidates(rx):

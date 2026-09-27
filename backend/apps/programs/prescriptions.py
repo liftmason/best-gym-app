@@ -183,9 +183,11 @@ def keep_warmups_first(session):
     so the board, the drag-and-drop positions and the player all agree."""
     items = list(session_items(session).order_by("order", "id"))
     ordered = sorted(items, key=lambda i: not i.warmup)
-    for order, item in enumerate(ordered):
-        if item.order != order:
-            type(item).objects.filter(pk=item.pk).update(order=order)
+    changed = [item for order, item in enumerate(ordered) if item.order != order]
+    for item in changed:
+        item.order = ordered.index(item)
+    if changed:
+        type(changed[0]).objects.bulk_update(changed, ["order"])
 
 
 def layout(items, get=lambda item: item):

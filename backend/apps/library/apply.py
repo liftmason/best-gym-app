@@ -195,12 +195,17 @@ def _write_week(program, order, start_date, planned, publish):
     days = ProgramDay.objects.bulk_create(
         [ProgramDay(week=week, date=start_date + datetime.timedelta(days=i)) for i in range(7)]
     )
+    pairs, tagged = [], []
     for offset, session_plan in planned.days.items():
         session = ProgramSession.objects.create(day=days[offset], order=0, name=session_plan.source.name)
         for i, (slot, exercise) in enumerate(session_plan.exercises):
-            rx = services.copy_dose(slot, Prescription(session=session, order=i, exercise=exercise))
+            rx = Prescription(session=session, order=i, exercise=exercise)
+            pairs.append((slot, rx))
             if slot.is_tag:
-                rx.tag_slot_tags.set(slot.tags.all())
+                tagged.append((rx, slot.tags.all()))
+    # The week's exercises, their set overrides and tags in three queries (audit M15).
+    services.copy_doses(pairs)
+    services.add_tags(Prescription._meta.get_field("tag_slot_tags"), tagged)
     if publish:
         program_services.set_published(week, True)
     return week

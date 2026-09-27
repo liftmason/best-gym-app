@@ -43,9 +43,15 @@ def _done_dates(habit, start, end):
     return set(habit.logs.filter(date__gte=start, date__lte=end).values_list("date", flat=True))
 
 
-def week_count(habit, date):
+LOOKBACK = 400 * DAY  # how far back a streak is counted
+
+
+def week_count(habit, date, done=None):
+    """Times done in the training week containing `date` (from `done` dates if given)."""
     start = habit.athlete.gym.week_start_for(date)
-    return len(_done_dates(habit, start, start + 6 * DAY))
+    if done is None:
+        done = _done_dates(habit, start, start + 6 * DAY)
+    return sum(1 for d in done if start <= d <= start + 6 * DAY)
 
 
 def is_due(habit, date, training=None):
@@ -55,24 +61,30 @@ def is_due(habit, date, training=None):
     return True
 
 
-def streak(habit, today):
-    """Days (or, for weekly targets, weeks) in a row, counted back from today."""
+def streak(habit, today, done=None, training=None):
+    """Days (or, for weekly targets, weeks) in a row, counted back from today, up to
+    LOOKBACK. `done` (dates ticked since LOOKBACK) and `training` (training dates in that
+    time) can be passed in to save queries when showing several habits."""
     athlete = habit.athlete
+    lookback = today - LOOKBACK
+    if done is None:
+        done = _done_dates(habit, lookback, today)
     if habit.weekly_target:
-        gym = athlete.gym
-        week = gym.week_start_for(today)
-        count = 0
-        if week_count(habit, today) >= habit.weekly_target:
-            count += 1
+        week_start = athlete.gym.week_start_for
+        per_week = {}
+        for d in done:
+            per_week[week_start(d)] = per_week.get(week_start(d), 0) + 1
+        week = week_start(today)
+        count = 1 if per_week.get(week, 0) >= habit.weekly_target else 0
         week -= 7 * DAY
-        while week_count(habit, week) >= habit.weekly_target:
+        while week >= lookback and per_week.get(week, 0) >= habit.weekly_target:
             count += 1
             week -= 7 * DAY
         return count
-    lookback = today - 400 * DAY
-    done = _done_dates(habit, lookback, today)
     if habit.cadence == Habit.Cadence.TRAINING:
-        days = sorted(training_dates(athlete, lookback, today), reverse=True)
+        if training is None:
+            training = training_dates(athlete, lookback, today)
+        days = sorted((d for d in training if lookback <= d <= today), reverse=True)
     else:
         # Every day back from today; the count stops at the first day not done.
         days = [today - i * DAY for i in range((today - lookback).days + 1)]
@@ -94,25 +106,35 @@ def last_seven(habit, today):
 
 def for_day(athlete, date):
     """The athlete's habits for a day: those due, plus weekly ones already met ("done for
-    this week"). Each item: habit, done (that day), streak, met_for_week."""
+    this week"). Each item: habit, done (that day), streak, met_for_week. A fixed number of
+    queries however many habits there are (audit M14)."""
     habits = list(active(athlete))
-    training = training_dates(athlete, date, date)
-    items = []
+    if not habits:
+        return []
     today = athlete.today()
+    week = athlete.gym.week_start_for(date)
+    start, end = min(today - LOOKBACK, week), max(today, week + 6 * DAY, date)
+    done = {h.pk: set() for h in habits}
+    for habit_id, day in HabitLog.objects.filter(
+        habit__in=habits, date__gte=start, date__lte=end
+    ).values_list("habit_id", "date"):
+        done[habit_id].add(day)
+    training = training_dates(athlete, start, end)
+    items = []
     for h in habits:
-        done = h.logs.filter(date=date).exists()
+        is_done = date in done[h.pk]
         target = h.weekly_target
-        count = week_count(h, date) if target else None
-        met = bool(target) and count >= target and not done
-        if not is_due(h, date, training) and not done:
+        count = week_count(h, date, done[h.pk]) if target else None
+        met = bool(target) and count >= target and not is_done
+        if not is_due(h, date, training) and not is_done:
             continue
         items.append(
             {
                 "habit": h,
-                "done": done,
+                "done": is_done,
                 "met_for_week": met,
                 "week_count": count,
-                "streak": streak(h, today),
+                "streak": streak(h, today, done={d for d in done[h.pk] if d <= today}, training=training),
             }
         )
     return items
