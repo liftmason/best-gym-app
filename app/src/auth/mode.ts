@@ -2,10 +2,10 @@
  * Coaching or Training. One account can have a coach profile, an athlete profile, or both;
  * with both, the app opens in the mode last used (coaching the first time).
  */
-import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
-
 import type { components } from '@/api';
+import type { Who } from '@/sync/engine';
+
+import { getPref, setPref } from './prefs';
 
 export type Mode = 'coaching' | 'training';
 type Me = components['schemas']['MeOut'];
@@ -23,19 +23,26 @@ export function modeFor(me: Pick<Me, 'coach' | 'athlete'>, last: Mode | null): M
 const KEY = 'gt.mode';
 
 export async function lastMode(): Promise<Mode | null> {
+  const saved = await getPref(KEY);
+  return saved === 'coaching' || saved === 'training' ? saved : null;
+}
+
+export function rememberMode(mode: Mode): Promise<void> {
+  return setPref(KEY, mode);
+}
+
+const ATHLETE = 'gt.athlete';
+
+/** Whose training this device holds, so training mode opens offline without /me. */
+export async function lastAthlete(): Promise<Who | null> {
   try {
-    const saved = Platform.OS === 'web' ? globalThis.localStorage?.getItem(KEY) : await SecureStore.getItemAsync(KEY);
-    return saved === 'coaching' || saved === 'training' ? saved : null;
+    const saved = JSON.parse((await getPref(ATHLETE)) ?? 'null');
+    return typeof saved?.athleteId === 'string' && typeof saved?.userId === 'string' ? saved : null;
   } catch {
     return null;
   }
 }
 
-export async function rememberMode(mode: Mode): Promise<void> {
-  try {
-    if (Platform.OS === 'web') globalThis.localStorage?.setItem(KEY, mode);
-    else await SecureStore.setItemAsync(KEY, mode);
-  } catch {
-    // Only a convenience: the next start opens in coaching mode.
-  }
+export function rememberAthlete(who: Who | null): Promise<void> {
+  return setPref(ATHLETE, who && JSON.stringify(who));
 }

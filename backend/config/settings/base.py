@@ -141,7 +141,7 @@ DEMO_STAFF = True
 CORS_ALLOWED_ORIGINS = [o.strip() for o in os.environ.get("WEB_APP_ORIGINS", "").split(",") if o.strip()]
 CORS_URLS_REGEX = r"^/api/.*$"
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = ["authorization", "content-type", "x-client"]
+CORS_ALLOW_HEADERS = ["authorization", "content-type", "x-client", "x-schema-version"]
 
 # Sign-in codes (apps/signin). The app-review account (App Store, Play) gets a fixed code;
 # in development the seeded demo users (@DEMO_EMAIL_DOMAIN) do (local settings).

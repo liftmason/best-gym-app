@@ -1,14 +1,18 @@
 /**
  * The phone's tables. The synced ones are generated from the server (schema.generated.ts).
- * When their description changes, they're dropped and made again, and the next sync
- * downloads everything afresh (S4 decision E). The local ones (the outbox of actions not yet
- * sent, and the sync state) are never wiped: what the athlete did offline survives an update.
- * A later change to a local table must add an ALTER here, not a drop.
+ * The local ones: the outbox (actions not yet sent), local_changes (what those actions did to
+ * the synced tables, so a pull can undo it before laying the server's rows down) and
+ * sync_state.
+ *
+ * When the synced tables' description changes, they're dropped and made again, and the next
+ * sync downloads everything afresh (S4 decision E). The outbox is kept: what the athlete did
+ * offline survives an update, and applies again after the download. A later change to a
+ * local table must add an ALTER here, not a drop.
  */
 import type { Database, Tx } from './database';
 import { CREATE, SCHEMA_HASH, SCHEMA_VERSION } from './schema.generated';
 
-export const LOCAL_TABLES = ['outbox', 'sync_state'] as const;
+export const LOCAL_TABLES = ['outbox', 'local_changes', 'sync_state'] as const;
 
 const CREATE_LOCAL = `
 CREATE TABLE IF NOT EXISTS outbox (
@@ -18,6 +22,13 @@ CREATE TABLE IF NOT EXISTS outbox (
   payload TEXT NOT NULL,
   at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS local_changes (
+  seq INTEGER PRIMARY KEY AUTOINCREMENT,
+  action_id TEXT NOT NULL,
+  tbl TEXT NOT NULL,
+  row_id TEXT NOT NULL,
+  before TEXT
+);
 CREATE TABLE IF NOT EXISTS sync_state (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL
@@ -25,7 +36,7 @@ CREATE TABLE IF NOT EXISTS sync_state (
 `;
 
 /** sync_state keys. `schema` is the synced tables' description; the rest belong to the sync engine. */
-export const STATE = { schema: 'schema', cursor: 'cursor', historyFrom: 'history_from' } as const;
+export const STATE = { schema: 'schema', cursor: 'cursor', historyFrom: 'history_from', owner: 'owner' } as const;
 
 export async function getState(tx: Pick<Tx, 'query'>, key: string): Promise<string | null> {
   const rows = await tx.query('SELECT value FROM sync_state WHERE key = ?', [key]);
@@ -53,6 +64,7 @@ export function prepare(database: Database): Promise<boolean> {
       if (!(LOCAL_TABLES as readonly string[]).includes(name as string)) await tx.run(`DROP TABLE "${name}"`);
     }
     for (const sql of CREATE) await tx.run(sql);
+    await tx.run('DELETE FROM local_changes'); // their rows are gone; pending actions apply again after bootstrap
     for (const key of Object.values(STATE)) await setState(tx, key, null);
     await setState(tx, STATE.schema, current);
     return true;

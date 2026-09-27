@@ -2,9 +2,10 @@ import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import { api, ApiError } from '@/api';
+import { ApiError } from '@/api';
 import { SignInFrame } from '@/auth/frame';
 import { useMe } from '@/auth/me';
+import { signOut } from '@/auth/sign-out';
 import { HOME, lastMode, modeFor, type Mode } from '@/auth/mode';
 import { Button, colors, Text } from '@/ui';
 
@@ -27,7 +28,7 @@ export default function Index() {
 
   if (me.isError) {
     const offline = me.error instanceof ApiError && me.error.offline;
-    // An athlete trains offline: the local copy arrives with sync (S4b).
+    // An athlete trains offline, on this device's copy.
     if (offline && last === 'training') return <Redirect href={HOME.training} />;
     return (
       <SignInFrame>
@@ -36,7 +37,7 @@ export default function Index() {
           {offline ? 'Check your connection and try again.' : 'Try again in a moment.'}
         </Text>
         <Button title="Try again" onPress={() => me.refetch()} />
-        <Button title="Sign out" variant="ghost" onPress={() => api.signOut()} />
+        <Button title="Sign out" variant="ghost" onPress={signOut} />
       </SignInFrame>
     );
   }
@@ -49,7 +50,7 @@ export default function Index() {
         <Text variant="small" tone="muted">
           Signed in as {me.data.email}. To train with a coach, open the invite link they sent you.
         </Text>
-        <Button title="Sign out" variant="ghost" onPress={() => api.signOut()} />
+        <Button title="Sign out" variant="ghost" onPress={signOut} />
       </SignInFrame>
     );
   }
