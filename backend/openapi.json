@@ -139,6 +139,10 @@
           "athlete": {
             "$ref": "#/components/schemas/AthleteRef"
           },
+          "band": {
+            "title": "Band",
+            "type": "string"
+          },
           "competition_date": {
             "anyOf": [
               {
@@ -154,6 +158,17 @@
           "competition_name": {
             "title": "Competition Name",
             "type": "string"
+          },
+          "compliance": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Compliance"
           },
           "email": {
             "title": "Email",
@@ -186,9 +201,23 @@
             "title": "Missing Metrics",
             "type": "array"
           },
+          "streak": {
+            "title": "Streak",
+            "type": "integer"
+          },
           "units": {
             "title": "Units",
             "type": "string"
+          },
+          "week": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HeaderWeek"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "weight_class": {
             "title": "Weight Class",
@@ -206,7 +235,11 @@
           "max_updates",
           "hide_history_before_link",
           "metrics",
-          "missing_metrics"
+          "missing_metrics",
+          "week",
+          "compliance",
+          "band",
+          "streak"
         ],
         "title": "AthleteOut",
         "type": "object"
@@ -1708,6 +1741,36 @@
           "last_seven"
         ],
         "title": "HabitOut",
+        "type": "object"
+      },
+      "HeaderWeek": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "week_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WeekTypeRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "week_type"
+        ],
+        "title": "HeaderWeek",
         "type": "object"
       },
       "HistoryIn": {

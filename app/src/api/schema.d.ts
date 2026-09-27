@@ -2527,10 +2527,14 @@ export interface components {
         /** AthleteOut */
         AthleteOut: {
             athlete: components["schemas"]["AthleteRef"];
+            /** Band */
+            band: string;
             /** Competition Date */
             competition_date: string | null;
             /** Competition Name */
             competition_name: string;
+            /** Compliance */
+            compliance: number | null;
             /** Email */
             email: string;
             /** Hide History Before Link */
@@ -2546,8 +2550,11 @@ export interface components {
             metrics: components["schemas"]["MetricOut"][];
             /** Missing Metrics */
             missing_metrics: string[];
+            /** Streak */
+            streak: number;
             /** Units */
             units: string;
+            week: components["schemas"]["HeaderWeek"] | null;
             /** Weight Class */
             weight_class: string;
         };
@@ -3226,6 +3233,17 @@ export interface components {
             note: string;
             /** Streak */
             streak: number;
+        };
+        /** HeaderWeek */
+        HeaderWeek: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Label */
+            label: string;
+            week_type: components["schemas"]["WeekTypeRef"] | null;
         };
         /** HistoryIn */
         HistoryIn: {

@@ -33,6 +33,9 @@ def test_an_athlete_and_their_metrics_in_the_gyms_unit(api, athlete, gym):
     assert float(BodyweightEntry.objects.get().kg) == pytest.approx(81.65, abs=0.01)
     body = api.get(f"/api/v1/athletes/{athlete.pk}").json()
     assert body["athlete"]["name"] == "Maya Torres" and "bodyweight" not in body["missing_metrics"]
+    # The header: no program yet, so no week; nothing scheduled, so no compliance and no streak.
+    assert body["week"] is None and body["compliance"] is None
+    assert body["band"] == "good" and body["streak"] == 0
     history = api.get(f"/api/v1/athletes/{athlete.pk}/metrics").json()["history"]
     assert history[0]["what"] == "Bodyweight" and history[0]["value"] == "180 lb"
 

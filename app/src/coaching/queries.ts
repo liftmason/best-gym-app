@@ -43,3 +43,18 @@ export function useInvites() {
 export function useInviteTemplates() {
   return useQuery({ queryKey: ['coach', 'invite-templates'], queryFn: () => ok(api.client.GET('/api/v1/invites/templates')) });
 }
+
+export function useAthlete(id: string) {
+  return useQuery({
+    queryKey: [...keys.athlete(id), 'header'],
+    queryFn: () => ok(api.client.GET('/api/v1/athletes/{athlete_id}', { params: { path: { athlete_id: id } } })),
+  });
+}
+
+export function useOverview(id: string, lift: string | null) {
+  return useQuery({
+    queryKey: [...keys.athlete(id), 'overview', lift],
+    queryFn: () =>
+      ok(api.client.GET('/api/v1/athletes/{athlete_id}/overview', { params: { path: { athlete_id: id }, query: lift ? { lift } : {} } })),
+  });
+}
