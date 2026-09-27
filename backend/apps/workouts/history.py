@@ -97,9 +97,10 @@ def duration_text(seconds):
     return f"{seconds} s"
 
 
-def _entries(athlete, exercise_ids=None, exclude_log=None, since=None):
+def _entries(athlete, exercise_ids=None, exclude_log=None, since=None, before=None):
     """Every exercise the athlete did in a finished session, newest first; from `since` only
-    when given (a coach the athlete hides earlier history from: accounts.coaching)."""
+    when given (a coach the athlete hides earlier history from: accounts.coaching), and
+    before `before` (what a phone's copy doesn't hold: sync.bootstrap.baselines)."""
     sets = (
         SetLog.objects.filter(
             done=True,
@@ -113,6 +114,8 @@ def _entries(athlete, exercise_ids=None, exclude_log=None, since=None):
     )
     if since is not None:
         sets = sets.filter(session_exercise__session_log__date__gte=since)
+    if before is not None:
+        sets = sets.filter(session_exercise__session_log__date__lt=before)
     if exercise_ids is not None:
         sets = sets.filter(session_exercise__exercise_id__in=exercise_ids)
     if exclude_log is not None:
@@ -177,10 +180,13 @@ def last_line(entry, unit, today):
 # ---------------------------------------------------------------- PRs
 
 
-def lifetime_prs(athlete, since=None):
-    """Per loaded exercise: heaviest set and best e1RM with their dates, most recent PR first."""
+def lifetime_prs(athlete, since=None, before=None, with_ids=False):
+    """Per loaded exercise: heaviest set and best e1RM with their dates, most recent PR first
+    (with `exercise_id` in each when `with_ids`)."""
     best = {}
-    for entry in reversed(_entries(athlete, since=since)):  # oldest first, so ties keep the first time
+    for entry in reversed(
+        _entries(athlete, since=since, before=before)
+    ):  # oldest first, so ties keep the first time
         if entry.exercise_id is None:
             continue
         top = entry.top
@@ -190,6 +196,8 @@ def lifetime_prs(athlete, since=None):
             entry.exercise_id,
             {"name": entry.name, "heaviest": None, "heaviest_date": None, "e1rm": None, "e1rm_date": None},
         )
+        if with_ids:
+            pr["exercise_id"] = entry.exercise_id
         pr["name"] = entry.name
         if pr["heaviest"] is None or top.load_kg > pr["heaviest"].load_kg:
             pr["heaviest"], pr["heaviest_date"] = top, entry.date

@@ -59,6 +59,8 @@ class AthleteProfileOut(Schema):
     coach_name: str | None
     gym_name: str | None
     hide_history_before_link: bool
+    week_start: int  # 0 Monday … 6 Sunday: the gym's training week (weekly habit targets)
+    max_updates: str  # auto: a session's PR becomes the max; coach: the coach decides
 
 
 class MeOut(Schema):
@@ -107,6 +109,8 @@ def me(request):
             "coach_name": athlete.coach.user.name if athlete.active_coaching else None,
             "gym_name": athlete.gym.name if athlete.active_coaching else None,
             "hide_history_before_link": athlete.hide_history_before_link,
+            "week_start": athlete.gym.week_start if athlete.gym else 0,
+            "max_updates": athlete.max_updates,
         }
         if athlete
         else None,

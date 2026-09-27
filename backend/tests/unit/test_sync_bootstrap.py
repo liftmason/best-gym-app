@@ -117,3 +117,24 @@ def test_old_apps_are_told_to_update(athlete, settings, monkeypatch):
         response = api.get("/api/v1/sync/bootstrap")
         assert response.status_code == status, version
     assert response.json()["error"]["code"] == "upgrade_required"
+
+
+def test_a_new_phone_gets_each_lifts_best_from_before_its_twelve_months(athlete, gym):
+    """So its PRs still count everything (sync.bootstrap.baselines)."""
+    old = logged(athlete, gym, days_ago=400)
+    SetLog.objects.create(session_exercise=old.exercises.get(), set_number=2, load_kg=90, reps=1, done=True)
+    logged(athlete, gym, days_ago=10)  # inside the phone's year: not a baseline
+    (best,) = bootstrap.snapshot(athlete)["baselines"].values()
+    assert best["name"] == "Snatch" and best["heaviest_kg"] == "90.00" and best["heaviest_reps"] == 1
+    assert best["e1rm"] == "93.00"  # 90 kg ×1 beats 80 kg ×2's 85.33
+
+
+def test_a_new_phone_gets_habit_ticks_as_far_back_as_a_streak_counts(athlete):
+    from apps.programs import habits
+    from apps.programs.models import HabitLog
+
+    habit = habits.prescribe(athlete, "Sleep", "😴", "daily")
+    for days_ago in (380, 420):
+        HabitLog.objects.create(habit=habit, date=athlete.today() - days_ago * DAY)
+    rows = bootstrap.snapshot(athlete)["tables"]["programs_habitlog"]
+    assert [r["date"] for r in rows] == [(athlete.today() - 380 * DAY).isoformat()]

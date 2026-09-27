@@ -11,6 +11,8 @@ That means the phone runs the rules the server runs for what the athlete sees: t
 
 ## 1. Decisions
 
+**Accepted as recommended** (27 September 2026).
+
 | # | Question | Recommendation | Why |
 |---|---|---|---|
 | A | One PR or two? | **Two.** S5a: the training loop (home and week, check-in, player, finish and done, issues, habits on home) with its actions. S5b: progress, messages, profile and metrics, onboarding after an invite, form videos, older history. | Like S4: S5a is the heart of the app and worth trying on a phone on its own. |
