@@ -246,7 +246,7 @@ def check_warmup(se, checked):
     return se
 
 
-def start_planned(athlete, session_id):
+def start_planned(athlete, session_id, log_id=None, exercise_ids=None):
     """Start (or resume) one of the athlete's planned sessions: in a published week of their
     active program, on its day or a day already past (a missed day filled in afterwards).
     ProgramSession.DoesNotExist for anyone else's or a draft week's; NotYetUnlocked before
@@ -261,13 +261,16 @@ def start_planned(athlete, session_id):
     )
     if session.day.date > athlete.today():
         raise NotYetUnlocked(session.day.date)
-    return start(athlete, session)
+    return start(athlete, session, log_id, exercise_ids)
 
 
 @transaction.atomic
-def start(athlete, program_session):
+def start(athlete, program_session, log_id=None, exercise_ids=None):
     """The log for a planned session, created on first start with a snapshot of every
-    prescription. Starting again (or twice at once) returns the same log."""
+    prescription. Starting again (or twice at once) returns the same log. A phone that
+    started it offline gives the ids it chose: `log_id`, and `exercise_ids` mapping each
+    prescription's id to its SessionExercise's."""
+    exercise_ids = {str(k): v for k, v in (exercise_ids or {}).items()}
     existing = SessionLog.objects.filter(program_session=program_session).first()
     if existing:
         return existing
@@ -278,6 +281,7 @@ def start(athlete, program_session):
     try:
         with transaction.atomic():
             log = SessionLog.objects.create(
+                **({"id": log_id} if log_id else {}),
                 athlete=athlete,
                 program_session=program_session,
                 date=day.date,
@@ -292,6 +296,7 @@ def start(athlete, program_session):
     SessionExercise.objects.bulk_create(
         [
             SessionExercise(
+                **({"id": exercise_ids[str(rx.pk)]} if str(rx.pk) in exercise_ids else {}),
                 session_log=log,
                 prescription=rx,
                 exercise=rx.exercise,
@@ -320,7 +325,19 @@ def _number(value, name, limit, whole=False):
     return number
 
 
-def log_set(se, number, *, load=None, reps=None, time=None, time_unit="s", rir=None, done=False, unit="kg"):
+def log_set(
+    se,
+    number,
+    *,
+    load=None,
+    reps=None,
+    time=None,
+    time_unit="s",
+    rir=None,
+    done=False,
+    unit="kg",
+    set_id=None,
+):
     """One set as the athlete entered it: load in their `unit`, time in minutes or seconds.
     Validates, converts and saves; SessionClosed once the edit window has passed."""
     _open(se.session_log)
@@ -340,15 +357,26 @@ def log_set(se, number, *, load=None, reps=None, time=None, time_unit="s", rir=N
         duration_seconds=int(time * (60 if time_unit == "min" else 1)) if time is not None else None,
         rir=rir,
         done=bool(done),
+        set_id=set_id,
     )
 
 
 @transaction.atomic
-def save_set(se, set_number, *, load_kg, reps, duration_seconds, rir, done):
+def save_set(se, set_number, *, load_kg, reps, duration_seconds, rir, done, set_id=None):
     log = _locked(se.session_log)
     row, _ = SetLog.objects.update_or_create(
         session_exercise=se,
         set_number=set_number,
+        create_defaults={
+            "id": set_id,
+            "load_kg": load_kg,
+            "reps": reps,
+            "duration_seconds": duration_seconds,
+            "rir": rir,
+            "done": done,
+        }
+        if set_id
+        else None,
         defaults={
             "load_kg": load_kg,
             "reps": reps,

@@ -1,6 +1,43 @@
 {
   "components": {
     "schemas": {
+      "Action": {
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Payload",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Action",
+        "type": "object"
+      },
       "Answer": {
         "properties": {
           "other": {
@@ -2743,6 +2780,48 @@
         "title": "OptionIn",
         "type": "object"
       },
+      "Outcome": {
+        "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ],
+        "title": "Outcome",
+        "type": "object"
+      },
       "OverviewOut": {
         "properties": {
           "chart": {
@@ -3230,6 +3309,38 @@
           "library"
         ],
         "title": "PullOut",
+        "type": "object"
+      },
+      "PushIn": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/Action"
+            },
+            "title": "Actions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "actions"
+        ],
+        "title": "PushIn",
+        "type": "object"
+      },
+      "PushOut": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/Outcome"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "title": "PushOut",
         "type": "object"
       },
       "Pushed": {
@@ -9932,6 +10043,44 @@
           }
         ],
         "summary": "Pull",
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
+    "/api/v1/sync/push": {
+      "post": {
+        "description": "The athlete's actions, in the order they happened. Push before pulling.",
+        "operationId": "apps_sync_api_push",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Push",
         "tags": [
           "Sync"
         ]

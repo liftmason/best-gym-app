@@ -160,6 +160,22 @@ def toggle(habit, date):
     return True
 
 
+@transaction.atomic
+def set_done(habit, date, done, today=None):
+    """Mark a day done or not done: the same call again changes nothing (what sync sends,
+    rather than a toggle). `today` is the athlete's day when they did it, so a tick synced
+    late is still checked against the window it was made in."""
+    core.lock(habit)
+    today = today or habit.athlete.today()
+    if not today - (TICKABLE_DAYS - 1) * DAY <= date <= today:
+        raise CannotTick("Only today and yesterday can be ticked.")
+    if done:
+        HabitLog.objects.get_or_create(habit=habit, date=date)
+    else:
+        habit.logs.filter(date=date).delete()
+    return done
+
+
 EMOJI = ["🍎", "😴", "💧", "🧘", "🚶", "🥩", "🥗", "⚖️", "💪", "📓"]
 MAX_NAME, MAX_NOTE = 80, 120
 

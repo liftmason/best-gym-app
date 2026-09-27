@@ -15,14 +15,21 @@ class InvalidIssue(errors.Invalid):
     pass
 
 
-def report(log, kind, text=""):
-    """A report about one of the athlete's sessions."""
+def report(log, kind, text="", issue_id=None):
+    """A report about one of the athlete's sessions (`issue_id`: the id a phone chose; the
+    same one again returns the report already made)."""
+    if issue_id:
+        existing = IssueReport.objects.filter(pk=issue_id, athlete=log.athlete).first()
+        if existing:
+            return existing
     if kind not in IssueKind.values:
         raise InvalidIssue("Pick what kind of issue it is.")
     text = (text or "").strip()
     if len(text) > MAX_TEXT:
         raise InvalidIssue(f"Keep it to {MAX_TEXT} characters.")
-    issue = IssueReport.objects.create(athlete=log.athlete, session_log=log, kind=kind, text=text)
+    issue = IssueReport.objects.create(
+        **({"id": issue_id} if issue_id else {}), athlete=log.athlete, session_log=log, kind=kind, text=text
+    )
     alerts.issue_reported(issue)
     return issue
 

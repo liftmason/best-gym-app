@@ -71,4 +71,5 @@ NOT_SYNCED = [
     "billing.Subscription",
     "billing.StripeEvent",
     "sync.Change",
+    "sync.SyncAction",
 ]

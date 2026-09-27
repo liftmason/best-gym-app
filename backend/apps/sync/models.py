@@ -5,6 +5,8 @@ row's marker outlives it."""
 
 from django.db import models
 
+from apps.core import models as core
+
 
 class Op(models.TextChoices):
     INSERT = "I", "Insert"
@@ -30,3 +32,17 @@ class Change(models.Model):
 
     def __str__(self):
         return f"{self.op} {self.table} {self.row_id}"
+
+
+class SyncAction(core.Model):
+    """One pushed action, stored by the id the phone gave it: a repeat returns this result
+    and changes nothing. `ok` false: permanently rejected (the phone drops it)."""
+
+    athlete = models.ForeignKey("accounts.Athlete", on_delete=models.CASCADE, related_name="+")
+    name = models.CharField(max_length=40)
+    ok = models.BooleanField()
+    result = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} {self.id} ({'done' if self.ok else 'rejected'})"

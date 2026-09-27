@@ -30,8 +30,13 @@ def _open(thread):
     return Coaching.objects.filter(pk=thread.coaching_id, status=CoachingStatus.ACTIVE).exists()
 
 
-def send(thread, sender, body):
-    """A message from the thread's coach or athlete. Alerts the other side."""
+def send(thread, sender, body, message_id=None):
+    """A message from the thread's coach or athlete. Alerts the other side. `message_id`:
+    the id a phone chose; the same one again returns the message already sent."""
+    if message_id:
+        existing = Message.objects.filter(pk=message_id, thread=thread, sender=sender).first()
+        if existing:
+            return existing
     if sender.pk not in participants(thread) or not _open(thread):
         raise NotInThread()
     body = (body or "").strip()
@@ -39,7 +44,9 @@ def send(thread, sender, body):
         raise EmptyMessage()
     if len(body) > MAX_BODY:
         raise errors.Invalid(f"Messages are at most {MAX_BODY} characters.")
-    message = Message.objects.create(thread=thread, sender=sender, body=body)
+    message = Message.objects.create(
+        **({"id": message_id} if message_id else {}), thread=thread, sender=sender, body=body
+    )
     alerts.message_sent(message)
     return message
 

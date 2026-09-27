@@ -2,6 +2,7 @@
 sync; their screens use the API online. The rules are in pull.py, bootstrap.py and push.py."""
 
 import datetime
+import uuid
 from typing import Any
 
 from ninja import Router, Schema
@@ -60,3 +61,33 @@ def older_history(request, before: str = "", limit: int = 20):
 
     tables, cursor = booting.older_sessions(athlete_of(request), before, limit)
     return {"tables": tables, "next": cursor}
+
+
+class Action(Schema):
+    id: uuid.UUID  # chosen by the phone; the same id again is the same action
+    name: str  # session.start, set.save, … (apps/sync/actions.py)
+    at: datetime.datetime | None = None  # when the athlete did it
+    payload: dict[str, Any] = {}
+
+
+class PushIn(Schema):
+    actions: list[Action]
+
+
+class Outcome(Schema):
+    id: str
+    status: str  # done, rejected (drop it), retry (send it again later, with what follows)
+    result: dict[str, Any] | None = None
+    error: dict[str, Any] | None = None
+
+
+class PushOut(Schema):
+    results: list[Outcome]
+
+
+@router.post("/sync/push", response=PushOut)
+def push(request, data: PushIn):
+    """The athlete's actions, in the order they happened. Push before pulling."""
+    from . import push as pushing
+
+    return {"results": pushing.push(athlete_of(request), [a.dict() for a in data.actions])}
