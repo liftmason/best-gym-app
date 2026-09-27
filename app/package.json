@@ -58,7 +58,9 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "api:types": "openapi-typescript ../backend/openapi.json -o src/api/schema.d.ts",
-    "db:schema": "node scripts/db-schema.mjs"
+    "db:schema": "node scripts/db-schema.mjs",
+    "export:web": "expo export --platform web",
+    "serve:web": "node scripts/serve-web.mjs"
   },
   "private": true,
   "jest": {

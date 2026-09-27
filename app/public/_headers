@@ -1,0 +1,12 @@
+# Cloudflare Pages response headers for the web app (copied into the export by Expo).
+# Cross-origin isolation: the local database (SQLite in WebAssembly) needs SharedArrayBuffer.
+# `npm run serve:web` reads this file too, so trying the export locally matches hosting.
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# Bundles are named by their content: they never change, so browsers keep them.
+/_expo/static/*
+  Cache-Control: public, max-age=31536000, immutable

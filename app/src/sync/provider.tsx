@@ -5,6 +5,7 @@
 import { createContext, useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
+import { OtherTab } from '@/db/tab-lock';
 import { Button, colors, space, Text } from '@/ui';
 
 import type { SyncStatus, Who } from './engine';
@@ -16,7 +17,7 @@ const Context = createContext<SyncSession | null>(null);
 
 export function SyncProvider({ who, children }: { who: Who; children: ReactNode }) {
   const [session, setSession] = useState<SyncSession | null>(null);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<'other-tab' | 'error' | null>(null);
   const [attempt, setAttempt] = useState(0);
   const { athleteId, userId } = who;
 
@@ -29,7 +30,7 @@ export function SyncProvider({ who, children }: { who: Who; children: ReactNode 
         setSession(started);
         stop = startScheduler(started.engine, surroundings);
       })
-      .catch(() => alive && setFailed(true));
+      .catch((error) => alive && setFailed(error instanceof OtherTab ? 'other-tab' : 'error'));
     return () => {
       alive = false;
       stop?.();
@@ -39,12 +40,21 @@ export function SyncProvider({ who, children }: { who: Who; children: ReactNode 
   if (failed) {
     return (
       <View style={styles.centre}>
-        <Text variant="h3">Couldn&apos;t open your training on this device</Text>
-        <Text tone="muted">If GymTrainer is open in another tab or window, close it and try again.</Text>
+        {failed === 'other-tab' ? (
+          <>
+            <Text variant="h3">GymTrainer is open in another tab</Text>
+            <Text tone="muted">Your training can be open in one tab at a time. Close the other one, then try again here.</Text>
+          </>
+        ) : (
+          <>
+            <Text variant="h3">Couldn&apos;t open your training on this device</Text>
+            <Text tone="muted">Try again. If it keeps happening, restart the app.</Text>
+          </>
+        )}
         <Button
           title="Try again"
           onPress={() => {
-            setFailed(false);
+            setFailed(null);
             setAttempt((n) => n + 1);
           }}
         />
