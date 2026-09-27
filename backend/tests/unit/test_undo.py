@@ -70,3 +70,11 @@ def test_a_snapshot_in_an_older_format_is_dropped_not_half_restored(program, ath
     EditHistory.objects.update(snapshot={"week_type": None, "focus_note": "", "sessions": []})
     assert undo.undo(first) is None
     assert names(first) == ["Snatch"] and not EditHistory.objects.exists()
+
+
+def test_undoing_a_removal_brings_the_exercise_back(program, athlete, coach, gym):
+    first = weeks(program)[0]
+    services.add_prescription(first.days.first(), ex(gym, "sn"), athlete)
+    services.remove_prescription(Prescription.objects.get(), by=coach.user)
+    undo.undo(first)
+    assert names(first) == ["Snatch"]

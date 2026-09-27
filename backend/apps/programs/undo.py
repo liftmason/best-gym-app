@@ -129,7 +129,8 @@ def restore(week, snap):
                 Prescription.objects.filter(pk=r["id"], session__day__week__program=week.program).first()
                 or Prescription()
             )
-            if rx.pk and rx.session_id != session.pk and rx.session.day.week_id != week.pk:
+            # (A new row already has its UUID, so ask whether it's saved, not whether it has an id.)
+            if not rx._state.adding and rx.session_id != session.pk and rx.session.day.week_id != week.pk:
                 left.add(rx.session)
             rx.session, rx.order, rx.exercise = session, r["order"], exercise
             for field, value in r["fields"].items():
