@@ -18,7 +18,13 @@ export type PullPage = {
   library_reset: boolean;
   library: Change[] | null;
 };
-export type Snapshot = { tables: Record<string, ServerRow[]>; cursor: string; history_from: string };
+export type Snapshot = {
+  tables: Record<string, ServerRow[]>;
+  cursor: string;
+  history_from: string;
+  /** Each lift's best from before history_from (backend sync.bootstrap.baselines). */
+  baselines?: Record<string, unknown>;
+};
 export type Outgoing = { id: string; name: string; at: string; payload: Record<string, unknown> };
 export type Outcome = components['schemas']['Outcome'];
 

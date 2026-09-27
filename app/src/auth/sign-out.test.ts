@@ -6,7 +6,7 @@ const mockApiSignOut = jest.fn();
 jest.mock('@/sync/session', () => ({ unsentActions: () => mockUnsent(), forgetDevice: () => mockForget() }));
 jest.mock('@/ui/confirm', () => ({ confirm: (...args: unknown[]) => mockConfirm(...args) }));
 jest.mock('@/api', () => ({ api: { signOut: () => mockApiSignOut() } }));
-jest.mock('./mode', () => ({ rememberAthlete: async () => {} }));
+jest.mock('@/training/profile', () => ({ saveProfile: async () => {} }));
 
 // eslint-disable-next-line import/first
 import { signOut } from './sign-out';

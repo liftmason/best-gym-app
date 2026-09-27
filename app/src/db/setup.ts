@@ -36,7 +36,13 @@ CREATE TABLE IF NOT EXISTS sync_state (
 `;
 
 /** sync_state keys. `schema` is the synced tables' description; the rest belong to the sync engine. */
-export const STATE = { schema: 'schema', cursor: 'cursor', historyFrom: 'history_from', owner: 'owner' } as const;
+export const STATE = {
+  schema: 'schema',
+  cursor: 'cursor',
+  historyFrom: 'history_from',
+  baselines: 'baselines',
+  owner: 'owner',
+} as const;
 
 export async function getState(tx: Pick<Tx, 'query'>, key: string): Promise<string | null> {
   const rows = await tx.query('SELECT value FROM sync_state WHERE key = ?', [key]);

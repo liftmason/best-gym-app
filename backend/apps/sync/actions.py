@@ -196,6 +196,22 @@ def video_attach(athlete, data, day):
     return {}
 
 
+def started_ids(payload, result):
+    """{phone's id: server's id} when a session was already started on another device: the
+    log, and each exercise by its prescription."""
+    ids = {str(payload.get("session_log_id")): result["session_log_id"]}
+    kept = result.get("exercises") or {}
+    for e in payload.get("exercises") or []:
+        server = kept.get(str(e.get("prescription_id")))
+        if server:
+            ids[str(e.get("id"))] = server
+    return {phone: server for phone, server in ids.items() if phone != server}
+
+
+# Actions whose result can name different ids than the phone chose; later actions in the
+# same batch are rewritten to use them (push.py), as the phone does with its outbox.
+ALIASES = {"session.start": started_ids}
+
 ACTIONS = {
     "session.start": (SessionStart, session_start),
     "set.save": (SetSave, set_save),

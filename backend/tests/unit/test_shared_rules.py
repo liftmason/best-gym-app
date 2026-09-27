@@ -44,3 +44,18 @@ def test_clean_answer(case):
             checkins.clean_answer(question, case["value"], case["other"])
     else:
         assert list(checkins.clean_answer(question, case["value"], case["other"])) == case["expected"]
+
+
+@pytest.mark.parametrize("case", CASES["checked_number"])
+def test_checked_number(case):
+    limit = Decimal(case["limit"]) if isinstance(case["limit"], str) else case["limit"]
+    check = lambda: sessions._number(case["value"], "Reps", limit, whole=case["whole"])  # noqa: E731
+    if "error" in case:
+        with pytest.raises(sessions.InvalidSet, match=case["error"]):
+            check()
+        return
+    result = check()
+    if case["whole"]:
+        assert result == (int(case["expected"]) if case["expected"] is not None else None)
+    else:
+        assert _text(result) == case["expected"]

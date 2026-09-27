@@ -23,7 +23,7 @@ from .models import SessionExercise, SessionLog, SetLog
 PLATE_STEP = {"kg": Decimal("0.5"), "lb": Decimal("2.5")}
 MAX_SET_NUMBER = 50
 # What one logged set may hold, in the athlete's unit: load, reps, time (minutes or seconds).
-SET_LIMITS = {"load": Decimal("2000"), "reps": 999, "time": Decimal("1440")}
+SET_LIMITS = {"load": Decimal("2000"), "reps": 999, "time": Decimal("1440")}  # time in minutes: a day
 MAX_RIR = 5  # 5 means "5 or more"
 MAX_COMMENT = 2000
 
@@ -345,10 +345,11 @@ def log_set(
         raise InvalidSet(f"Sets are numbered 1 to {MAX_SET_NUMBER}.")
     load = _number(load, "Load", SET_LIMITS["load"])
     reps = _number(reps, "Reps", SET_LIMITS["reps"], whole=True)
-    time = _number(time, "Time", SET_LIMITS["time"])
-    rir = _number(rir, "RIR", MAX_RIR, whole=True)
     if time_unit not in ("s", "min"):
         raise InvalidSet("Time is in seconds or minutes.")
+    # The limit is a day in whichever unit the time was entered in.
+    time = _number(time, "Time", SET_LIMITS["time"] * (60 if time_unit == "s" else 1))
+    rir = _number(rir, "RIR", MAX_RIR, whole=True)
     return save_set(
         se,
         int(number),

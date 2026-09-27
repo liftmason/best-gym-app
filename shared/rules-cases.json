@@ -195,5 +195,79 @@
         ""
       ]
     }
+  ],
+  "checked_number": [
+    {
+      "value": "5",
+      "limit": 999,
+      "whole": true,
+      "expected": "5"
+    },
+    {
+      "value": " 5 ",
+      "limit": 999,
+      "whole": true,
+      "expected": "5"
+    },
+    {
+      "value": "2.5",
+      "limit": 999,
+      "whole": true,
+      "error": "Reps isn't a number."
+    },
+    {
+      "value": "05",
+      "limit": 999,
+      "whole": true,
+      "error": "Reps must be a whole number."
+    },
+    {
+      "value": "1000",
+      "limit": 999,
+      "whole": true,
+      "error": "Reps must be between 0 and 999."
+    },
+    {
+      "value": "-1",
+      "limit": 999,
+      "whole": true,
+      "error": "Reps must be between 0 and 999."
+    },
+    {
+      "value": "lots",
+      "limit": 999,
+      "whole": true,
+      "error": "Reps isn't a number."
+    },
+    {
+      "value": "",
+      "limit": 999,
+      "whole": true,
+      "expected": null
+    },
+    {
+      "value": "102.5",
+      "limit": "2000",
+      "whole": false,
+      "expected": "102.5"
+    },
+    {
+      "value": "2000.01",
+      "limit": "2000",
+      "whole": false,
+      "error": "Reps must be between 0 and 2000."
+    },
+    {
+      "value": "abc",
+      "limit": "2000",
+      "whole": false,
+      "error": "Reps isn't a number."
+    },
+    {
+      "value": "1e3",
+      "limit": "2000",
+      "whole": false,
+      "expected": "1000"
+    }
   ]
 }

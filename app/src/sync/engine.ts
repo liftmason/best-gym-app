@@ -16,16 +16,18 @@ import { ApiError } from '@/api/errors';
 import type { Database, Tx } from '@/db/database';
 import { COLUMNS, SCOPE, type SyncedTable } from '@/db/schema.generated';
 import { getState, setState, STATE } from '@/db/setup';
+import { localDate } from '@/domain/dates';
 import { uuid7 } from '@/domain/ids';
 
-import { ACTIONS, type Action } from './actions';
+import { ACTIONS, type Action, type ActionContext } from './actions';
+import { rename } from './aliases';
 import { recorder, undoLocal } from './local';
 import { isSynced, remove, upsert } from './rows';
 import type { Change, Outgoing, Transport } from './transport';
 
 export const PUSH_BATCH = 200; // backend apps/sync/push.py MAX_BATCH
 
-export type Who = { athleteId: string; userId: string };
+export type Who = { athleteId: string; userId: string; timezone: string; maxUpdates: string };
 
 export type SyncStatus = {
   running: boolean;
@@ -77,21 +79,20 @@ export function makeSyncEngine({ database, transport, who, now = () => new Date(
     update({ pending: Number(n) });
   }
 
+  function context(id: string, at: string): ActionContext {
+    const { athleteId, userId, timezone, maxUpdates } = who();
+    return { id, at, athleteId, userId, day: localDate(at, timezone), maxUpdates };
+  }
+
   /** Applies every waiting action's effect again, in order. One that no longer fits is skipped here; the server decides. */
   async function reapply(tx: Tx) {
-    const { athleteId, userId } = who();
     const waiting = await tx.query('SELECT id, name, payload, at FROM outbox ORDER BY seq');
     for (const [id, name, payload, at] of waiting) {
       const action = ACTIONS[name as string];
       if (!action) continue;
       await tx.exec('SAVEPOINT reapply');
       try {
-        await action.apply(recorder(tx, id as string), JSON.parse(payload as string), {
-          id: id as string,
-          at: at as string,
-          athleteId,
-          userId,
-        });
+        await action.apply(recorder(tx, id as string), JSON.parse(payload as string), context(id as string, at as string));
         await tx.exec('RELEASE reapply');
       } catch {
         await tx.exec('ROLLBACK TO reapply; RELEASE reapply');
@@ -121,6 +122,7 @@ export function makeSyncEngine({ database, transport, who, now = () => new Date(
         await clearSynced(tx, SYNCED);
         await setState(tx, STATE.cursor, null);
         await setState(tx, STATE.historyFrom, null);
+        await setState(tx, STATE.baselines, null);
       }
       await setState(tx, STATE.owner, athleteId);
     });
@@ -137,6 +139,7 @@ export function makeSyncEngine({ database, transport, who, now = () => new Date(
       }
       await setState(tx, STATE.cursor, snapshot.cursor);
       await setState(tx, STATE.historyFrom, snapshot.history_from);
+      await setState(tx, STATE.baselines, JSON.stringify(snapshot.baselines ?? {}));
       await reapply(tx);
     });
   }
@@ -153,9 +156,12 @@ export function makeSyncEngine({ database, transport, who, now = () => new Date(
       }));
       const results = await transport.push(outgoing);
       const settled: string[] = [];
+      const aliases: Record<string, string> = {};
       for (const [i, result] of results.entries()) {
         if (result.status === 'retry') break;
         settled.push(result.id);
+        const adopt = ACTIONS[outgoing[i].name]?.adopt;
+        if (result.status === 'done' && adopt) Object.assign(aliases, adopt(outgoing[i].payload as never, result.result ?? {}));
         if (result.status === 'rejected') {
           const message = (result.error as { message?: string } | null)?.message ?? "This couldn't be saved.";
           noticeListeners.forEach((listener) => listener({ action: outgoing[i].name, message }));
@@ -164,6 +170,13 @@ export function makeSyncEngine({ database, transport, who, now = () => new Date(
       if (settled.length) {
         await database.write(async (tx) => {
           for (const id of settled) await tx.run('DELETE FROM outbox WHERE id = ?', [id]);
+          if (Object.keys(aliases).length) {
+            // The server kept its own ids: what's still waiting refers to them from now on.
+            for (const [id, payload] of await tx.query('SELECT id, payload FROM outbox')) {
+              const renamed = JSON.stringify(rename(JSON.parse(payload as string), aliases));
+              if (renamed !== payload) await tx.run('UPDATE outbox SET payload = ? WHERE id = ?', [renamed, id]);
+            }
+          }
         });
       }
       await countPending();
@@ -246,9 +259,8 @@ export function makeSyncEngine({ database, transport, who, now = () => new Date(
     async enqueue<P>(action: Action<P>, payload: P): Promise<string> {
       const id = newId();
       const at = now().toISOString();
-      const { athleteId, userId } = who();
       await database.write(async (tx) => {
-        await action.apply(recorder(tx, id), payload, { id, at, athleteId, userId });
+        await action.apply(recorder(tx, id), payload, context(id, at));
         await tx.run('INSERT INTO outbox (id, name, payload, at) VALUES (?, ?, ?, ?)', [
           id,
           action.name,
@@ -285,7 +297,7 @@ export function makeSyncEngine({ database, transport, who, now = () => new Date(
         await tx.run('DELETE FROM outbox');
         await tx.run('DELETE FROM local_changes');
         await clearSynced(tx, SYNCED);
-        for (const key of [STATE.cursor, STATE.historyFrom, STATE.owner]) await setState(tx, key, null);
+        for (const key of [STATE.cursor, STATE.historyFrom, STATE.baselines, STATE.owner]) await setState(tx, key, null);
       });
       await countPending();
     },

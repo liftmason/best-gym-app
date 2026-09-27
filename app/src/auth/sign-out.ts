@@ -4,9 +4,8 @@
  */
 import { api } from '@/api';
 import { forgetDevice, unsentActions } from '@/sync/session';
+import { saveProfile } from '@/training/profile';
 import { confirm } from '@/ui/confirm';
-
-import { rememberAthlete } from './mode';
 
 export async function signOut(): Promise<void> {
   const unsent = await unsentActions().catch(() => 0);
@@ -20,6 +19,6 @@ export async function signOut(): Promise<void> {
     if (!sure) return;
   }
   await forgetDevice().catch(() => {});
-  await rememberAthlete(null);
+  await saveProfile(null);
   await api.signOut();
 }

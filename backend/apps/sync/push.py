@@ -8,6 +8,8 @@
   phone drops that action, and the batch carries on.
 - Anything else (a server error, the database going away) is temporary: nothing is stored
   for it, and the batch stops there so the phone retries it and what follows, in order.
+- A session started offline that another device had already started keeps the server's
+  ids; the actions after it in the batch are rewritten to them (actions.ALIASES).
 """
 
 import datetime
@@ -22,7 +24,7 @@ from django.utils import timezone
 from apps.core import errors
 from apps.core import models as core
 
-from .actions import ACTIONS
+from .actions import ACTIONS, ALIASES
 from .models import SyncAction
 
 logger = logging.getLogger(__name__)
@@ -99,16 +101,28 @@ def _run(athlete, action):
         return {"id": str(action_id), "status": "retry"}, True
 
 
+def _aliased(value, aliases):
+    """`value` with every id in `aliases` replaced, however deep."""
+    if isinstance(value, dict):
+        return {k: _aliased(v, aliases) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_aliased(v, aliases) for v in value]
+    return aliases.get(str(value), value) if aliases else value
+
+
 def push(athlete, actions):
     """[{id, status: done|rejected|retry, result|error}] for each action, in order. After a
     "retry" the rest aren't run: they come back as "retry" too."""
     if len(actions) > MAX_BATCH:
         raise errors.Invalid({"actions": f"Send at most {MAX_BATCH} actions at a time."})
-    results, stopped = [], False
+    results, stopped, aliases = [], False, {}
     for action in actions:
         if stopped:
             results.append({"id": str(action["id"]), "status": "retry"})
             continue
-        outcome, stopped = _run(athlete, action)
+        payload = _aliased(action.get("payload") or {}, aliases)
+        outcome, stopped = _run(athlete, {**action, "payload": payload})
         results.append(outcome)
+        if outcome["status"] == "done" and action.get("name") in ALIASES:
+            aliases.update(ALIASES[action["name"]](payload, outcome["result"]))
     return results

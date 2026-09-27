@@ -8,23 +8,25 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { OtherTab } from '@/db/tab-lock';
 import { Button, colors, space, Text } from '@/ui';
 
-import type { SyncStatus, Who } from './engine';
+import type { TrainingProfile } from '@/training/profile';
+
+import type { SyncStatus } from './engine';
 import { startScheduler } from './scheduler';
 import { startSession, type SyncSession } from './session';
 import { surroundings } from './surroundings';
 
-const Context = createContext<SyncSession | null>(null);
+const Context = createContext<(SyncSession & { profile: TrainingProfile }) | null>(null);
 
-export function SyncProvider({ who, children }: { who: Who; children: ReactNode }) {
+export function SyncProvider({ profile, children }: { profile: TrainingProfile; children: ReactNode }) {
   const [session, setSession] = useState<SyncSession | null>(null);
   const [failed, setFailed] = useState<'other-tab' | 'error' | null>(null);
   const [attempt, setAttempt] = useState(0);
-  const { athleteId, userId } = who;
+  const { athleteId, userId, timezone, maxUpdates } = profile;
 
   useEffect(() => {
     let stop: (() => void) | null = null;
     let alive = true;
-    startSession({ athleteId, userId })
+    startSession({ athleteId, userId, timezone, maxUpdates })
       .then((started) => {
         if (!alive) return;
         setSession(started);
@@ -35,7 +37,7 @@ export function SyncProvider({ who, children }: { who: Who; children: ReactNode 
       alive = false;
       stop?.();
     };
-  }, [athleteId, userId, attempt]);
+  }, [athleteId, userId, timezone, maxUpdates, attempt]);
 
   if (failed) {
     return (
@@ -68,10 +70,10 @@ export function SyncProvider({ who, children }: { who: Who; children: ReactNode 
       </View>
     );
   }
-  return <Context.Provider value={session}>{children}</Context.Provider>;
+  return <Context.Provider value={{ ...session, profile }}>{children}</Context.Provider>;
 }
 
-export function useSync(): SyncSession {
+export function useSync(): SyncSession & { profile: TrainingProfile } {
   const session = useContext(Context);
   if (!session) throw new Error('useSync outside SyncProvider');
   return session;
