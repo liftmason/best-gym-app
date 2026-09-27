@@ -17,11 +17,13 @@ export const TRAINING_TABLES: SyncedTable[] = [
   'programs_habit',
   'programs_habitlog',
   'exercises_exercise',
+  'exercises_category',
   'workouts_sessionlog',
   'workouts_sessionexercise',
   'workouts_setlog',
   'workouts_checkinquestion',
   'workouts_checkinanswer',
+  'workouts_issuereport',
   'accounts_maxentry',
 ];
 

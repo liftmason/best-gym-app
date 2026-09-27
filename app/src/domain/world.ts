@@ -49,7 +49,16 @@ export type PrescribedSetRow = {
   reps: number | null;
   load_value: string | null;
 };
-export type ExerciseRow = { id: Id; name: string; measure: string; percent_of_id: Id | null; category_id: Id | null };
+export type ExerciseRow = {
+  id: Id;
+  name: string;
+  measure: string;
+  percent_of_id: Id | null;
+  category_id: Id | null;
+  youtube_url?: string;
+  cue?: string;
+};
+export type CategoryRow = { id: Id; name: string };
 export type LogRow = {
   id: Id;
   program_session_id: Id | null;
@@ -99,8 +108,17 @@ export type QuestionRow = {
   detail_label: string;
   archived: boolean;
 };
-export type AnswerRow = { id: Id; session_log_id: Id; question_id: Id | null; value: string; other_text: string };
+export type AnswerRow = {
+  id: Id;
+  session_log_id: Id;
+  question_id: Id | null;
+  question_text?: string;
+  type?: string;
+  value: string;
+  other_text: string;
+};
 export type WeekTypeRow = { id: Id; name: string; colour: string; description: string };
+export type IssueRow = { id: Id; session_log_id: Id | null; kind: string; text: string; created_at: string; resolved_at: string | null };
 
 /** An exercise's best from before the phone's history (backend sync.bootstrap.baselines). */
 export type Baseline = {
@@ -200,6 +218,7 @@ export function makeWorld(tables: Tables, athlete: Athlete, clock: Clock, histor
     overridesOf: group(overrides, (s) => s.prescription_id),
     exercise: new Map(rows<ExerciseRow>('exercises_exercise').map((e) => [e.id, e])),
     weekType: new Map(rows<WeekTypeRow>('programs_weektype').map((t) => [t.id, t])),
+    category: new Map(rows<CategoryRow>('exercises_category').map((c) => [c.id, c])),
     logs,
     log: new Map(logs.map((l) => [l.id, l])),
     logOfSession: new Map(logs.filter((l) => l.program_session_id).map((l) => [l.program_session_id!, l])),
@@ -210,7 +229,8 @@ export function makeWorld(tables: Tables, athlete: Athlete, clock: Clock, histor
     habits: habits.filter((h) => h.archived_at === null),
     habitLogsOf: group(rows<HabitLogRow>('programs_habitlog'), (l) => l.habit_id),
     questions: questions.filter((q) => !q.archived),
-    answersOf: group(rows<AnswerRow>('workouts_checkinanswer'), (a) => a.session_log_id),
+    answersOf: group(sortBy(rows<AnswerRow & { order: number }>('workouts_checkinanswer'), (a) => a.order, (a) => a.id), (a) => a.session_log_id),
+    issuesOf: group(sortBy(rows<IssueRow>('workouts_issuereport'), (i) => instant(i.created_at)), (i) => i.session_log_id),
   };
 }
 

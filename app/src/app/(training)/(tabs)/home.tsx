@@ -7,6 +7,7 @@ import { weekEnd, weekView, type Card as SessionCardView } from '@/domain/week';
 import { Refused } from '@/sync/actions';
 import { useSync } from '@/sync/provider';
 import { SyncNotices } from '@/sync/status';
+import { flash } from '@/training/flash';
 import { range, shortDay } from '@/training/format';
 import { TrainingHeader } from '@/training/header';
 import { Habits } from '@/training/home/habits';
@@ -24,6 +25,7 @@ export default function Home() {
   const { engine, profile } = useSync();
   const [wanted, setWanted] = useState<{ week: string | null; day: string | null }>({ week: null, day: null });
   const [problem, setProblem] = useState<string | null>(null);
+  const [said] = useState(() => flash.take());
 
   if (!world) {
     return (
@@ -53,6 +55,11 @@ export default function Home() {
       <TrainingHeader subtitle={subtitle} />
       <SyncNotices />
       <ScrollView contentContainerStyle={styles.body}>
+        {said ? (
+          <Text variant="small" tone="muted" style={styles.flash}>
+            {said}
+          </Text>
+        ) : null}
         {view.paused.map((log) => (
           <PausedCard key={log.id} log={log} onResume={() => router.push({ pathname: '/session/[log]', params: { log: log.id } })} />
         ))}
@@ -127,4 +134,5 @@ const styles = StyleSheet.create({
   body: { padding: 18, paddingBottom: space.xxl, gap: space.m },
   empty: { alignItems: 'center', gap: space.s, padding: space.xl, backgroundColor: colors.surface, borderRadius: 18, borderWidth: 1, borderColor: colors.line },
   centred: { textAlign: 'center' },
+  flash: { backgroundColor: colors.surface2, borderRadius: 10, padding: space.m },
 });
