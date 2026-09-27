@@ -58,6 +58,7 @@ for category in (
     errors.Conflict,
     errors.Gone,
     errors.TooMany,
+    errors.UpgradeRequired,
 ):
     api.add_exception_handler(category, _service_error)
 

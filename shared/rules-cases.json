@@ -1,0 +1,21 @@
+{
+  "about": "Rules the phone runs offline, as cases both the backend (pytest) and the app (jest) check. Weights are strings of kg unless a unit says otherwise.",
+  "e1rm": [
+    {"load_kg": "100", "reps": 1, "expected": "103.33"},
+    {"load_kg": "100", "reps": 5, "expected": "116.67"},
+    {"load_kg": "80", "reps": 3, "expected": "88.00"},
+    {"load_kg": "80", "reps": 0, "expected": null}
+  ],
+  "plate_round": [
+    {"kg": "63.747", "unit": "kg", "expected": "63.5", "why": "rounds once, not 63.75 then 64"},
+    {"kg": "80", "unit": "kg", "expected": "80"},
+    {"kg": "61.25", "unit": "kg", "expected": "61.5", "why": "halves round up"},
+    {"kg": "100", "unit": "lb", "expected": "220"}
+  ],
+  "suggested_load": [
+    {"basis": "percent", "value": "77", "max_kg": "82", "unit": "kg", "expected": "63"},
+    {"basis": "percent", "value": "80", "max_kg": "100", "unit": "lb", "expected": "177.5"},
+    {"basis": "weight", "value": "101.25", "max_kg": null, "unit": "kg", "expected": "101.25", "why": "a fixed weight isn't plate-rounded"},
+    {"basis": "rpe", "value": "8", "max_kg": null, "unit": "kg", "expected": null}
+  ]
+}

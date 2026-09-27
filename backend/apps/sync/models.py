@@ -46,3 +46,14 @@ class SyncAction(core.Model):
 
     def __str__(self):
         return f"{self.name} {self.id} ({'done' if self.ok else 'rejected'})"
+
+
+class Purge(models.Model):
+    """How far the change log has been trimmed: a cursor from before `below_txid` may have
+    missed deleted changes, so that phone bootstraps again. One row."""
+
+    below_txid = models.BigIntegerField(default=0)
+    at = models.DateTimeField(null=True)
+
+    def __str__(self):
+        return f"Change log trimmed below {self.below_txid}"

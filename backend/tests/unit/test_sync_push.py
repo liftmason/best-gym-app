@@ -210,6 +210,8 @@ def test_the_push_endpoint(athlete, planned):
     body = {"actions": [a | {"id": str(a["id"]), "at": a["at"].isoformat()} for a in batch]}
     import json
 
-    api = Client(HTTP_AUTHORIZATION=f"Bearer {signin.open_session(athlete.user).access}")
+    api = Client(
+        HTTP_AUTHORIZATION=f"Bearer {signin.open_session(athlete.user).access}", HTTP_X_SCHEMA_VERSION="1"
+    )
     response = api.post("/api/v1/sync/push", json.dumps(body, default=str), content_type="application/json")
     assert response.status_code == 200 and [r["status"] for r in response.json()["results"]] == ["done"] * 6

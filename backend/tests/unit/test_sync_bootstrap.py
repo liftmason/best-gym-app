@@ -94,10 +94,26 @@ def test_a_new_phone_gets_twelve_months_and_pages_back_online(athlete, gym):
 
 
 def test_the_endpoints(athlete, coach):
-    api = Client(HTTP_AUTHORIZATION=f"Bearer {signin.open_session(athlete.user).access}")
+    api = Client(
+        HTTP_AUTHORIZATION=f"Bearer {signin.open_session(athlete.user).access}", HTTP_X_SCHEMA_VERSION="1"
+    )
     shot = api.get("/api/v1/sync/bootstrap").json()
     assert "exercises_exercise" in shot["tables"] and shot["cursor"]
     page = api.get("/api/v1/sync/pull", {"cursor": shot["cursor"]}).json()
     assert page["more"] is False and page["library_reset"] is False
-    coach_api = Client(HTTP_AUTHORIZATION=f"Bearer {signin.open_session(coach.user).access}")
+    coach_api = Client(
+        HTTP_AUTHORIZATION=f"Bearer {signin.open_session(coach.user).access}", HTTP_X_SCHEMA_VERSION="1"
+    )
     assert coach_api.get("/api/v1/sync/bootstrap").status_code == 404  # coaches don't sync
+
+
+def test_old_apps_are_told_to_update(athlete, settings, monkeypatch):
+    from apps.sync import api as sync_api
+
+    monkeypatch.setattr(sync_api, "SCHEMA_VERSION", 3)
+    token = signin.open_session(athlete.user).access
+    for version, status in (("3", 200), ("2", 200), ("1", 426), ("", 426), ("x", 426)):
+        api = Client(HTTP_AUTHORIZATION=f"Bearer {token}", HTTP_X_SCHEMA_VERSION=version)
+        response = api.get("/api/v1/sync/bootstrap")
+        assert response.status_code == status, version
+    assert response.json()["error"]["code"] == "upgrade_required"

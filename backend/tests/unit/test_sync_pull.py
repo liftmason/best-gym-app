@@ -162,3 +162,24 @@ def test_a_new_gym_replaces_the_library(athlete, coach):
 def test_a_made_up_cursor_is_refused(athlete):
     with pytest.raises(pull.BadCursor):
         pull.pull(athlete, "not-a-cursor")
+
+
+def test_a_phone_that_missed_trimmed_changes_bootstraps_again(athlete):
+    import datetime
+
+    from apps.core import errors
+    from apps.sync import bootstrap, purge
+
+    BodyweightEntry.objects.create(athlete=athlete, date=athlete.today(), kg=70, source="athlete")
+    from django.utils import timezone
+
+    from apps.sync.models import Change
+
+    stale = first_cursor(athlete)
+    # The trigger stamps changes with the database's clock, not the test's frozen one.
+    Change.objects.update(at=timezone.now() - datetime.timedelta(days=purge.KEEP_DAYS + 1))
+    assert purge.purge() >= 1
+    with pytest.raises(errors.Gone):
+        pull.pull(athlete, stale)
+    fresh = bootstrap.snapshot(athlete)
+    assert pull.pull(athlete, fresh["cursor"])["more"] is False  # a new copy pulls on fine

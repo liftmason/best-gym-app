@@ -88,6 +88,10 @@ def rows_for(athlete, gym, keys):
 def pull(athlete, cursor_value, limit=PAGE):
     """{changes, cursor, more, library_reset, library}: one page."""
     cursor = decode(cursor_value)
+    from .purge import below
+
+    if cursor["lo"] < below():
+        raise errors.Gone("This device hasn't synced for a long time: download everything again (bootstrap).")
     gym = athlete.gym
     gym_id = str(gym.pk) if gym else None
     library_reset = cursor["gym"] != gym_id

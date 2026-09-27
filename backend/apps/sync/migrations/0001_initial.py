@@ -52,5 +52,13 @@ migrations.CreateModel(
                 'abstract': False,
             },
         ),
+migrations.CreateModel(
+            name='Purge',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('below_txid', models.BigIntegerField(default=0)),
+                ('at', models.DateTimeField(null=True)),
+            ],
+        ),
         migrations.RunPython(apps.sync.triggers.install, apps.sync.triggers.uninstall),
     ]

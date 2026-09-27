@@ -8,10 +8,27 @@ from typing import Any
 from ninja import Router, Schema
 
 from apps.api.main import athlete_of
+from apps.core import errors
 
 from . import pull as pulling
 
 router = Router(tags=["Sync"])
+
+# The shape of the phone's local database the server speaks to. Bump it when a synced table
+# changes shape; the server accepts this version and the one before, so phones not yet
+# updated keep working for one release (docs/EXPO_MIGRATION.md, "Versioning").
+SCHEMA_VERSION = 1
+
+
+def athlete_syncing(request):
+    """The athlete, if their app's schema version (X-Schema-Version) is one we speak."""
+    try:
+        version = int(request.headers.get("X-Schema-Version", ""))
+    except ValueError:
+        version = 0
+    if version not in (SCHEMA_VERSION, SCHEMA_VERSION - 1) or version < 1:
+        raise errors.UpgradeRequired()
+    return athlete_of(request)
 
 
 class Row(Schema):
@@ -32,7 +49,7 @@ class PullOut(Schema):
 @router.get("/sync/pull", response=PullOut)
 def pull(request, cursor: str):
     """What changed since `cursor` (from bootstrap or the last pull), a page at a time."""
-    return pulling.pull(athlete_of(request), cursor)
+    return pulling.pull(athlete_syncing(request), cursor)
 
 
 class BootstrapOut(Schema):
@@ -46,7 +63,7 @@ def bootstrap(request):
     """A new device's first copy of the athlete's scope (12 months of history)."""
     from . import bootstrap as booting
 
-    return booting.snapshot(athlete_of(request))
+    return booting.snapshot(athlete_syncing(request))
 
 
 class HistoryOut(Schema):
@@ -90,4 +107,4 @@ def push(request, data: PushIn):
     """The athlete's actions, in the order they happened. Push before pulling."""
     from . import push as pushing
 
-    return {"results": pushing.push(athlete_of(request), [a.dict() for a in data.actions])}
+    return {"results": pushing.push(athlete_syncing(request), [a.dict() for a in data.actions])}
