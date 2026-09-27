@@ -18,6 +18,7 @@ import type { SyncEngine } from '@/sync/engine';
 import { Chip, colors, fonts, radius, SetRow, space, Text, type Measure, type SetValues } from '@/ui';
 
 import { RxBanner } from './banner';
+import { FormVideos } from './form-videos';
 
 const asText = (row: SetRowView): SetValues => ({
   load: row.load,
@@ -163,6 +164,7 @@ export function ExerciseBlock({
           Set {n}: {message}
         </Text>
       ))}
+      <FormVideos world={world} se={se} coach={coach} editable={editable} />
       {exercise?.cue ? (
         <Text variant="tiny" tone="muted" style={styles.cue}>
           Cue — {exercise.cue}

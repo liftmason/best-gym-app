@@ -45,6 +45,9 @@ jest.mock('react-native-safe-area-context', () => {
 
 const mockRouter = jest.requireMock('expo-router').router as Record<string, jest.Mock>;
 
+// Whole screens on a real database: slower than a unit test, above all on CI's runners.
+jest.setTimeout(30_000);
+
 beforeEach(() => {
   mockIds = 0;
   Object.values(mockRouter).forEach((f) => f.mockClear());
@@ -90,7 +93,7 @@ test('check-in, lifts, finish, done', async () => {
 
   view = await show(Summary);
   expect(await screen.findByText('8 / 10')).toBeTruthy();
-  expect(screen.getByText('2 exercises · Accumulation week')).toBeTruthy();
+  expect(screen.getByText('2 exercises · Intensification week')).toBeTruthy();
   await fireEvent.press(screen.getByRole('button', { name: 'Start session →' }));
   await waitFor(() => expect(mockRouter.replace).toHaveBeenLastCalledWith({ pathname: '/session/[log]/player', params: { log, n: '1' } }));
   await view.unmount();

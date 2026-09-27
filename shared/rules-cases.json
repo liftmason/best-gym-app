@@ -269,5 +269,117 @@
       "whole": false,
       "expected": "1000"
     }
+  ],
+  "clean_metric": [
+    {
+      "spec": {
+        "key": "bodyweight",
+        "label": "Bodyweight",
+        "kind": "weight",
+        "lift": false
+      },
+      "raw": " 64.25 ",
+      "expected": "64.25"
+    },
+    {
+      "spec": {
+        "key": "bodyweight",
+        "label": "Bodyweight",
+        "kind": "weight",
+        "lift": false
+      },
+      "raw": "",
+      "expected": null
+    },
+    {
+      "spec": {
+        "key": "bodyweight",
+        "label": "Bodyweight",
+        "kind": "weight",
+        "lift": false
+      },
+      "raw": "19.99",
+      "error": "Bodyweight: enter a value between 20 and 600."
+    },
+    {
+      "spec": {
+        "key": "bodyweight",
+        "label": "Bodyweight",
+        "kind": "weight",
+        "lift": false
+      },
+      "raw": "64.255",
+      "error": "Bodyweight: at most 2 decimal places."
+    },
+    {
+      "spec": {
+        "key": "bodyweight",
+        "label": "Bodyweight",
+        "kind": "weight",
+        "lift": false
+      },
+      "raw": "heavy",
+      "error": "Enter a number."
+    },
+    {
+      "spec": {
+        "key": "height_cm",
+        "label": "Height",
+        "kind": "height",
+        "lift": false
+      },
+      "raw": "168.5",
+      "expected": "168.5"
+    },
+    {
+      "spec": {
+        "key": "height_cm",
+        "label": "Height",
+        "kind": "height",
+        "lift": false
+      },
+      "raw": "168.55",
+      "error": "Height: at most 1 decimal place."
+    },
+    {
+      "spec": {
+        "key": "lift_x",
+        "label": "Snatch 1RM",
+        "kind": "weight",
+        "lift": true
+      },
+      "raw": "82.5",
+      "expected": "82.5"
+    },
+    {
+      "spec": {
+        "key": "lift_x",
+        "label": "Snatch 1RM",
+        "kind": "weight",
+        "lift": true
+      },
+      "raw": "1000.5",
+      "error": "Snatch 1RM: enter a value between 1 and 1000."
+    },
+    {
+      "spec": {
+        "key": "years_training",
+        "label": "Years training",
+        "kind": "years",
+        "lift": false
+      },
+      "raw": "3-5",
+      "expected": "3-5"
+    },
+    {
+      "spec": {
+        "key": "years_training",
+        "label": "Years training",
+        "kind": "years",
+        "lift": false
+      },
+      "raw": "ten",
+      "error": "Pick how long they've been training."
+    }
   ]
 }

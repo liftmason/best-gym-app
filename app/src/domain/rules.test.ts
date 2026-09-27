@@ -1,6 +1,7 @@
 import cases from '../../../shared/rules-cases.json';
 
 import { cleanAnswer } from './checkins';
+import { cleanMetric } from './metrics';
 import { e1rm, plateRound, suggestedLoad, type LoadBasis, type Unit } from './rules';
 import { checkedNumber } from './sessions';
 
@@ -27,5 +28,11 @@ describe('the shared rules cases (also run by pytest)', () => {
     const check = () => checkedNumber(c.value, 'Reps', c.limit, c.whole);
     if ('error' in c && c.error) expect(check).toThrow(c.error);
     else expect(check()).toBe(c.expected);
+  });
+
+  test.each(cases.clean_metric)('a metric: $spec.key "$raw"', (c) => {
+    const clean = () => cleanMetric(c.spec, c.raw);
+    if ('error' in c && c.error) expect(clean).toThrow(c.error);
+    else expect(clean()).toBe(c.expected);
   });
 });

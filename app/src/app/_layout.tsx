@@ -7,12 +7,12 @@ import {
   useFonts,
 } from '@expo-google-fonts/inter';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { api, makeQueryClient, useAuth } from '@/api';
-import { handlePushes, registerForPush } from '@/push/register';
+import { handlePushes, pushTarget, registerForPush } from '@/push/register';
 import { syncNow } from '@/sync/session';
 import { colors } from '@/ui';
 
@@ -42,7 +42,25 @@ export default function RootLayout() {
     if (ready) SplashScreen.hideAsync();
   }, [ready]);
 
-  useEffect(() => handlePushes(syncNow), []);
+  // A tapped push can come before the app is ready (it opened the app): go there once it is.
+  const canGo = Boolean(ready) && auth === 'signedIn';
+  const canGoNow = useRef(false);
+  const tapped = useRef<ReturnType<typeof pushTarget> | null>(null);
+  useEffect(
+    () =>
+      handlePushes(syncNow, (data) => {
+        if (canGoNow.current) router.navigate(pushTarget(data));
+        else tapped.current = pushTarget(data);
+      }),
+    [],
+  );
+  useEffect(() => {
+    canGoNow.current = canGo;
+    if (canGo && tapped.current) {
+      router.navigate(tapped.current);
+      tapped.current = null;
+    }
+  }, [canGo]);
   useEffect(() => {
     // Each sign-in is a new device session on the server, so the token is given again.
     if (auth === 'signedIn') registerForPush(api).catch(() => {});

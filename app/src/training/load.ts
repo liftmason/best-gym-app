@@ -24,7 +24,13 @@ export const TRAINING_TABLES: SyncedTable[] = [
   'workouts_checkinquestion',
   'workouts_checkinanswer',
   'workouts_issuereport',
+  'workouts_formvideo',
   'accounts_maxentry',
+  'accounts_coaching',
+  'messaging_thread',
+  'messaging_message',
+  'accounts_bodyweightentry',
+  'exercises_trackedlift',
 ];
 
 export async function loadWorld(database: Database, athlete: Athlete, clock: Clock): Promise<World> {

@@ -16,6 +16,8 @@ export type TrainingProfile = Who & {
   weekStart: number;
   coachName: string | null;
   gymName: string | null;
+  heightCm: string | null;
+  yearsTraining: string | null;
 };
 
 const KEY = 'gt.training';
@@ -35,6 +37,8 @@ export function profileFrom(me: Me): TrainingProfile | null {
     maxUpdates: a.max_updates,
     coachName: a.coach_name ?? null,
     gymName: a.gym_name ?? null,
+    heightCm: a.height_cm ?? null,
+    yearsTraining: a.years_training ?? null,
   };
 }
 

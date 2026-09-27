@@ -22,13 +22,14 @@ from decimal import Decimal
 import pytest
 from django.utils import timezone
 
-from apps.accounts.models import MaxEntry, MeasurementSource
+from apps.accounts import metrics
+from apps.accounts.models import BodyweightEntry, MaxEntry, MeasurementSource
 from apps.programs import dose as doses
 from apps.programs import habits
 from apps.programs import services as program_services
 from apps.programs.models import HabitLog, WeekType
 from apps.sync import bootstrap, scope
-from apps.workouts import checkins, history, player, prs, questions, sessions, week
+from apps.workouts import charts, checkins, history, player, prs, questions, sessions, week
 from apps.workouts.models import SessionExercise, SessionLog, SetLog
 
 from ..conftest import ex
@@ -214,6 +215,14 @@ def build(athlete, coach, gym):
     # Three in week 1 (met), one on its Sunday (the week boundary), two so far in week 2.
     for d in (days1[0].date, days1[1].date, days1[3].date, days1[6].date, days2[0].date, days2[1].date):
         HabitLog.objects.create(habit=habit_weekly, date=d)
+    # Last, so the ids above stay as shared/offline-session.json knows them.
+    program_services.set_week_type(w2, WeekType.objects.get(gym=gym, name="Intensification"), by=by)
+    athlete.height_cm, athlete.years_training = Decimal("168.5"), "3-5"
+    athlete.save(update_fields=["height_cm", "years_training"])
+    for days_ago, kg in ((30, "64.20"), (5, "63.80")):
+        BodyweightEntry.objects.create(
+            athlete=athlete, date=today - days_ago * DAY, kg=Decimal(kg), source=MeasurementSource.ATHLETE
+        )
     return program
 
 
@@ -344,6 +353,39 @@ def history_json(athlete, unit, since):
     }
 
 
+def charts_json(athlete, unit, since):
+    """The Progress tab: the lifts worth charting, and each one's points, phase bands and change."""
+    lifts = charts.chart_lifts(athlete, since=since)
+    out = {"lifts": [str(e.pk) for e in lifts], "charts": {}}
+    for e in lifts:
+        points = charts.e1rm_points(athlete, e, since=since)
+        out["charts"][str(e.pk)] = {
+            "points": [[iso(d), dec(v), dec(bw), wt.name if wt else None] for d, v, bw, wt in points],
+            "bands": [[wt.name, i, j] for wt, i, j in charts.phase_bands(points)],
+            "change": charts.progress_change(athlete, e, unit, since=since),
+        }
+    return out
+
+
+def metrics_json(athlete):
+    """The Profile's training metrics: each one, and its current value."""
+    specs = metrics.metric_specs(athlete.gym)
+    current = metrics.current_metrics(athlete, specs)
+    return [
+        {
+            "key": m.key,
+            "label": m.label,
+            "kind": m.kind,
+            "value": dec(current[m.key]["value"])
+            if isinstance(current[m.key]["value"], Decimal)
+            else current[m.key]["value"],
+            "date": iso(current[m.key]["date"]),
+            "source": current[m.key]["source"],
+        }
+        for m in specs
+    ]
+
+
 def habits_json(athlete, date):
     return [
         {
@@ -378,8 +420,10 @@ def parity(athlete, coach, gym):
             ],
             "player": {str(log.pk): player_json(athlete, log, unit) for log in logs},
             "history": history_json(athlete, unit, since),
+            "charts": charts_json(athlete, unit, since),
         }
     athlete.units = "kg"
+    expect["metrics"] = metrics_json(athlete)
     expect["habits"] = {iso(MONDAY + i * DAY): habits_json(athlete, MONDAY + i * DAY) for i in range(11)}
     return {
         "about": (
@@ -396,6 +440,8 @@ def parity(athlete, coach, gym):
             "timezone": athlete.user.timezone,
             "week_start": athlete.gym.week_start,
             "max_updates": athlete.max_updates,
+            "height_cm": dec(athlete.height_cm),
+            "years_training": athlete.years_training,
         },
         "snapshot": {
             "tables": {k: v for k, v in sorted(snapshot["tables"].items())},

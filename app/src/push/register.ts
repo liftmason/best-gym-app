@@ -43,8 +43,13 @@ export async function registerForPush(api: Api, available = pushAvailable()): Pr
   return 'registered';
 }
 
-/** Shown while the app is open, too; every push also asks for a sync. */
-export function handlePushes(onSync: () => void): () => void {
+export type PushData = { type?: string; athlete_id?: string; sync?: boolean };
+
+/**
+ * Shown while the app is open, too; every push also asks for a sync. A tap (also one that
+ * opened the app) goes to what it's about.
+ */
+export function handlePushes(onSync: () => void, onOpen: (data: PushData) => void): () => void {
   if (Platform.OS === 'web') return () => {};
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -58,12 +63,24 @@ export function handlePushes(onSync: () => void): () => void {
   const received = Notifications.addNotificationReceivedListener((n) => {
     if (wantsSync(n.request.content.data)) onSync();
   });
-  // A tap opens the app; which screen it opens comes with those screens (S5, S6).
   const tapped = Notifications.addNotificationResponseReceivedListener((r) => {
-    if (wantsSync(r.notification.request.content.data)) onSync();
+    const data = (r.notification.request.content.data ?? {}) as PushData;
+    if (wantsSync(data)) onSync();
+    onOpen(data);
   });
+  Notifications.getLastNotificationResponseAsync()
+    .then((r) => r && onOpen((r.notification.request.content.data ?? {}) as PushData))
+    .catch(() => {});
   return () => {
     received.remove();
     tapped.remove();
   };
+}
+
+/** Where a tapped push goes: the athlete's messages or week; a coach's go to their home until their screens exist (S6). */
+export function pushTarget(data: PushData): '/messages' | '/home' | '/' {
+  if (data.athlete_id) return '/';
+  if (data.type === 'message') return '/messages';
+  if (data.type === 'week') return '/home';
+  return '/';
 }

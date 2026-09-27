@@ -1,12 +1,14 @@
 {
  "about": "What the athlete's screens show, by the server's rules, from the rows a phone holds. Written by backend/tests/unit/test_parity.py (UPDATE_PARITY=1); checked by app/src/domain/parity.test.ts.",
  "athlete": {
+  "height_cm": "168.5",
   "id": "00000000-0000-7000-8000-000000000128",
   "max_updates": "approve",
   "timezone": "America/New_York",
   "units": "kg",
   "user_id": "00000000-0000-7000-8000-000000000127",
-  "week_start": 0
+  "week_start": 0,
+  "years_training": "3-5"
  },
  "expect": {
   "habits": {
@@ -230,6 +232,156 @@
    ]
   },
   "kg": {
+   "charts": {
+    "charts": {
+     "00000000-0000-7000-8000-000000000029": {
+      "bands": [
+       [
+        "Accumulation",
+        0,
+        0
+       ],
+       [
+        "Intensification",
+        1,
+        1
+       ]
+      ],
+      "change": {
+       "change": 28,
+       "drop": 28,
+       "weeks": 1
+      },
+      "points": [
+       [
+        "2026-09-14",
+        "59.73",
+        "64.20",
+        "Accumulation"
+       ],
+       [
+        "2026-09-21",
+        "87.83",
+        "63.80",
+        "Intensification"
+       ]
+      ]
+     },
+     "00000000-0000-7000-8000-000000000034": {
+      "bands": [
+       [
+        "Intensification",
+        0,
+        0
+       ]
+      ],
+      "change": null,
+      "points": [
+       [
+        "2026-09-21",
+        "61.33",
+        "63.80",
+        "Intensification"
+       ]
+      ]
+     },
+     "00000000-0000-7000-8000-000000000049": {
+      "bands": [
+       [
+        "Intensification",
+        0,
+        0
+       ]
+      ],
+      "change": null,
+      "points": [
+       [
+        "2026-09-23",
+        "85.77",
+        "63.80",
+        "Intensification"
+       ]
+      ]
+     },
+     "00000000-0000-7000-8000-000000000064": {
+      "bands": [
+       [
+        "Accumulation",
+        0,
+        0
+       ],
+       [
+        "Intensification",
+        1,
+        1
+       ]
+      ],
+      "change": {
+       "change": 15,
+       "drop": 15,
+       "weeks": 1
+      },
+      "points": [
+       [
+        "2026-09-14",
+        "110.83",
+        "64.20",
+        "Accumulation"
+       ],
+       [
+        "2026-09-21",
+        "125.55",
+        "63.80",
+        "Intensification"
+       ]
+      ]
+     },
+     "00000000-0000-7000-8000-000000000087": {
+      "bands": [
+       [
+        "Intensification",
+        0,
+        0
+       ]
+      ],
+      "change": null,
+      "points": [
+       [
+        "2026-09-21",
+        "76.00",
+        "63.80",
+        "Intensification"
+       ]
+      ]
+     },
+     "00000000-0000-7000-8000-000000000095": {
+      "bands": [
+       [
+        "Intensification",
+        0,
+        0
+       ]
+      ],
+      "change": null,
+      "points": [
+       [
+        "2026-09-21",
+        "53.33",
+        "63.80",
+        "Intensification"
+       ]
+      ]
+     }
+    },
+    "lifts": [
+     "00000000-0000-7000-8000-000000000029",
+     "00000000-0000-7000-8000-000000000049",
+     "00000000-0000-7000-8000-000000000064",
+     "00000000-0000-7000-8000-000000000095",
+     "00000000-0000-7000-8000-000000000034",
+     "00000000-0000-7000-8000-000000000087"
+    ]
+   },
    "history": {
     "compliance": [
      2,
@@ -2685,6 +2837,156 @@
    ]
   },
   "lb": {
+   "charts": {
+    "charts": {
+     "00000000-0000-7000-8000-000000000029": {
+      "bands": [
+       [
+        "Accumulation",
+        0,
+        0
+       ],
+       [
+        "Intensification",
+        1,
+        1
+       ]
+      ],
+      "change": {
+       "change": 62,
+       "drop": 62,
+       "weeks": 1
+      },
+      "points": [
+       [
+        "2026-09-14",
+        "59.73",
+        "64.20",
+        "Accumulation"
+       ],
+       [
+        "2026-09-21",
+        "87.83",
+        "63.80",
+        "Intensification"
+       ]
+      ]
+     },
+     "00000000-0000-7000-8000-000000000034": {
+      "bands": [
+       [
+        "Intensification",
+        0,
+        0
+       ]
+      ],
+      "change": null,
+      "points": [
+       [
+        "2026-09-21",
+        "61.33",
+        "63.80",
+        "Intensification"
+       ]
+      ]
+     },
+     "00000000-0000-7000-8000-000000000049": {
+      "bands": [
+       [
+        "Intensification",
+        0,
+        0
+       ]
+      ],
+      "change": null,
+      "points": [
+       [
+        "2026-09-23",
+        "85.77",
+        "63.80",
+        "Intensification"
+       ]
+      ]
+     },
+     "00000000-0000-7000-8000-000000000064": {
+      "bands": [
+       [
+        "Accumulation",
+        0,
+        0
+       ],
+       [
+        "Intensification",
+        1,
+        1
+       ]
+      ],
+      "change": {
+       "change": 32,
+       "drop": 32,
+       "weeks": 1
+      },
+      "points": [
+       [
+        "2026-09-14",
+        "110.83",
+        "64.20",
+        "Accumulation"
+       ],
+       [
+        "2026-09-21",
+        "125.55",
+        "63.80",
+        "Intensification"
+       ]
+      ]
+     },
+     "00000000-0000-7000-8000-000000000087": {
+      "bands": [
+       [
+        "Intensification",
+        0,
+        0
+       ]
+      ],
+      "change": null,
+      "points": [
+       [
+        "2026-09-21",
+        "76.00",
+        "63.80",
+        "Intensification"
+       ]
+      ]
+     },
+     "00000000-0000-7000-8000-000000000095": {
+      "bands": [
+       [
+        "Intensification",
+        0,
+        0
+       ]
+      ],
+      "change": null,
+      "points": [
+       [
+        "2026-09-21",
+        "53.33",
+        "63.80",
+        "Intensification"
+       ]
+      ]
+     }
+    },
+    "lifts": [
+     "00000000-0000-7000-8000-000000000029",
+     "00000000-0000-7000-8000-000000000049",
+     "00000000-0000-7000-8000-000000000064",
+     "00000000-0000-7000-8000-000000000095",
+     "00000000-0000-7000-8000-000000000034",
+     "00000000-0000-7000-8000-000000000087"
+    ]
+   },
    "history": {
     "compliance": [
      2,
@@ -5138,7 +5440,57 @@
      "wanted_day": "2026-10-05"
     }
    ]
-  }
+  },
+  "metrics": [
+   {
+    "date": "2026-09-19",
+    "key": "bodyweight",
+    "kind": "weight",
+    "label": "Bodyweight",
+    "source": "Athlete",
+    "value": "63.80"
+   },
+   {
+    "date": null,
+    "key": "height_cm",
+    "kind": "height",
+    "label": "Height",
+    "source": null,
+    "value": "168.5"
+   },
+   {
+    "date": "2026-07-26",
+    "key": "lift_00000000-0000-7000-8000-000000000029",
+    "kind": "weight",
+    "label": "Snatch 1RM",
+    "source": "Coach",
+    "value": "82.00"
+   },
+   {
+    "date": "2026-07-26",
+    "key": "lift_00000000-0000-7000-8000-000000000049",
+    "kind": "weight",
+    "label": "Clean & Jerk 1RM",
+    "source": "Coach",
+    "value": "104.00"
+   },
+   {
+    "date": "2026-07-26",
+    "key": "lift_00000000-0000-7000-8000-000000000064",
+    "kind": "weight",
+    "label": "Back Squat 1RM",
+    "source": "Coach",
+    "value": "135.00"
+   },
+   {
+    "date": null,
+    "key": "years_training",
+    "kind": "years",
+    "label": "Years training",
+    "source": null,
+    "value": "3\u20135"
+   }
+  ]
  },
  "now": "2026-09-24T16:00:00+00:00",
  "snapshot": {
@@ -5154,7 +5506,24 @@
   },
   "history_from": "2025-09-24",
   "tables": {
-   "accounts_bodyweightentry": [],
+   "accounts_bodyweightentry": [
+    {
+     "athlete_id": "00000000-0000-7000-8000-000000000128",
+     "created_at": "2026-09-24T16:00:00+00:00",
+     "date": "2026-09-19",
+     "id": "00000000-0000-7000-8000-000000000277",
+     "kg": "63.80",
+     "source": "athlete"
+    },
+    {
+     "athlete_id": "00000000-0000-7000-8000-000000000128",
+     "created_at": "2026-09-24T16:00:00+00:00",
+     "date": "2026-08-25",
+     "id": "00000000-0000-7000-8000-000000000276",
+     "kg": "64.20",
+     "source": "athlete"
+    }
+   ],
    "accounts_coaching": [
     {
      "athlete_id": "00000000-0000-7000-8000-000000000128",
@@ -6873,7 +7242,7 @@
      "published": true,
      "published_at": "2026-09-24T16:00:00+00:00",
      "start_date": "2026-09-21",
-     "week_type_id": "00000000-0000-7000-8000-000000000023"
+     "week_type_id": "00000000-0000-7000-8000-000000000024"
     }
    ],
    "programs_weektype": [

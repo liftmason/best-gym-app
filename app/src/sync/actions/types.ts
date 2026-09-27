@@ -12,6 +12,8 @@ export type ActionContext = {
   day: string;
   /** auto: a session's PR becomes the working max at once; approve: the coach decides. */
   maxUpdates: string;
+  /** The athlete's own unit: weights they type arrive in it. */
+  units: 'kg' | 'lb';
 };
 
 /**

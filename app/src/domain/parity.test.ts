@@ -5,7 +5,9 @@
  */
 import parity from '../../../shared/parity.json';
 
+import { chartLifts, e1rmPoints, phaseBands, progressChange } from './charts';
 import { forDay } from './habits';
+import { currentMetrics } from './metrics';
 import {
   bestE1rm,
   compliance,
@@ -159,6 +161,17 @@ describe.each(['kg', 'lb'] as const)('the server and the phone agree, in %s', (u
   test('history: PRs, streaks, compliance and each lift', () => {
     expect(historyJson(w, unit)).toEqual(expected.history);
   });
+
+  test('the progress charts', () => {
+    const lifts = chartLifts(w);
+    const charts = Object.fromEntries(
+      lifts.map((e) => {
+        const points = e1rmPoints(w, e.id);
+        return [e.id, { points, bands: phaseBands(points), change: progressChange(w, e.id) }];
+      }),
+    );
+    expect({ lifts: lifts.map((e) => e.id), charts }).toEqual(expected.charts);
+  });
 });
 
 test.each(Object.keys(parity.expect.habits))('habits on %s', (date) => {
@@ -171,4 +184,10 @@ test.each(Object.keys(parity.expect.habits))('habits on %s', (date) => {
     streak: i.streak,
   }));
   expect(items).toEqual((parity.expect.habits as Record<string, unknown>)[date]);
+});
+
+test('the training metrics', () => {
+  const w = world('kg');
+  const athlete = parity.athlete as unknown as { height_cm: string | null; years_training: string | null };
+  expect(currentMetrics(w, { heightCm: athlete.height_cm, yearsTraining: athlete.years_training })).toEqual(parity.expect.metrics);
 });

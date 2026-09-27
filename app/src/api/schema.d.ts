@@ -2557,6 +2557,8 @@ export interface components {
             coach_name: string | null;
             /** Gym Name */
             gym_name: string | null;
+            /** Height Cm */
+            height_cm: string | null;
             /** Hide History Before Link */
             hide_history_before_link: boolean;
             /**
@@ -2570,6 +2572,8 @@ export interface components {
             units: string;
             /** Week Start */
             week_start: number;
+            /** Years Training */
+            years_training: string | null;
         };
         /** AthleteRef */
         AthleteRef: {

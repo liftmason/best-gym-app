@@ -112,7 +112,7 @@ function NewOrReturning({ token, email }: { token: string; email: string }) {
         }),
       );
       await api.signedIn(tokens);
-      router.replace('/');
+      router.replace('/welcome'); // a new athlete: their training numbers first
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Something went wrong. Try again.');
       setBusy(false);

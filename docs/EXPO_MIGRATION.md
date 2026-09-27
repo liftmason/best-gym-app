@@ -39,7 +39,8 @@ Nothing is deployed: the free-tier Render blueprint is disconnected. The offline
 
 **Sub-project 5 (the athlete's app)** is in progress (plan in `docs/plans/S5_ATHLETE.md`):
 - **S5a (the training loop):** the rules ported to the phone and checked against the server's (`shared/parity.json`); the session actions; home and week; check-in, player, finish and done; offline end-to-end checks.
-- **S5b:** progress, messages, profile and metrics, onboarding, form videos.
+- **S5a is merged** (PR #10).
+- **S5b (branch `s5b-athlete`):** progress charts, messages (with the new `message.read` action), profile and metrics, onboarding after an invite, and form videos with an upload queue.
 
 **How to work.** Each sub-project in "Order of work" gets its own short spec (only where this document leaves real decisions open), then an implementation plan, then the build, one branch and PR per sub-project. Keep the Django service tests passing throughout; write tests before fixes for the audit items. When this document and the code disagree, raise it rather than silently diverging; update this document when a decision changes.
 

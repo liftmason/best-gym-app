@@ -1,7 +1,7 @@
 import { ExecutionEnvironment } from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 
-import { pushAvailable, registerForPush } from './register';
+import { pushAvailable, pushTarget, registerForPush } from './register';
 
 jest.mock('expo-notifications', () => ({
   getPermissionsAsync: jest.fn(),
@@ -46,4 +46,11 @@ test('refused permission or no push: nothing is sent', async () => {
   expect(await registerForPush(api, true)).toBe('refused');
   expect(await registerForPush(api, false)).toBe('unavailable');
   expect(PUT).not.toHaveBeenCalled();
+});
+
+test('a tapped push opens what it is about', () => {
+  expect(pushTarget({ type: 'message', sync: true })).toBe('/messages');
+  expect(pushTarget({ type: 'week', sync: true })).toBe('/home');
+  expect(pushTarget({ type: 'message', athlete_id: 'a1' })).toBe('/'); // a coach's
+  expect(pushTarget({ sync: true })).toBe('/');
 });

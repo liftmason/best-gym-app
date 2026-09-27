@@ -122,6 +122,25 @@ That means the phone runs the rules the server runs for what the athlete sees: t
 - **Training profile** (decision D): kept on the device from `/me`, so training mode opens offline.
 - **Development build:** `eas.json` and `expo-dev-client` are ready. The build waits for the Android package name, which is permanent once the app is in the Play Store.
 
+**S5b as built:**
+- **Progress:**
+  - A lift's e1RM sparkline with its change and a lift chooser; personal records; recent sessions, which open for review.
+  - Older sessions load online, a page at a time.
+  - The chart rules are ported and checked in the parity file.
+- **Messages:** the Coach tab, with sending offline.
+  - New sync action **`message.read`**. The design's action list had none, so athletes had no way to mark a coach's messages read, and the unread badge would never clear.
+  - Notification taps open the Coach tab or the week, including a tap that launched the app.
+- **Profile:**
+  - Training metrics edit offline (`metrics.update`). Height and years training live on the athlete's record, which doesn't sync, so they come with `/me`, and a pending change shows from the outbox until then.
+  - Units, history visibility and devices are online settings, and say so when offline.
+- **Onboarding** after joining through an invite: the training numbers (each skippable), then "You're all set".
+- **Form videos:**
+  - A local `uploads` queue, never wiped. On a phone the file is copied into app storage; on the web it's held in memory, so it needs a connection.
+  - A video uploads once its session has reached the server: the server starts the upload, the file goes to the signed URL, then `video.attach` is queued.
+  - Refusals keep their reason. Uploads follow the server's ids when a session was started on another device.
+  - Notes and removal of sent videos are online, as before.
+- **Performance:** training mode loads its data once (`TrainingProvider`), shared by all tabs.
+
 **S5a**
 1. The rules: week, sessions and player, history and PRs, habits, check-ins. Cases shared with pytest.
 2. The session actions and their local effects; the engine adopting server ids.

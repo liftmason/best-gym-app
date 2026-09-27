@@ -4,6 +4,7 @@ cases in shared/rules-cases.json, which the app's tests run too (docs/EXPO_MIGRA
 
 import json
 import pathlib
+import re
 from decimal import Decimal
 from types import SimpleNamespace
 
@@ -59,3 +60,17 @@ def test_checked_number(case):
         assert result == (int(case["expected"]) if case["expected"] is not None else None)
     else:
         assert _text(result) == case["expected"]
+
+
+@pytest.mark.parametrize("case", CASES["clean_metric"])
+def test_clean_metric(case):
+    from apps.accounts import metrics
+
+    spec = case["spec"]
+    m = metrics.Metric(spec["key"], spec["label"], spec["kind"], SimpleNamespace() if spec["lift"] else None)
+    if "error" in case:
+        with pytest.raises(metrics.InvalidMetric, match=re.escape(case["error"])):
+            metrics.clean_value(m, case["raw"])
+        return
+    result = metrics.clean_value(m, case["raw"])
+    assert (format(result, "f") if isinstance(result, Decimal) else result) == case["expected"]

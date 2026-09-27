@@ -235,6 +235,17 @@
             ],
             "title": "Gym Name"
           },
+          "height_cm": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height Cm"
+          },
           "hide_history_before_link": {
             "title": "Hide History Before Link",
             "type": "boolean"
@@ -255,6 +266,17 @@
           "week_start": {
             "title": "Week Start",
             "type": "integer"
+          },
+          "years_training": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Years Training"
           }
         },
         "required": [
@@ -264,7 +286,9 @@
           "gym_name",
           "hide_history_before_link",
           "week_start",
-          "max_updates"
+          "max_updates",
+          "height_cm",
+          "years_training"
         ],
         "title": "AthleteProfileOut",
         "type": "object"
