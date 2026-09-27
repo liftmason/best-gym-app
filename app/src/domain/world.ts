@@ -61,6 +61,9 @@ export type ExerciseRow = {
 export type CategoryRow = { id: Id; name: string };
 export type BodyweightRow = { id: Id; date: string; kg: string };
 export type TrackedLiftRow = { id: Id; exercise_id: Id; order: number };
+export type CoachingRow = { id: Id; status: string; started_at: string };
+export type ThreadRow = { id: Id; coaching_id: Id };
+export type MessageRow = { id: Id; thread_id: Id; sender_id: Id | null; body: string; sent_at: string; read_at: string | null };
 export type LogRow = {
   id: Id;
   program_session_id: Id | null;
@@ -231,6 +234,9 @@ export function makeWorld(tables: Tables, athlete: Athlete, clock: Clock, histor
     habits: habits.filter((h) => h.archived_at === null),
     bodyweights: sortBy(rows<BodyweightRow>('accounts_bodyweightentry'), (b) => b.date, (b) => b.id),
     tracked: sortBy(rows<TrackedLiftRow>('exercises_trackedlift'), (t) => t.order, (t) => t.id),
+    coaching: rows<CoachingRow>('accounts_coaching').find((c) => c.status === 'active') ?? null,
+    threads: rows<ThreadRow>('messaging_thread'),
+    messages: sortBy(rows<MessageRow>('messaging_message'), (m) => instant(m.sent_at), (m) => m.id),
     habitLogsOf: group(rows<HabitLogRow>('programs_habitlog'), (l) => l.habit_id),
     questions: questions.filter((q) => !q.archived),
     answersOf: group(sortBy(rows<AnswerRow & { order: number }>('workouts_checkinanswer'), (a) => a.order, (a) => a.id), (a) => a.session_log_id),

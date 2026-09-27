@@ -261,3 +261,17 @@ def test_a_long_timed_set_is_saved(athlete, planned):
         "set.save", set_id=uuid.uuid7(), session_exercise_id=se_id, set_number=2, duration_seconds=86401
     )
     assert push.push(athlete, [too_long])[0]["status"] == "rejected"
+
+
+def test_reading_the_coachs_messages(athlete, coach, frozen_clock):
+    from apps.messaging import services as messaging
+
+    thread = messaging.thread_for(athlete)
+    seen = messaging.send(thread, coach.user, "Good work")
+    frozen_clock.shift(datetime.timedelta(minutes=5))
+    later = messaging.send(thread, coach.user, "Sent after the phone looked")
+    (result,) = push.push(athlete, [act("message.read", until=seen.sent_at)])
+    assert result["status"] == "done" and result["result"] == {"marked": 1}
+    seen.refresh_from_db()
+    later.refresh_from_db()
+    assert seen.read_at is not None and later.read_at is None

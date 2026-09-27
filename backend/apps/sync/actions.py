@@ -170,6 +170,16 @@ def message_send(athlete, data, day):
     return {"message_id": str(messaging.send(thread, athlete.user, data.body, data.message_id).pk)}
 
 
+class MessageRead(Schema):
+    until: datetime.datetime  # the newest message the athlete had seen
+
+
+def message_read(athlete, data, day):
+    """The athlete has read their coach's messages, up to `until`."""
+    thread = messaging.thread_for(athlete)
+    return {"marked": messaging.mark_read(thread, athlete.user, until=data.until)}
+
+
 class MetricsUpdate(Schema):
     values: dict[str, str]  # metric key -> value, weights in the athlete's unit
     date: datetime.date | None = None
@@ -222,6 +232,7 @@ ACTIONS = {
     "habit.set": (HabitSet, habit_set),
     "issue.report": (IssueReport, issue_report),
     "message.send": (MessageSend, message_send),
+    "message.read": (MessageRead, message_read),
     "metrics.update": (MetricsUpdate, metrics_update),
     "video.attach": (VideoAttach, video_attach),
 }

@@ -3,6 +3,7 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { SyncProvider } from '@/sync/provider';
 import { useTrainingProfile } from '@/training/profile';
+import { TrainingProvider } from '@/training/use-training';
 import { colors } from '@/ui';
 
 /**
@@ -21,7 +22,9 @@ export default function TrainingLayout() {
   if (!profile) return <Redirect href="/" />;
   return (
     <SyncProvider profile={profile}>
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }} />
+      <TrainingProvider>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }} />
+      </TrainingProvider>
     </SyncProvider>
   );
 }

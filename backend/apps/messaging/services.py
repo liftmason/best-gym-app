@@ -51,10 +51,13 @@ def send(thread, sender, body, message_id=None):
     return message
 
 
-def mark_read(thread, reader):
-    """The reader has seen the other side's messages. For the coach this also clears the
-    thread's item in their attention feed. Returns how many were newly marked."""
+def mark_read(thread, reader, until=None):
+    """The reader has seen the other side's messages (those sent by `until`, when a phone
+    says when it showed them). For the coach this also clears the thread's item in their
+    attention feed. Returns how many were newly marked."""
     unread = thread.unread_for(reader)
+    if until is not None:
+        unread = unread.filter(sent_at__lte=until)
     count = unread.update(read_at=timezone.now())
     if count and reader.pk == thread.coach.user_id:
         alerts.thread_read(thread)
