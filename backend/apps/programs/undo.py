@@ -3,9 +3,12 @@
 Before each board edit, `record()` stores a JSON snapshot of the week (type, focus
 note, sessions, prescriptions with every dose field, tags and per-set overrides).
 `undo()` restores the latest snapshot and deletes it. Restoring matches rows by id, so
-moved and edited exercises come back as they were; a session an athlete has logged is
-never removed. Adding, duplicating or deleting weeks and applying templates aren't
-recorded: they have their own confirm or preview.
+moved and edited exercises come back as they were, including one moved to another week of
+the program; a session an athlete has logged is never removed. Sessions are placed by day
+of the week (0-6 from the week's start), so a snapshot still fits after the week has moved
+(duplicating, deleting or applying weeks shifts later ones). Adding, duplicating or
+deleting weeks and applying templates aren't recorded: they have their own confirm or
+preview.
 """
 
 from decimal import Decimal
@@ -18,6 +21,8 @@ from .models import EditHistory, PrescribedSet, Prescription, ProgramSession, We
 from .prescriptions import COPIED_FIELDS
 
 UNDO_DEPTH = 50
+# Bump when the snapshot's shape changes; older snapshots are dropped, not half-restored.
+SNAPSHOT_VERSION = 2
 
 
 def _dec(value):
@@ -56,13 +61,14 @@ def snapshot(week):
         sessions.append(
             {
                 "id": str(session.pk),
-                "date": session.day.date.isoformat(),
+                "day": (session.day.date - week.start_date).days,
                 "order": session.order,
                 "name": session.name,
                 "prescriptions": rxs,
             }
         )
     return {
+        "v": SNAPSHOT_VERSION,
         "week_type": str(week.week_type_id) if week.week_type_id else None,
         "focus_note": week.focus_note,
         "sessions": sessions,
@@ -85,6 +91,9 @@ def undo(week):
     entry = latest(week)
     if entry is None:
         return None
+    if entry.snapshot.get("v") != SNAPSHOT_VERSION:
+        EditHistory.objects.filter(program_week=week).delete()  # all older than this one
+        return None
     restore(week, entry.snapshot)
     label = entry.label
     entry.delete()
@@ -98,13 +107,13 @@ def restore(week, snap):
     week.focus_note = snap["focus_note"]
     week.save(update_fields=["week_type", "focus_note"])
 
-    days = {d.date.isoformat(): d for d in week.days.all()}
+    days = {(d.date - week.start_date).days: d for d in week.days.all()}
     gym = week.program.athlete.gym
-    restored_sessions, restored_rx = set(), set()
+    restored_sessions, restored_rx, left = set(), set(), set()
     # Put sessions and exercises back first, then delete what the snapshot didn't have:
     # deleting a session first would cascade to exercises that are about to move back.
     for s in snap["sessions"]:
-        day = days.get(s["date"])
+        day = days.get(s["day"])
         if day is None:
             continue
         session = ProgramSession.objects.filter(pk=s["id"], day__week=week).first() or ProgramSession(day=day)
@@ -115,7 +124,13 @@ def restore(week, snap):
             exercise = Exercise.objects.filter(pk=r["exercise"], gym=gym).first()
             if exercise is None:
                 continue  # deleted from the library since
-            rx = Prescription.objects.filter(pk=r["id"], session__day__week=week).first() or Prescription()
+            # Anywhere in the program: it may have been moved to another week since.
+            rx = (
+                Prescription.objects.filter(pk=r["id"], session__day__week__program=week.program).first()
+                or Prescription()
+            )
+            if rx.pk and rx.session_id != session.pk and rx.session.day.week_id != week.pk:
+                left.add(rx.session)
             rx.session, rx.order, rx.exercise = session, r["order"], exercise
             for field, value in r["fields"].items():
                 setattr(rx, field, Decimal(value) if field == "load_value" and value is not None else value)
@@ -143,3 +158,11 @@ def restore(week, snap):
         session_id__in=logged - restored_sessions
     ).delete()
     ProgramSession.objects.filter(day__week=week).exclude(pk__in=restored_sessions | logged).delete()
+    # Sessions in other weeks that exercises came back from: tidy as a move would.
+    from .services import _empty_and_unused, _renumber
+
+    for other in left:
+        if _empty_and_unused(other):
+            other.delete()
+        else:
+            _renumber(other)

@@ -47,7 +47,7 @@ Each step is one or more commits on `s1-hardening`, with tests passing at the en
 
 **Step 3: undo (H2, H3).**
 - Snapshots store each session as a day offset from the week start, not a date, so shifted weeks restore correctly.
-- A move across weeks records both weeks, and undoing it restores both.
+- *As built:* undoing a move across weeks finds the moved exercise anywhere in the program and brings it back (recording the target week too would have let an undo there delete the exercise outright).
 - Old-format snapshots are discarded rather than half-restored.
 - Tests: undo after duplicate, delete and apply-at shifts; undo of a cross-week move.
 
