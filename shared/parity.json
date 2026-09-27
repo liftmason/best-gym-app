@@ -10,6 +10,29 @@
  },
  "expect": {
   "habits": {
+   "2026-09-14": [
+    {
+     "done": false,
+     "habit": "00000000-0000-7000-8000-000000000256",
+     "met_for_week": false,
+     "streak": 4,
+     "week_count": null
+    },
+    {
+     "done": true,
+     "habit": "00000000-0000-7000-8000-000000000257",
+     "met_for_week": false,
+     "streak": 3,
+     "week_count": null
+    },
+    {
+     "done": true,
+     "habit": "00000000-0000-7000-8000-000000000258",
+     "met_for_week": false,
+     "streak": 1,
+     "week_count": 4
+    }
+   ],
    "2026-09-15": [
     {
      "done": false,
@@ -19,11 +42,144 @@
      "week_count": null
     },
     {
-     "done": false,
+     "done": true,
      "habit": "00000000-0000-7000-8000-000000000258",
      "met_for_week": false,
-     "streak": 0,
-     "week_count": 0
+     "streak": 1,
+     "week_count": 4
+    }
+   ],
+   "2026-09-16": [
+    {
+     "done": false,
+     "habit": "00000000-0000-7000-8000-000000000256",
+     "met_for_week": false,
+     "streak": 4,
+     "week_count": null
+    },
+    {
+     "done": false,
+     "habit": "00000000-0000-7000-8000-000000000257",
+     "met_for_week": false,
+     "streak": 3,
+     "week_count": null
+    },
+    {
+     "done": false,
+     "habit": "00000000-0000-7000-8000-000000000258",
+     "met_for_week": true,
+     "streak": 1,
+     "week_count": 4
+    }
+   ],
+   "2026-09-17": [
+    {
+     "done": false,
+     "habit": "00000000-0000-7000-8000-000000000256",
+     "met_for_week": false,
+     "streak": 4,
+     "week_count": null
+    },
+    {
+     "done": true,
+     "habit": "00000000-0000-7000-8000-000000000258",
+     "met_for_week": false,
+     "streak": 1,
+     "week_count": 4
+    }
+   ],
+   "2026-09-18": [
+    {
+     "done": true,
+     "habit": "00000000-0000-7000-8000-000000000256",
+     "met_for_week": false,
+     "streak": 4,
+     "week_count": null
+    },
+    {
+     "done": true,
+     "habit": "00000000-0000-7000-8000-000000000257",
+     "met_for_week": false,
+     "streak": 3,
+     "week_count": null
+    },
+    {
+     "done": false,
+     "habit": "00000000-0000-7000-8000-000000000258",
+     "met_for_week": true,
+     "streak": 1,
+     "week_count": 4
+    }
+   ],
+   "2026-09-19": [
+    {
+     "done": true,
+     "habit": "00000000-0000-7000-8000-000000000256",
+     "met_for_week": false,
+     "streak": 4,
+     "week_count": null
+    },
+    {
+     "done": false,
+     "habit": "00000000-0000-7000-8000-000000000258",
+     "met_for_week": true,
+     "streak": 1,
+     "week_count": 4
+    }
+   ],
+   "2026-09-20": [
+    {
+     "done": false,
+     "habit": "00000000-0000-7000-8000-000000000256",
+     "met_for_week": false,
+     "streak": 4,
+     "week_count": null
+    },
+    {
+     "done": true,
+     "habit": "00000000-0000-7000-8000-000000000258",
+     "met_for_week": false,
+     "streak": 1,
+     "week_count": 4
+    }
+   ],
+   "2026-09-21": [
+    {
+     "done": true,
+     "habit": "00000000-0000-7000-8000-000000000256",
+     "met_for_week": false,
+     "streak": 4,
+     "week_count": null
+    },
+    {
+     "done": true,
+     "habit": "00000000-0000-7000-8000-000000000257",
+     "met_for_week": false,
+     "streak": 3,
+     "week_count": null
+    },
+    {
+     "done": true,
+     "habit": "00000000-0000-7000-8000-000000000258",
+     "met_for_week": false,
+     "streak": 1,
+     "week_count": 2
+    }
+   ],
+   "2026-09-22": [
+    {
+     "done": true,
+     "habit": "00000000-0000-7000-8000-000000000256",
+     "met_for_week": false,
+     "streak": 4,
+     "week_count": null
+    },
+    {
+     "done": true,
+     "habit": "00000000-0000-7000-8000-000000000258",
+     "met_for_week": false,
+     "streak": 1,
+     "week_count": 2
     }
    ],
    "2026-09-23": [
@@ -45,7 +201,7 @@
      "done": false,
      "habit": "00000000-0000-7000-8000-000000000258",
      "met_for_week": false,
-     "streak": 0,
+     "streak": 1,
      "week_count": 2
     }
    ],
@@ -68,7 +224,7 @@
      "done": false,
      "habit": "00000000-0000-7000-8000-000000000258",
      "met_for_week": false,
-     "streak": 0,
+     "streak": 1,
      "week_count": 2
     }
    ]
@@ -99,15 +255,6 @@
         "session_exercise": "00000000-0000-7000-8000-000000000198",
         "sets": "5\u00d72 @ 56 kg",
         "top": "56 kg \u00d72"
-       },
-       {
-        "best_e1rm": "86.80",
-        "date": "2025-08-20",
-        "last_line": "84 kg \u00d71 \u00b7 13 mo ago",
-        "log": "00000000-0000-7000-8000-000000000134",
-        "session_exercise": "00000000-0000-7000-8000-000000000135",
-        "sets": "1\u00d71 @ 84 kg",
-        "top": "84 kg \u00d71"
        }
       ],
       "trend": "up"
@@ -269,57 +416,11 @@
     "recent": [
      "00000000-0000-7000-8000-000000000238",
      "00000000-0000-7000-8000-000000000213",
-     "00000000-0000-7000-8000-000000000197",
-     "00000000-0000-7000-8000-000000000134"
+     "00000000-0000-7000-8000-000000000197"
     ],
     "streak": 2
    },
    "player": {
-    "00000000-0000-7000-8000-000000000134": {
-     "candidates": [],
-     "counts": [
-      1,
-      1,
-      1
-     ],
-     "exercises": {
-      "00000000-0000-7000-8000-000000000135": {
-       "banner": null,
-       "last_time": "85 kg \u00d71 \u00b7 3 days ago",
-       "measure": "reps",
-       "planned_sets": 0,
-       "rows": [
-        {
-         "done": true,
-         "load": "84",
-         "number": 1,
-         "placeholder": "",
-         "reps": 1,
-         "rir": "",
-         "time": ""
-        }
-       ],
-       "time_unit": "s"
-      }
-     },
-     "resume": [
-      "player",
-      1
-     ],
-     "steps": [
-      {
-       "done": true,
-       "items": [
-        "00000000-0000-7000-8000-000000000135"
-       ],
-       "labels": [],
-       "section": "",
-       "section_note": "",
-       "warmup": false
-      }
-     ],
-     "top_sets": 1
-    },
     "00000000-0000-7000-8000-000000000197": {
      "candidates": [],
      "counts": [
@@ -1384,200 +1485,150 @@
       "cards": [
        {
         "count": 2,
-        "editable": null,
+        "editable": false,
         "items": [
          {
-          "dose": "6\u00d72 @ 78% \u00b7 RIR 1\u20132",
+          "dose": "5\u00d72 @ 70%",
           "name": "Snatch"
          },
          {
-          "dose": "5\u00d73 @ 80%",
+          "dose": "5\u00d75 @ 70%",
           "name": "Back Squat"
          }
         ],
-        "log": "00000000-0000-7000-8000-000000000252",
-        "session": "00000000-0000-7000-8000-000000000183",
-        "state": "paused"
-       },
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "4\u00d75 @ 50 kg",
-          "name": "Push Press"
-         },
-         {
-          "dose": "3\u00d710",
-          "name": "Ab Wheel Rollout"
-         }
-        ],
-        "log": null,
-        "session": "00000000-0000-7000-8000-000000000186",
-        "state": "start"
+        "log": "00000000-0000-7000-8000-000000000197",
+        "session": "00000000-0000-7000-8000-000000000162",
+        "state": "done"
        }
       ],
-      "next_week": null,
-      "number": 2,
+      "next_week": "00000000-0000-7000-8000-000000000146",
+      "number": 1,
       "paused": [
+       "00000000-0000-7000-8000-000000000252",
        "00000000-0000-7000-8000-000000000210"
       ],
-      "prev_week": "00000000-0000-7000-8000-000000000138",
-      "start": "2026-09-21",
+      "prev_week": null,
+      "start": "2026-09-14",
       "strip": [
        {
-        "count": 5,
-        "date": "2026-09-21",
+        "count": 2,
+        "date": "2026-09-14",
         "is_today": false,
-        "selected": false,
+        "selected": true,
         "status": "done"
        },
        {
         "count": 0,
-        "date": "2026-09-22",
+        "date": "2026-09-15",
         "is_today": false,
         "selected": false,
         "status": "rest"
        },
        {
-        "count": 3,
-        "date": "2026-09-23",
-        "is_today": false,
-        "selected": false,
-        "status": "done"
-       },
-       {
-        "count": 4,
-        "date": "2026-09-24",
-        "is_today": true,
-        "selected": true,
-        "status": "today"
-       },
-       {
         "count": 1,
-        "date": "2026-09-25",
+        "date": "2026-09-16",
         "is_today": false,
         "selected": false,
-        "status": "upcoming"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-26",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
+        "status": "missed"
        },
        {
         "count": 0,
-        "date": "2026-09-27",
+        "date": "2026-09-17",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 1,
+        "date": "2026-09-18",
+        "is_today": false,
+        "selected": false,
+        "status": "missed"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-19",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-20",
         "is_today": false,
         "selected": false,
         "status": "rest"
        }
       ],
       "today": "2026-09-24",
-      "week": "00000000-0000-7000-8000-000000000146"
+      "week": "00000000-0000-7000-8000-000000000138"
      },
      "wanted_day": "2026-09-14"
     },
     {
      "view": {
-      "cards": [
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "6\u00d72 @ 78% \u00b7 RIR 1\u20132",
-          "name": "Snatch"
-         },
-         {
-          "dose": "5\u00d73 @ 80%",
-          "name": "Back Squat"
-         }
-        ],
-        "log": "00000000-0000-7000-8000-000000000252",
-        "session": "00000000-0000-7000-8000-000000000183",
-        "state": "paused"
-       },
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "4\u00d75 @ 50 kg",
-          "name": "Push Press"
-         },
-         {
-          "dose": "3\u00d710",
-          "name": "Ab Wheel Rollout"
-         }
-        ],
-        "log": null,
-        "session": "00000000-0000-7000-8000-000000000186",
-        "state": "start"
-       }
-      ],
-      "next_week": null,
-      "number": 2,
+      "cards": [],
+      "next_week": "00000000-0000-7000-8000-000000000146",
+      "number": 1,
       "paused": [
+       "00000000-0000-7000-8000-000000000252",
        "00000000-0000-7000-8000-000000000210"
       ],
-      "prev_week": "00000000-0000-7000-8000-000000000138",
-      "start": "2026-09-21",
+      "prev_week": null,
+      "start": "2026-09-14",
       "strip": [
        {
-        "count": 5,
-        "date": "2026-09-21",
+        "count": 2,
+        "date": "2026-09-14",
         "is_today": false,
         "selected": false,
         "status": "done"
        },
        {
         "count": 0,
-        "date": "2026-09-22",
+        "date": "2026-09-15",
+        "is_today": false,
+        "selected": true,
+        "status": "rest"
+       },
+       {
+        "count": 1,
+        "date": "2026-09-16",
+        "is_today": false,
+        "selected": false,
+        "status": "missed"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-17",
         "is_today": false,
         "selected": false,
         "status": "rest"
        },
        {
-        "count": 3,
-        "date": "2026-09-23",
-        "is_today": false,
-        "selected": false,
-        "status": "done"
-       },
-       {
-        "count": 4,
-        "date": "2026-09-24",
-        "is_today": true,
-        "selected": true,
-        "status": "today"
-       },
-       {
         "count": 1,
-        "date": "2026-09-25",
+        "date": "2026-09-18",
         "is_today": false,
         "selected": false,
-        "status": "upcoming"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-26",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
+        "status": "missed"
        },
        {
         "count": 0,
-        "date": "2026-09-27",
+        "date": "2026-09-19",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-20",
         "is_today": false,
         "selected": false,
         "status": "rest"
        }
       ],
       "today": "2026-09-24",
-      "week": "00000000-0000-7000-8000-000000000146"
+      "week": "00000000-0000-7000-8000-000000000138"
      },
      "wanted_day": "2026-09-15"
     },
@@ -1585,201 +1636,147 @@
      "view": {
       "cards": [
        {
-        "count": 2,
+        "count": 1,
         "editable": null,
         "items": [
          {
-          "dose": "6\u00d72 @ 78% \u00b7 RIR 1\u20132",
+          "dose": "4\u00d72 @ 72%",
           "name": "Snatch"
-         },
-         {
-          "dose": "5\u00d73 @ 80%",
-          "name": "Back Squat"
-         }
-        ],
-        "log": "00000000-0000-7000-8000-000000000252",
-        "session": "00000000-0000-7000-8000-000000000183",
-        "state": "paused"
-       },
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "4\u00d75 @ 50 kg",
-          "name": "Push Press"
-         },
-         {
-          "dose": "3\u00d710",
-          "name": "Ab Wheel Rollout"
          }
         ],
         "log": null,
-        "session": "00000000-0000-7000-8000-000000000186",
-        "state": "start"
+        "session": "00000000-0000-7000-8000-000000000165",
+        "state": "backfill"
        }
       ],
-      "next_week": null,
-      "number": 2,
+      "next_week": "00000000-0000-7000-8000-000000000146",
+      "number": 1,
       "paused": [
+       "00000000-0000-7000-8000-000000000252",
        "00000000-0000-7000-8000-000000000210"
       ],
-      "prev_week": "00000000-0000-7000-8000-000000000138",
-      "start": "2026-09-21",
+      "prev_week": null,
+      "start": "2026-09-14",
       "strip": [
        {
-        "count": 5,
-        "date": "2026-09-21",
+        "count": 2,
+        "date": "2026-09-14",
         "is_today": false,
         "selected": false,
         "status": "done"
        },
        {
         "count": 0,
-        "date": "2026-09-22",
+        "date": "2026-09-15",
         "is_today": false,
         "selected": false,
         "status": "rest"
        },
        {
-        "count": 3,
-        "date": "2026-09-23",
+        "count": 1,
+        "date": "2026-09-16",
         "is_today": false,
-        "selected": false,
-        "status": "done"
-       },
-       {
-        "count": 4,
-        "date": "2026-09-24",
-        "is_today": true,
         "selected": true,
-        "status": "today"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-25",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-26",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
+        "status": "missed"
        },
        {
         "count": 0,
-        "date": "2026-09-27",
+        "date": "2026-09-17",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 1,
+        "date": "2026-09-18",
+        "is_today": false,
+        "selected": false,
+        "status": "missed"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-19",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-20",
         "is_today": false,
         "selected": false,
         "status": "rest"
        }
       ],
       "today": "2026-09-24",
-      "week": "00000000-0000-7000-8000-000000000146"
+      "week": "00000000-0000-7000-8000-000000000138"
      },
      "wanted_day": "2026-09-16"
     },
     {
      "view": {
-      "cards": [
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "6\u00d72 @ 78% \u00b7 RIR 1\u20132",
-          "name": "Snatch"
-         },
-         {
-          "dose": "5\u00d73 @ 80%",
-          "name": "Back Squat"
-         }
-        ],
-        "log": "00000000-0000-7000-8000-000000000252",
-        "session": "00000000-0000-7000-8000-000000000183",
-        "state": "paused"
-       },
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "4\u00d75 @ 50 kg",
-          "name": "Push Press"
-         },
-         {
-          "dose": "3\u00d710",
-          "name": "Ab Wheel Rollout"
-         }
-        ],
-        "log": null,
-        "session": "00000000-0000-7000-8000-000000000186",
-        "state": "start"
-       }
-      ],
-      "next_week": null,
-      "number": 2,
+      "cards": [],
+      "next_week": "00000000-0000-7000-8000-000000000146",
+      "number": 1,
       "paused": [
+       "00000000-0000-7000-8000-000000000252",
        "00000000-0000-7000-8000-000000000210"
       ],
-      "prev_week": "00000000-0000-7000-8000-000000000138",
-      "start": "2026-09-21",
+      "prev_week": null,
+      "start": "2026-09-14",
       "strip": [
        {
-        "count": 5,
-        "date": "2026-09-21",
+        "count": 2,
+        "date": "2026-09-14",
         "is_today": false,
         "selected": false,
         "status": "done"
        },
        {
         "count": 0,
-        "date": "2026-09-22",
+        "date": "2026-09-15",
         "is_today": false,
         "selected": false,
         "status": "rest"
        },
        {
-        "count": 3,
-        "date": "2026-09-23",
-        "is_today": false,
-        "selected": false,
-        "status": "done"
-       },
-       {
-        "count": 4,
-        "date": "2026-09-24",
-        "is_today": true,
-        "selected": true,
-        "status": "today"
-       },
-       {
         "count": 1,
-        "date": "2026-09-25",
+        "date": "2026-09-16",
         "is_today": false,
         "selected": false,
-        "status": "upcoming"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-26",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
+        "status": "missed"
        },
        {
         "count": 0,
-        "date": "2026-09-27",
+        "date": "2026-09-17",
+        "is_today": false,
+        "selected": true,
+        "status": "rest"
+       },
+       {
+        "count": 1,
+        "date": "2026-09-18",
+        "is_today": false,
+        "selected": false,
+        "status": "missed"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-19",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-20",
         "is_today": false,
         "selected": false,
         "status": "rest"
        }
       ],
       "today": "2026-09-24",
-      "week": "00000000-0000-7000-8000-000000000146"
+      "week": "00000000-0000-7000-8000-000000000138"
      },
      "wanted_day": "2026-09-17"
     },
@@ -1787,302 +1784,213 @@
      "view": {
       "cards": [
        {
-        "count": 2,
+        "count": 1,
         "editable": null,
         "items": [
          {
-          "dose": "6\u00d72 @ 78% \u00b7 RIR 1\u20132",
-          "name": "Snatch"
-         },
-         {
-          "dose": "5\u00d73 @ 80%",
-          "name": "Back Squat"
+          "dose": "5\u00d72 @ 75%",
+          "name": "Clean & Jerk"
          }
         ],
-        "log": "00000000-0000-7000-8000-000000000252",
-        "session": "00000000-0000-7000-8000-000000000183",
+        "log": "00000000-0000-7000-8000-000000000210",
+        "session": "00000000-0000-7000-8000-000000000167",
         "state": "paused"
-       },
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "4\u00d75 @ 50 kg",
-          "name": "Push Press"
-         },
-         {
-          "dose": "3\u00d710",
-          "name": "Ab Wheel Rollout"
-         }
-        ],
-        "log": null,
-        "session": "00000000-0000-7000-8000-000000000186",
-        "state": "start"
        }
       ],
-      "next_week": null,
-      "number": 2,
+      "next_week": "00000000-0000-7000-8000-000000000146",
+      "number": 1,
       "paused": [
-       "00000000-0000-7000-8000-000000000210"
+       "00000000-0000-7000-8000-000000000252"
       ],
-      "prev_week": "00000000-0000-7000-8000-000000000138",
-      "start": "2026-09-21",
+      "prev_week": null,
+      "start": "2026-09-14",
       "strip": [
        {
-        "count": 5,
-        "date": "2026-09-21",
+        "count": 2,
+        "date": "2026-09-14",
         "is_today": false,
         "selected": false,
         "status": "done"
        },
        {
         "count": 0,
-        "date": "2026-09-22",
+        "date": "2026-09-15",
         "is_today": false,
         "selected": false,
         "status": "rest"
        },
        {
-        "count": 3,
-        "date": "2026-09-23",
-        "is_today": false,
-        "selected": false,
-        "status": "done"
-       },
-       {
-        "count": 4,
-        "date": "2026-09-24",
-        "is_today": true,
-        "selected": true,
-        "status": "today"
-       },
-       {
         "count": 1,
-        "date": "2026-09-25",
+        "date": "2026-09-16",
         "is_today": false,
         "selected": false,
-        "status": "upcoming"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-26",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
+        "status": "missed"
        },
        {
         "count": 0,
-        "date": "2026-09-27",
+        "date": "2026-09-17",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 1,
+        "date": "2026-09-18",
+        "is_today": false,
+        "selected": true,
+        "status": "missed"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-19",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-20",
         "is_today": false,
         "selected": false,
         "status": "rest"
        }
       ],
       "today": "2026-09-24",
-      "week": "00000000-0000-7000-8000-000000000146"
+      "week": "00000000-0000-7000-8000-000000000138"
      },
      "wanted_day": "2026-09-18"
     },
     {
      "view": {
-      "cards": [
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "6\u00d72 @ 78% \u00b7 RIR 1\u20132",
-          "name": "Snatch"
-         },
-         {
-          "dose": "5\u00d73 @ 80%",
-          "name": "Back Squat"
-         }
-        ],
-        "log": "00000000-0000-7000-8000-000000000252",
-        "session": "00000000-0000-7000-8000-000000000183",
-        "state": "paused"
-       },
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "4\u00d75 @ 50 kg",
-          "name": "Push Press"
-         },
-         {
-          "dose": "3\u00d710",
-          "name": "Ab Wheel Rollout"
-         }
-        ],
-        "log": null,
-        "session": "00000000-0000-7000-8000-000000000186",
-        "state": "start"
-       }
-      ],
-      "next_week": null,
-      "number": 2,
+      "cards": [],
+      "next_week": "00000000-0000-7000-8000-000000000146",
+      "number": 1,
       "paused": [
+       "00000000-0000-7000-8000-000000000252",
        "00000000-0000-7000-8000-000000000210"
       ],
-      "prev_week": "00000000-0000-7000-8000-000000000138",
-      "start": "2026-09-21",
+      "prev_week": null,
+      "start": "2026-09-14",
       "strip": [
        {
-        "count": 5,
-        "date": "2026-09-21",
+        "count": 2,
+        "date": "2026-09-14",
         "is_today": false,
         "selected": false,
         "status": "done"
        },
        {
         "count": 0,
-        "date": "2026-09-22",
+        "date": "2026-09-15",
         "is_today": false,
         "selected": false,
         "status": "rest"
        },
        {
-        "count": 3,
-        "date": "2026-09-23",
-        "is_today": false,
-        "selected": false,
-        "status": "done"
-       },
-       {
-        "count": 4,
-        "date": "2026-09-24",
-        "is_today": true,
-        "selected": true,
-        "status": "today"
-       },
-       {
         "count": 1,
-        "date": "2026-09-25",
+        "date": "2026-09-16",
         "is_today": false,
         "selected": false,
-        "status": "upcoming"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-26",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
+        "status": "missed"
        },
        {
         "count": 0,
-        "date": "2026-09-27",
+        "date": "2026-09-17",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 1,
+        "date": "2026-09-18",
+        "is_today": false,
+        "selected": false,
+        "status": "missed"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-19",
+        "is_today": false,
+        "selected": true,
+        "status": "rest"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-20",
         "is_today": false,
         "selected": false,
         "status": "rest"
        }
       ],
       "today": "2026-09-24",
-      "week": "00000000-0000-7000-8000-000000000146"
+      "week": "00000000-0000-7000-8000-000000000138"
      },
      "wanted_day": "2026-09-19"
     },
     {
      "view": {
-      "cards": [
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "6\u00d72 @ 78% \u00b7 RIR 1\u20132",
-          "name": "Snatch"
-         },
-         {
-          "dose": "5\u00d73 @ 80%",
-          "name": "Back Squat"
-         }
-        ],
-        "log": "00000000-0000-7000-8000-000000000252",
-        "session": "00000000-0000-7000-8000-000000000183",
-        "state": "paused"
-       },
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "4\u00d75 @ 50 kg",
-          "name": "Push Press"
-         },
-         {
-          "dose": "3\u00d710",
-          "name": "Ab Wheel Rollout"
-         }
-        ],
-        "log": null,
-        "session": "00000000-0000-7000-8000-000000000186",
-        "state": "start"
-       }
-      ],
-      "next_week": null,
-      "number": 2,
+      "cards": [],
+      "next_week": "00000000-0000-7000-8000-000000000146",
+      "number": 1,
       "paused": [
+       "00000000-0000-7000-8000-000000000252",
        "00000000-0000-7000-8000-000000000210"
       ],
-      "prev_week": "00000000-0000-7000-8000-000000000138",
-      "start": "2026-09-21",
+      "prev_week": null,
+      "start": "2026-09-14",
       "strip": [
        {
-        "count": 5,
-        "date": "2026-09-21",
+        "count": 2,
+        "date": "2026-09-14",
         "is_today": false,
         "selected": false,
         "status": "done"
        },
        {
         "count": 0,
-        "date": "2026-09-22",
+        "date": "2026-09-15",
         "is_today": false,
         "selected": false,
         "status": "rest"
        },
        {
-        "count": 3,
-        "date": "2026-09-23",
-        "is_today": false,
-        "selected": false,
-        "status": "done"
-       },
-       {
-        "count": 4,
-        "date": "2026-09-24",
-        "is_today": true,
-        "selected": true,
-        "status": "today"
-       },
-       {
         "count": 1,
-        "date": "2026-09-25",
+        "date": "2026-09-16",
         "is_today": false,
         "selected": false,
-        "status": "upcoming"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-26",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
+        "status": "missed"
        },
        {
         "count": 0,
-        "date": "2026-09-27",
+        "date": "2026-09-17",
         "is_today": false,
         "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 1,
+        "date": "2026-09-18",
+        "is_today": false,
+        "selected": false,
+        "status": "missed"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-19",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-20",
+        "is_today": false,
+        "selected": true,
         "status": "rest"
        }
       ],
       "today": "2026-09-24",
-      "week": "00000000-0000-7000-8000-000000000146"
+      "week": "00000000-0000-7000-8000-000000000138"
      },
      "wanted_day": "2026-09-20"
     },
@@ -2802,15 +2710,6 @@
         "session_exercise": "00000000-0000-7000-8000-000000000198",
         "sets": "5\u00d72 @ 123.5 lb",
         "top": "123.5 lb \u00d72"
-       },
-       {
-        "best_e1rm": "86.80",
-        "date": "2025-08-20",
-        "last_line": "185.2 lb \u00d71 \u00b7 13 mo ago",
-        "log": "00000000-0000-7000-8000-000000000134",
-        "session_exercise": "00000000-0000-7000-8000-000000000135",
-        "sets": "1\u00d71 @ 185.2 lb",
-        "top": "185.2 lb \u00d71"
        }
       ],
       "trend": "up"
@@ -2972,57 +2871,11 @@
     "recent": [
      "00000000-0000-7000-8000-000000000238",
      "00000000-0000-7000-8000-000000000213",
-     "00000000-0000-7000-8000-000000000197",
-     "00000000-0000-7000-8000-000000000134"
+     "00000000-0000-7000-8000-000000000197"
     ],
     "streak": 2
    },
    "player": {
-    "00000000-0000-7000-8000-000000000134": {
-     "candidates": [],
-     "counts": [
-      1,
-      1,
-      1
-     ],
-     "exercises": {
-      "00000000-0000-7000-8000-000000000135": {
-       "banner": null,
-       "last_time": "187.4 lb \u00d71 \u00b7 3 days ago",
-       "measure": "reps",
-       "planned_sets": 0,
-       "rows": [
-        {
-         "done": true,
-         "load": "185.2",
-         "number": 1,
-         "placeholder": "",
-         "reps": 1,
-         "rir": "",
-         "time": ""
-        }
-       ],
-       "time_unit": "s"
-      }
-     },
-     "resume": [
-      "player",
-      1
-     ],
-     "steps": [
-      {
-       "done": true,
-       "items": [
-        "00000000-0000-7000-8000-000000000135"
-       ],
-       "labels": [],
-       "section": "",
-       "section_note": "",
-       "warmup": false
-      }
-     ],
-     "top_sets": 1
-    },
     "00000000-0000-7000-8000-000000000197": {
      "candidates": [],
      "counts": [
@@ -4006,7 +3859,7 @@
         "editable": null,
         "items": [
          {
-          "dose": "4\u00d75 @ 50 kg",
+          "dose": "4\u00d75 @ 110.2 lb",
           "name": "Push Press"
          },
          {
@@ -4087,200 +3940,150 @@
       "cards": [
        {
         "count": 2,
-        "editable": null,
+        "editable": false,
         "items": [
          {
-          "dose": "6\u00d72 @ 78% \u00b7 RIR 1\u20132",
+          "dose": "5\u00d72 @ 70%",
           "name": "Snatch"
          },
          {
-          "dose": "5\u00d73 @ 80%",
+          "dose": "5\u00d75 @ 70%",
           "name": "Back Squat"
          }
         ],
-        "log": "00000000-0000-7000-8000-000000000252",
-        "session": "00000000-0000-7000-8000-000000000183",
-        "state": "paused"
-       },
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "4\u00d75 @ 50 kg",
-          "name": "Push Press"
-         },
-         {
-          "dose": "3\u00d710",
-          "name": "Ab Wheel Rollout"
-         }
-        ],
-        "log": null,
-        "session": "00000000-0000-7000-8000-000000000186",
-        "state": "start"
+        "log": "00000000-0000-7000-8000-000000000197",
+        "session": "00000000-0000-7000-8000-000000000162",
+        "state": "done"
        }
       ],
-      "next_week": null,
-      "number": 2,
+      "next_week": "00000000-0000-7000-8000-000000000146",
+      "number": 1,
       "paused": [
+       "00000000-0000-7000-8000-000000000252",
        "00000000-0000-7000-8000-000000000210"
       ],
-      "prev_week": "00000000-0000-7000-8000-000000000138",
-      "start": "2026-09-21",
+      "prev_week": null,
+      "start": "2026-09-14",
       "strip": [
        {
-        "count": 5,
-        "date": "2026-09-21",
+        "count": 2,
+        "date": "2026-09-14",
         "is_today": false,
-        "selected": false,
+        "selected": true,
         "status": "done"
        },
        {
         "count": 0,
-        "date": "2026-09-22",
+        "date": "2026-09-15",
         "is_today": false,
         "selected": false,
         "status": "rest"
        },
        {
-        "count": 3,
-        "date": "2026-09-23",
-        "is_today": false,
-        "selected": false,
-        "status": "done"
-       },
-       {
-        "count": 4,
-        "date": "2026-09-24",
-        "is_today": true,
-        "selected": true,
-        "status": "today"
-       },
-       {
         "count": 1,
-        "date": "2026-09-25",
+        "date": "2026-09-16",
         "is_today": false,
         "selected": false,
-        "status": "upcoming"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-26",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
+        "status": "missed"
        },
        {
         "count": 0,
-        "date": "2026-09-27",
+        "date": "2026-09-17",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 1,
+        "date": "2026-09-18",
+        "is_today": false,
+        "selected": false,
+        "status": "missed"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-19",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-20",
         "is_today": false,
         "selected": false,
         "status": "rest"
        }
       ],
       "today": "2026-09-24",
-      "week": "00000000-0000-7000-8000-000000000146"
+      "week": "00000000-0000-7000-8000-000000000138"
      },
      "wanted_day": "2026-09-14"
     },
     {
      "view": {
-      "cards": [
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "6\u00d72 @ 78% \u00b7 RIR 1\u20132",
-          "name": "Snatch"
-         },
-         {
-          "dose": "5\u00d73 @ 80%",
-          "name": "Back Squat"
-         }
-        ],
-        "log": "00000000-0000-7000-8000-000000000252",
-        "session": "00000000-0000-7000-8000-000000000183",
-        "state": "paused"
-       },
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "4\u00d75 @ 50 kg",
-          "name": "Push Press"
-         },
-         {
-          "dose": "3\u00d710",
-          "name": "Ab Wheel Rollout"
-         }
-        ],
-        "log": null,
-        "session": "00000000-0000-7000-8000-000000000186",
-        "state": "start"
-       }
-      ],
-      "next_week": null,
-      "number": 2,
+      "cards": [],
+      "next_week": "00000000-0000-7000-8000-000000000146",
+      "number": 1,
       "paused": [
+       "00000000-0000-7000-8000-000000000252",
        "00000000-0000-7000-8000-000000000210"
       ],
-      "prev_week": "00000000-0000-7000-8000-000000000138",
-      "start": "2026-09-21",
+      "prev_week": null,
+      "start": "2026-09-14",
       "strip": [
        {
-        "count": 5,
-        "date": "2026-09-21",
+        "count": 2,
+        "date": "2026-09-14",
         "is_today": false,
         "selected": false,
         "status": "done"
        },
        {
         "count": 0,
-        "date": "2026-09-22",
+        "date": "2026-09-15",
+        "is_today": false,
+        "selected": true,
+        "status": "rest"
+       },
+       {
+        "count": 1,
+        "date": "2026-09-16",
+        "is_today": false,
+        "selected": false,
+        "status": "missed"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-17",
         "is_today": false,
         "selected": false,
         "status": "rest"
        },
        {
-        "count": 3,
-        "date": "2026-09-23",
-        "is_today": false,
-        "selected": false,
-        "status": "done"
-       },
-       {
-        "count": 4,
-        "date": "2026-09-24",
-        "is_today": true,
-        "selected": true,
-        "status": "today"
-       },
-       {
         "count": 1,
-        "date": "2026-09-25",
+        "date": "2026-09-18",
         "is_today": false,
         "selected": false,
-        "status": "upcoming"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-26",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
+        "status": "missed"
        },
        {
         "count": 0,
-        "date": "2026-09-27",
+        "date": "2026-09-19",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-20",
         "is_today": false,
         "selected": false,
         "status": "rest"
        }
       ],
       "today": "2026-09-24",
-      "week": "00000000-0000-7000-8000-000000000146"
+      "week": "00000000-0000-7000-8000-000000000138"
      },
      "wanted_day": "2026-09-15"
     },
@@ -4288,201 +4091,147 @@
      "view": {
       "cards": [
        {
-        "count": 2,
+        "count": 1,
         "editable": null,
         "items": [
          {
-          "dose": "6\u00d72 @ 78% \u00b7 RIR 1\u20132",
+          "dose": "4\u00d72 @ 72%",
           "name": "Snatch"
-         },
-         {
-          "dose": "5\u00d73 @ 80%",
-          "name": "Back Squat"
-         }
-        ],
-        "log": "00000000-0000-7000-8000-000000000252",
-        "session": "00000000-0000-7000-8000-000000000183",
-        "state": "paused"
-       },
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "4\u00d75 @ 50 kg",
-          "name": "Push Press"
-         },
-         {
-          "dose": "3\u00d710",
-          "name": "Ab Wheel Rollout"
          }
         ],
         "log": null,
-        "session": "00000000-0000-7000-8000-000000000186",
-        "state": "start"
+        "session": "00000000-0000-7000-8000-000000000165",
+        "state": "backfill"
        }
       ],
-      "next_week": null,
-      "number": 2,
+      "next_week": "00000000-0000-7000-8000-000000000146",
+      "number": 1,
       "paused": [
+       "00000000-0000-7000-8000-000000000252",
        "00000000-0000-7000-8000-000000000210"
       ],
-      "prev_week": "00000000-0000-7000-8000-000000000138",
-      "start": "2026-09-21",
+      "prev_week": null,
+      "start": "2026-09-14",
       "strip": [
        {
-        "count": 5,
-        "date": "2026-09-21",
+        "count": 2,
+        "date": "2026-09-14",
         "is_today": false,
         "selected": false,
         "status": "done"
        },
        {
         "count": 0,
-        "date": "2026-09-22",
+        "date": "2026-09-15",
         "is_today": false,
         "selected": false,
         "status": "rest"
        },
        {
-        "count": 3,
-        "date": "2026-09-23",
+        "count": 1,
+        "date": "2026-09-16",
         "is_today": false,
-        "selected": false,
-        "status": "done"
-       },
-       {
-        "count": 4,
-        "date": "2026-09-24",
-        "is_today": true,
         "selected": true,
-        "status": "today"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-25",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-26",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
+        "status": "missed"
        },
        {
         "count": 0,
-        "date": "2026-09-27",
+        "date": "2026-09-17",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 1,
+        "date": "2026-09-18",
+        "is_today": false,
+        "selected": false,
+        "status": "missed"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-19",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-20",
         "is_today": false,
         "selected": false,
         "status": "rest"
        }
       ],
       "today": "2026-09-24",
-      "week": "00000000-0000-7000-8000-000000000146"
+      "week": "00000000-0000-7000-8000-000000000138"
      },
      "wanted_day": "2026-09-16"
     },
     {
      "view": {
-      "cards": [
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "6\u00d72 @ 78% \u00b7 RIR 1\u20132",
-          "name": "Snatch"
-         },
-         {
-          "dose": "5\u00d73 @ 80%",
-          "name": "Back Squat"
-         }
-        ],
-        "log": "00000000-0000-7000-8000-000000000252",
-        "session": "00000000-0000-7000-8000-000000000183",
-        "state": "paused"
-       },
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "4\u00d75 @ 50 kg",
-          "name": "Push Press"
-         },
-         {
-          "dose": "3\u00d710",
-          "name": "Ab Wheel Rollout"
-         }
-        ],
-        "log": null,
-        "session": "00000000-0000-7000-8000-000000000186",
-        "state": "start"
-       }
-      ],
-      "next_week": null,
-      "number": 2,
+      "cards": [],
+      "next_week": "00000000-0000-7000-8000-000000000146",
+      "number": 1,
       "paused": [
+       "00000000-0000-7000-8000-000000000252",
        "00000000-0000-7000-8000-000000000210"
       ],
-      "prev_week": "00000000-0000-7000-8000-000000000138",
-      "start": "2026-09-21",
+      "prev_week": null,
+      "start": "2026-09-14",
       "strip": [
        {
-        "count": 5,
-        "date": "2026-09-21",
+        "count": 2,
+        "date": "2026-09-14",
         "is_today": false,
         "selected": false,
         "status": "done"
        },
        {
         "count": 0,
-        "date": "2026-09-22",
+        "date": "2026-09-15",
         "is_today": false,
         "selected": false,
         "status": "rest"
        },
        {
-        "count": 3,
-        "date": "2026-09-23",
-        "is_today": false,
-        "selected": false,
-        "status": "done"
-       },
-       {
-        "count": 4,
-        "date": "2026-09-24",
-        "is_today": true,
-        "selected": true,
-        "status": "today"
-       },
-       {
         "count": 1,
-        "date": "2026-09-25",
+        "date": "2026-09-16",
         "is_today": false,
         "selected": false,
-        "status": "upcoming"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-26",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
+        "status": "missed"
        },
        {
         "count": 0,
-        "date": "2026-09-27",
+        "date": "2026-09-17",
+        "is_today": false,
+        "selected": true,
+        "status": "rest"
+       },
+       {
+        "count": 1,
+        "date": "2026-09-18",
+        "is_today": false,
+        "selected": false,
+        "status": "missed"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-19",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-20",
         "is_today": false,
         "selected": false,
         "status": "rest"
        }
       ],
       "today": "2026-09-24",
-      "week": "00000000-0000-7000-8000-000000000146"
+      "week": "00000000-0000-7000-8000-000000000138"
      },
      "wanted_day": "2026-09-17"
     },
@@ -4490,302 +4239,213 @@
      "view": {
       "cards": [
        {
-        "count": 2,
+        "count": 1,
         "editable": null,
         "items": [
          {
-          "dose": "6\u00d72 @ 78% \u00b7 RIR 1\u20132",
-          "name": "Snatch"
-         },
-         {
-          "dose": "5\u00d73 @ 80%",
-          "name": "Back Squat"
+          "dose": "5\u00d72 @ 75%",
+          "name": "Clean & Jerk"
          }
         ],
-        "log": "00000000-0000-7000-8000-000000000252",
-        "session": "00000000-0000-7000-8000-000000000183",
+        "log": "00000000-0000-7000-8000-000000000210",
+        "session": "00000000-0000-7000-8000-000000000167",
         "state": "paused"
-       },
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "4\u00d75 @ 50 kg",
-          "name": "Push Press"
-         },
-         {
-          "dose": "3\u00d710",
-          "name": "Ab Wheel Rollout"
-         }
-        ],
-        "log": null,
-        "session": "00000000-0000-7000-8000-000000000186",
-        "state": "start"
        }
       ],
-      "next_week": null,
-      "number": 2,
+      "next_week": "00000000-0000-7000-8000-000000000146",
+      "number": 1,
       "paused": [
-       "00000000-0000-7000-8000-000000000210"
+       "00000000-0000-7000-8000-000000000252"
       ],
-      "prev_week": "00000000-0000-7000-8000-000000000138",
-      "start": "2026-09-21",
+      "prev_week": null,
+      "start": "2026-09-14",
       "strip": [
        {
-        "count": 5,
-        "date": "2026-09-21",
+        "count": 2,
+        "date": "2026-09-14",
         "is_today": false,
         "selected": false,
         "status": "done"
        },
        {
         "count": 0,
-        "date": "2026-09-22",
+        "date": "2026-09-15",
         "is_today": false,
         "selected": false,
         "status": "rest"
        },
        {
-        "count": 3,
-        "date": "2026-09-23",
-        "is_today": false,
-        "selected": false,
-        "status": "done"
-       },
-       {
-        "count": 4,
-        "date": "2026-09-24",
-        "is_today": true,
-        "selected": true,
-        "status": "today"
-       },
-       {
         "count": 1,
-        "date": "2026-09-25",
+        "date": "2026-09-16",
         "is_today": false,
         "selected": false,
-        "status": "upcoming"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-26",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
+        "status": "missed"
        },
        {
         "count": 0,
-        "date": "2026-09-27",
+        "date": "2026-09-17",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 1,
+        "date": "2026-09-18",
+        "is_today": false,
+        "selected": true,
+        "status": "missed"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-19",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-20",
         "is_today": false,
         "selected": false,
         "status": "rest"
        }
       ],
       "today": "2026-09-24",
-      "week": "00000000-0000-7000-8000-000000000146"
+      "week": "00000000-0000-7000-8000-000000000138"
      },
      "wanted_day": "2026-09-18"
     },
     {
      "view": {
-      "cards": [
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "6\u00d72 @ 78% \u00b7 RIR 1\u20132",
-          "name": "Snatch"
-         },
-         {
-          "dose": "5\u00d73 @ 80%",
-          "name": "Back Squat"
-         }
-        ],
-        "log": "00000000-0000-7000-8000-000000000252",
-        "session": "00000000-0000-7000-8000-000000000183",
-        "state": "paused"
-       },
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "4\u00d75 @ 50 kg",
-          "name": "Push Press"
-         },
-         {
-          "dose": "3\u00d710",
-          "name": "Ab Wheel Rollout"
-         }
-        ],
-        "log": null,
-        "session": "00000000-0000-7000-8000-000000000186",
-        "state": "start"
-       }
-      ],
-      "next_week": null,
-      "number": 2,
+      "cards": [],
+      "next_week": "00000000-0000-7000-8000-000000000146",
+      "number": 1,
       "paused": [
+       "00000000-0000-7000-8000-000000000252",
        "00000000-0000-7000-8000-000000000210"
       ],
-      "prev_week": "00000000-0000-7000-8000-000000000138",
-      "start": "2026-09-21",
+      "prev_week": null,
+      "start": "2026-09-14",
       "strip": [
        {
-        "count": 5,
-        "date": "2026-09-21",
+        "count": 2,
+        "date": "2026-09-14",
         "is_today": false,
         "selected": false,
         "status": "done"
        },
        {
         "count": 0,
-        "date": "2026-09-22",
+        "date": "2026-09-15",
         "is_today": false,
         "selected": false,
         "status": "rest"
        },
        {
-        "count": 3,
-        "date": "2026-09-23",
-        "is_today": false,
-        "selected": false,
-        "status": "done"
-       },
-       {
-        "count": 4,
-        "date": "2026-09-24",
-        "is_today": true,
-        "selected": true,
-        "status": "today"
-       },
-       {
         "count": 1,
-        "date": "2026-09-25",
+        "date": "2026-09-16",
         "is_today": false,
         "selected": false,
-        "status": "upcoming"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-26",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
+        "status": "missed"
        },
        {
         "count": 0,
-        "date": "2026-09-27",
+        "date": "2026-09-17",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 1,
+        "date": "2026-09-18",
+        "is_today": false,
+        "selected": false,
+        "status": "missed"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-19",
+        "is_today": false,
+        "selected": true,
+        "status": "rest"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-20",
         "is_today": false,
         "selected": false,
         "status": "rest"
        }
       ],
       "today": "2026-09-24",
-      "week": "00000000-0000-7000-8000-000000000146"
+      "week": "00000000-0000-7000-8000-000000000138"
      },
      "wanted_day": "2026-09-19"
     },
     {
      "view": {
-      "cards": [
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "6\u00d72 @ 78% \u00b7 RIR 1\u20132",
-          "name": "Snatch"
-         },
-         {
-          "dose": "5\u00d73 @ 80%",
-          "name": "Back Squat"
-         }
-        ],
-        "log": "00000000-0000-7000-8000-000000000252",
-        "session": "00000000-0000-7000-8000-000000000183",
-        "state": "paused"
-       },
-       {
-        "count": 2,
-        "editable": null,
-        "items": [
-         {
-          "dose": "4\u00d75 @ 50 kg",
-          "name": "Push Press"
-         },
-         {
-          "dose": "3\u00d710",
-          "name": "Ab Wheel Rollout"
-         }
-        ],
-        "log": null,
-        "session": "00000000-0000-7000-8000-000000000186",
-        "state": "start"
-       }
-      ],
-      "next_week": null,
-      "number": 2,
+      "cards": [],
+      "next_week": "00000000-0000-7000-8000-000000000146",
+      "number": 1,
       "paused": [
+       "00000000-0000-7000-8000-000000000252",
        "00000000-0000-7000-8000-000000000210"
       ],
-      "prev_week": "00000000-0000-7000-8000-000000000138",
-      "start": "2026-09-21",
+      "prev_week": null,
+      "start": "2026-09-14",
       "strip": [
        {
-        "count": 5,
-        "date": "2026-09-21",
+        "count": 2,
+        "date": "2026-09-14",
         "is_today": false,
         "selected": false,
         "status": "done"
        },
        {
         "count": 0,
-        "date": "2026-09-22",
+        "date": "2026-09-15",
         "is_today": false,
         "selected": false,
         "status": "rest"
        },
        {
-        "count": 3,
-        "date": "2026-09-23",
-        "is_today": false,
-        "selected": false,
-        "status": "done"
-       },
-       {
-        "count": 4,
-        "date": "2026-09-24",
-        "is_today": true,
-        "selected": true,
-        "status": "today"
-       },
-       {
         "count": 1,
-        "date": "2026-09-25",
+        "date": "2026-09-16",
         "is_today": false,
         "selected": false,
-        "status": "upcoming"
-       },
-       {
-        "count": 1,
-        "date": "2026-09-26",
-        "is_today": false,
-        "selected": false,
-        "status": "upcoming"
+        "status": "missed"
        },
        {
         "count": 0,
-        "date": "2026-09-27",
+        "date": "2026-09-17",
         "is_today": false,
         "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 1,
+        "date": "2026-09-18",
+        "is_today": false,
+        "selected": false,
+        "status": "missed"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-19",
+        "is_today": false,
+        "selected": false,
+        "status": "rest"
+       },
+       {
+        "count": 0,
+        "date": "2026-09-20",
+        "is_today": false,
+        "selected": true,
         "status": "rest"
        }
       ],
       "today": "2026-09-24",
-      "week": "00000000-0000-7000-8000-000000000146"
+      "week": "00000000-0000-7000-8000-000000000138"
      },
      "wanted_day": "2026-09-20"
     },
@@ -4813,11 +4473,11 @@
           "name": "Back Squat"
          },
          {
-          "dose": "3\u00d78 @ 60 kg",
+          "dose": "3\u00d78 @ 132.3 lb",
           "name": "D1 Romanian Deadlift"
          },
          {
-          "dose": "3\u00d710 @ 40 kg",
+          "dose": "3\u00d710 @ 88.2 lb",
           "name": "D2 Pendlay Row"
          }
         ],
@@ -5071,7 +4731,7 @@
         "editable": null,
         "items": [
          {
-          "dose": "4\u00d75 @ 50 kg",
+          "dose": "4\u00d75 @ 110.2 lb",
           "name": "Push Press"
          },
          {
@@ -5401,7 +5061,7 @@
         "editable": null,
         "items": [
          {
-          "dose": "4\u00d75 @ 50 kg",
+          "dose": "4\u00d75 @ 110.2 lb",
           "name": "Push Press"
          },
          {
@@ -6504,7 +6164,7 @@
      "created_at": "2026-09-24T16:00:00+00:00",
      "date": "2026-09-22",
      "habit_id": "00000000-0000-7000-8000-000000000258",
-     "id": "00000000-0000-7000-8000-000000000270"
+     "id": "00000000-0000-7000-8000-000000000274"
     },
     {
      "athlete_id": "00000000-0000-7000-8000-000000000128",
@@ -6517,15 +6177,8 @@
      "athlete_id": "00000000-0000-7000-8000-000000000128",
      "created_at": "2026-09-24T16:00:00+00:00",
      "date": "2026-09-21",
-     "habit_id": "00000000-0000-7000-8000-000000000257",
-     "id": "00000000-0000-7000-8000-000000000267"
-    },
-    {
-     "athlete_id": "00000000-0000-7000-8000-000000000128",
-     "created_at": "2026-09-24T16:00:00+00:00",
-     "date": "2026-09-21",
      "habit_id": "00000000-0000-7000-8000-000000000258",
-     "id": "00000000-0000-7000-8000-000000000269"
+     "id": "00000000-0000-7000-8000-000000000273"
     },
     {
      "athlete_id": "00000000-0000-7000-8000-000000000128",
@@ -6533,6 +6186,20 @@
      "date": "2026-09-21",
      "habit_id": "00000000-0000-7000-8000-000000000256",
      "id": "00000000-0000-7000-8000-000000000262"
+    },
+    {
+     "athlete_id": "00000000-0000-7000-8000-000000000128",
+     "created_at": "2026-09-24T16:00:00+00:00",
+     "date": "2026-09-21",
+     "habit_id": "00000000-0000-7000-8000-000000000257",
+     "id": "00000000-0000-7000-8000-000000000267"
+    },
+    {
+     "athlete_id": "00000000-0000-7000-8000-000000000128",
+     "created_at": "2026-09-24T16:00:00+00:00",
+     "date": "2026-09-20",
+     "habit_id": "00000000-0000-7000-8000-000000000258",
+     "id": "00000000-0000-7000-8000-000000000272"
     },
     {
      "athlete_id": "00000000-0000-7000-8000-000000000128",
@@ -6554,6 +6221,27 @@
      "date": "2026-09-18",
      "habit_id": "00000000-0000-7000-8000-000000000257",
      "id": "00000000-0000-7000-8000-000000000266"
+    },
+    {
+     "athlete_id": "00000000-0000-7000-8000-000000000128",
+     "created_at": "2026-09-24T16:00:00+00:00",
+     "date": "2026-09-17",
+     "habit_id": "00000000-0000-7000-8000-000000000258",
+     "id": "00000000-0000-7000-8000-000000000271"
+    },
+    {
+     "athlete_id": "00000000-0000-7000-8000-000000000128",
+     "created_at": "2026-09-24T16:00:00+00:00",
+     "date": "2026-09-15",
+     "habit_id": "00000000-0000-7000-8000-000000000258",
+     "id": "00000000-0000-7000-8000-000000000270"
+    },
+    {
+     "athlete_id": "00000000-0000-7000-8000-000000000128",
+     "created_at": "2026-09-24T16:00:00+00:00",
+     "date": "2026-09-14",
+     "habit_id": "00000000-0000-7000-8000-000000000258",
+     "id": "00000000-0000-7000-8000-000000000269"
     },
     {
      "athlete_id": "00000000-0000-7000-8000-000000000128",

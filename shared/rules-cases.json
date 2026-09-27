@@ -1,21 +1,199 @@
 {
   "about": "Rules the phone runs offline, as cases both the backend (pytest) and the app (jest) check. Weights are strings of kg unless a unit says otherwise.",
   "e1rm": [
-    {"load_kg": "100", "reps": 1, "expected": "103.33"},
-    {"load_kg": "100", "reps": 5, "expected": "116.67"},
-    {"load_kg": "80", "reps": 3, "expected": "88.00"},
-    {"load_kg": "80", "reps": 0, "expected": null}
+    {
+      "load_kg": "100",
+      "reps": 1,
+      "expected": "103.33"
+    },
+    {
+      "load_kg": "100",
+      "reps": 5,
+      "expected": "116.67"
+    },
+    {
+      "load_kg": "80",
+      "reps": 3,
+      "expected": "88.00"
+    },
+    {
+      "load_kg": "80",
+      "reps": 0,
+      "expected": null
+    }
   ],
   "plate_round": [
-    {"kg": "63.747", "unit": "kg", "expected": "63.5", "why": "rounds once, not 63.75 then 64"},
-    {"kg": "80", "unit": "kg", "expected": "80"},
-    {"kg": "61.25", "unit": "kg", "expected": "61.5", "why": "halves round up"},
-    {"kg": "100", "unit": "lb", "expected": "220"}
+    {
+      "kg": "63.747",
+      "unit": "kg",
+      "expected": "63.5",
+      "why": "rounds once, not 63.75 then 64"
+    },
+    {
+      "kg": "80",
+      "unit": "kg",
+      "expected": "80"
+    },
+    {
+      "kg": "61.25",
+      "unit": "kg",
+      "expected": "61.5",
+      "why": "halves round up"
+    },
+    {
+      "kg": "100",
+      "unit": "lb",
+      "expected": "220"
+    }
   ],
   "suggested_load": [
-    {"basis": "percent", "value": "77", "max_kg": "82", "unit": "kg", "expected": "63"},
-    {"basis": "percent", "value": "80", "max_kg": "100", "unit": "lb", "expected": "177.5"},
-    {"basis": "weight", "value": "101.25", "max_kg": null, "unit": "kg", "expected": "101.25", "why": "a fixed weight isn't plate-rounded"},
-    {"basis": "rpe", "value": "8", "max_kg": null, "unit": "kg", "expected": null}
+    {
+      "basis": "percent",
+      "value": "77",
+      "max_kg": "82",
+      "unit": "kg",
+      "expected": "63"
+    },
+    {
+      "basis": "percent",
+      "value": "80",
+      "max_kg": "100",
+      "unit": "lb",
+      "expected": "177.5"
+    },
+    {
+      "basis": "weight",
+      "value": "101.25",
+      "max_kg": null,
+      "unit": "kg",
+      "expected": "101.25",
+      "why": "a fixed weight isn't plate-rounded"
+    },
+    {
+      "basis": "rpe",
+      "value": "8",
+      "max_kg": null,
+      "unit": "kg",
+      "expected": null
+    }
+  ],
+  "clean_answer": [
+    {
+      "question": {
+        "type": "scale",
+        "options": [],
+        "detail_label": ""
+      },
+      "value": " 7 ",
+      "other": "ignored",
+      "expected": [
+        "7",
+        ""
+      ]
+    },
+    {
+      "question": {
+        "type": "scale",
+        "options": [],
+        "detail_label": "Where?"
+      },
+      "value": "3",
+      "other": "  left knee ",
+      "expected": [
+        "3",
+        "left knee"
+      ]
+    },
+    {
+      "question": {
+        "type": "scale",
+        "options": [],
+        "detail_label": ""
+      },
+      "value": "11",
+      "other": "",
+      "error": "Pick a number from 1 to 10."
+    },
+    {
+      "question": {
+        "type": "scale",
+        "options": [],
+        "detail_label": ""
+      },
+      "value": "7.5",
+      "other": "",
+      "error": "Pick a number from 1 to 10."
+    },
+    {
+      "question": {
+        "type": "choice",
+        "options": [
+          "Nothing — all good",
+          "Legs are sore"
+        ],
+        "detail_label": ""
+      },
+      "value": "Legs are sore",
+      "other": "quads",
+      "expected": [
+        "Legs are sore",
+        ""
+      ]
+    },
+    {
+      "question": {
+        "type": "choice",
+        "options": [
+          "Nothing — all good",
+          "Legs are sore"
+        ],
+        "detail_label": ""
+      },
+      "value": "Other",
+      "other": " tight hips ",
+      "expected": [
+        "Other",
+        "tight hips"
+      ]
+    },
+    {
+      "question": {
+        "type": "choice",
+        "options": [
+          "Nothing — all good",
+          "Legs are sore"
+        ],
+        "detail_label": ""
+      },
+      "value": "Sleepy",
+      "other": "",
+      "error": "Pick one of the options."
+    },
+    {
+      "question": {
+        "type": "text",
+        "options": [],
+        "detail_label": ""
+      },
+      "value": "  slept   badly \n again ",
+      "other": "x",
+      "expected": [
+        "slept badly again",
+        ""
+      ]
+    },
+    {
+      "question": {
+        "type": "text",
+        "options": [],
+        "detail_label": ""
+      },
+      "value": "",
+      "other": "",
+      "expected": [
+        "",
+        ""
+      ]
+    }
   ]
 }

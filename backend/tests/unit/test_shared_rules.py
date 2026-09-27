@@ -32,3 +32,15 @@ def test_plate_round(case):
 def test_suggested_load(case):
     p = SimpleNamespace(load_basis=case["basis"], max_kg=Decimal(case["max_kg"]) if case["max_kg"] else None)
     assert _text(sessions.suggested_load(p, Decimal(case["value"]), case["unit"])) == case["expected"]
+
+
+@pytest.mark.parametrize("case", CASES["clean_answer"])
+def test_clean_answer(case):
+    from apps.workouts import checkins
+
+    question = SimpleNamespace(**case["question"])
+    if "error" in case:
+        with pytest.raises(checkins.InvalidAnswer, match=case["error"]):
+            checkins.clean_answer(question, case["value"], case["other"])
+    else:
+        assert list(checkins.clean_answer(question, case["value"], case["other"])) == case["expected"]

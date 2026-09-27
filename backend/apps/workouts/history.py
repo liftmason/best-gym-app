@@ -108,8 +108,13 @@ def _entries(athlete, exercise_ids=None, exclude_log=None, since=None, before=No
             session_exercise__session_log__finished_at__isnull=False,
         )
         .select_related("session_exercise__session_log")
+        # Within a session, exercises in their order (the phone groups them the same way).
         .order_by(
-            "-session_exercise__session_log__date", "-session_exercise__session_log__started_at", "set_number"
+            "-session_exercise__session_log__date",
+            "-session_exercise__session_log__started_at",
+            "session_exercise__order",
+            "session_exercise_id",
+            "set_number",
         )
     )
     if since is not None:
@@ -316,6 +321,9 @@ def logged_exercises(log):
     return SessionExercise.objects.filter(session_log=log).prefetch_related("sets")
 
 
-def recent_finished(athlete, limit=5):
-    """The athlete's latest finished sessions, newest first."""
-    return list(athlete.session_logs.finished().order_by("-date", "-finished_at")[:limit])
+def recent_finished(athlete, limit=5, since=None):
+    """The athlete's latest finished sessions, newest first (from `since` when given)."""
+    logs = athlete.session_logs.finished()
+    if since is not None:
+        logs = logs.filter(date__gte=since)
+    return list(logs.order_by("-date", "-finished_at")[:limit])

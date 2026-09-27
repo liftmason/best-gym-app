@@ -8,6 +8,9 @@ The scenario is one athlete two weeks into a program, with fixed ids and the fro
 - warm-ups, supersets, a section, varied sets, and loads by %, weight, RPE and time;
 - a percentage from another lift's max, a PR, and a lift from before the phone's 12 months;
 - a check-in answered part-way, and habits of every cadence.
+
+Lists of sessions cover the phone's 12 months (older ones load online); PRs count
+everything, the older part through the snapshot's baselines.
 """
 
 import datetime
@@ -236,7 +239,8 @@ def build(athlete, coach, gym):
         HabitLog.objects.create(habit=habit_daily, date=today - days_ago * DAY)
     for d in (days1[0].date, days1[4].date, days2[0].date, days2[2].date):
         HabitLog.objects.create(habit=habit_training, date=d)
-    for d in (days2[0].date, days2[1].date):
+    # Three in week 1 (met), one on its Sunday (the week boundary), two so far in week 2.
+    for d in (days1[0].date, days1[1].date, days1[3].date, days1[6].date, days2[0].date, days2[1].date):
         HabitLog.objects.create(habit=habit_weekly, date=d)
     return program
 
@@ -326,9 +330,9 @@ def player_json(athlete, log, unit):
     return out
 
 
-def history_json(athlete, unit):
+def history_json(athlete, unit, since):
     today = athlete.today()
-    by_exercise = history.exercise_history(athlete)
+    by_exercise = history.exercise_history(athlete, since=since)
     return {
         "lifetime_prs": [
             {
@@ -346,7 +350,7 @@ def history_json(athlete, unit):
         "streak": history.streak(athlete),
         "compliance": list(history.compliance(athlete, today)),
         "next_session": iso(history.next_session_date(athlete, today)),
-        "recent": [str(log.pk) for log in history.recent_finished(athlete)],
+        "recent": [str(log.pk) for log in history.recent_finished(athlete, since=since)],
         "exercises": {
             str(exercise_id): {
                 "trend": history.trend(entries),
@@ -386,19 +390,25 @@ def parity(athlete, coach, gym):
     athlete.refresh_from_db()
     today = athlete.today()
     snapshot = bootstrap.snapshot(athlete)
-    logs = list(athlete.session_logs.order_by("date", "id"))
+    since = snapshot["history_from"]
+    logs = list(athlete.session_logs.filter(date__gte=since).order_by("date", "id"))
     week_days = [None, *(MONDAY + i * DAY for i in range(14)), MONDAY + 21 * DAY]
     expect = {}
     for unit in ("kg", "lb"):
+        athlete.units = unit  # the week's cards use the athlete's own unit (not saved)
         expect[unit] = {
             "week": [
-                {"wanted_day": iso(d), "view": week_json(week.week_view(athlete, wanted_day=d))}
+                {
+                    "wanted_day": iso(d),
+                    "view": week_json(week.week_view(athlete, wanted_week=d, wanted_day=d)),
+                }
                 for d in week_days
             ],
             "player": {str(log.pk): player_json(athlete, log, unit) for log in logs},
-            "history": history_json(athlete, unit),
+            "history": history_json(athlete, unit, since),
         }
-    expect["habits"] = {iso(d): habits_json(athlete, d) for d in (today, today - DAY, today - 9 * DAY)}
+    athlete.units = "kg"
+    expect["habits"] = {iso(MONDAY + i * DAY): habits_json(athlete, MONDAY + i * DAY) for i in range(11)}
     return {
         "about": (
             "What the athlete's screens show, by the server's rules, from the rows a phone "
