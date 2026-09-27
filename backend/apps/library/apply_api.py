@@ -8,7 +8,7 @@ import uuid
 from ninja import Router, Schema, Status
 
 from apps.accounts import coaching
-from apps.api.main import coach_of
+from apps.api.main import programmer_of
 from apps.api.schemas import WeekTypeRef, week_type_ref
 from apps.programs import prescriptions
 
@@ -80,7 +80,7 @@ class Applied(Schema):
 
 
 def _athlete(request, athlete_id):
-    coach = coach_of(request)
+    coach = programmer_of(request)
     return coach, coaching.athlete_for(coach, athlete_id)
 
 

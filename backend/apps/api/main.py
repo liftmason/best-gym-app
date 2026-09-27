@@ -53,6 +53,7 @@ def _service_error(request, exc):
 for category in (
     errors.Invalid,
     errors.NotSignedIn,
+    errors.PaymentRequired,
     errors.NotFound,
     errors.Conflict,
     errors.Gone,
@@ -108,6 +109,7 @@ def _routers():
     from apps.accounts.coach_api import router as athletes
     from apps.accounts.me_api import router as me
     from apps.accounts.settings_api import router as settings
+    from apps.billing.api import router as billing
     from apps.dashboard.api import router as dashboard
     from apps.dashboard.bug_api import router as bugs
     from apps.exercises.api import router as library
@@ -137,6 +139,7 @@ def _routers():
     api.add_router("", me)
     api.add_router("", my_training)
     api.add_router("", bugs)
+    api.add_router("", billing)
 
 
 def coach_of(request):
@@ -144,6 +147,17 @@ def coach_of(request):
     coach = request.user.coach_profile
     if coach is None or coach.membership is None or coach.membership.ended_at is not None:
         raise errors.NotFound()
+    return coach
+
+
+def programmer_of(request):
+    """coach_of for programming (board, library, templates, applying): a write is refused
+    while the gym's plan makes programming read-only (a lapsed payment; apps/billing)."""
+    coach = coach_of(request)
+    if request.method not in ("GET", "HEAD", "OPTIONS"):
+        from apps.billing import entitlements
+
+        entitlements.require(coach.gym, entitlements.PROGRAM)
     return coach
 
 

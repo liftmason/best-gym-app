@@ -72,6 +72,31 @@
         "title": "Archived",
         "type": "object"
       },
+      "AthleteCount": {
+        "properties": {
+          "max": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max"
+          },
+          "used": {
+            "title": "Used",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "used",
+          "max"
+        ],
+        "title": "AthleteCount",
+        "type": "object"
+      },
       "AthleteOut": {
         "properties": {
           "athlete": {
@@ -585,6 +610,19 @@
         "title": "Checkin",
         "type": "object"
       },
+      "CheckoutIn": {
+        "properties": {
+          "plan_code": {
+            "title": "Plan Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan_code"
+        ],
+        "title": "CheckoutIn",
+        "type": "object"
+      },
       "Choices": {
         "properties": {
           "days": {
@@ -643,6 +681,9 @@
       },
       "CoachProfileOut": {
         "properties": {
+          "entitlements": {
+            "$ref": "#/components/schemas/Entitlements"
+          },
           "gym": {
             "$ref": "#/components/schemas/GymOut"
           },
@@ -664,7 +705,8 @@
           "id",
           "title",
           "role",
-          "gym"
+          "gym",
+          "entitlements"
         ],
         "title": "CoachProfileOut",
         "type": "object"
@@ -1045,6 +1087,50 @@
           "email"
         ],
         "title": "EmailIn",
+        "type": "object"
+      },
+      "Entitlements": {
+        "description": "What the gym's plan allows now. Hide upgrade prompts while billing_enabled is false.",
+        "properties": {
+          "athletes": {
+            "$ref": "#/components/schemas/AthleteCount"
+          },
+          "billing_enabled": {
+            "title": "Billing Enabled",
+            "type": "boolean"
+          },
+          "form_videos": {
+            "title": "Form Videos",
+            "type": "boolean"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/PlanOut"
+          },
+          "programming": {
+            "title": "Programming",
+            "type": "boolean"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "required": [
+          "billing_enabled",
+          "plan",
+          "status",
+          "athletes",
+          "form_videos",
+          "programming"
+        ],
+        "title": "Entitlements",
         "type": "object"
       },
       "ExerciseIn": {
@@ -2542,6 +2628,19 @@
         "title": "NewWeekType",
         "type": "object"
       },
+      "NonceOut": {
+        "properties": {
+          "nonce": {
+            "title": "Nonce",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nonce"
+        ],
+        "title": "NonceOut",
+        "type": "object"
+      },
       "Note": {
         "properties": {
           "note": {
@@ -2676,6 +2775,53 @@
           "label"
         ],
         "title": "Placement",
+        "type": "object"
+      },
+      "PlanOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "form_videos": {
+            "title": "Form Videos",
+            "type": "boolean"
+          },
+          "max_athletes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Athletes"
+          },
+          "max_coaches": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Coaches"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "max_athletes",
+          "max_coaches",
+          "form_videos"
+        ],
+        "title": "PlanOut",
         "type": "object"
       },
       "PlannedDay": {
@@ -3743,6 +3889,29 @@
         "title": "SlotOut",
         "type": "object"
       },
+      "SocialIn": {
+        "properties": {
+          "device": {
+            "default": "",
+            "title": "Device",
+            "type": "string"
+          },
+          "id_token": {
+            "title": "Id Token",
+            "type": "string"
+          },
+          "nonce": {
+            "title": "Nonce",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id_token",
+          "nonce"
+        ],
+        "title": "SocialIn",
+        "type": "object"
+      },
       "Source": {
         "properties": {
           "id": {
@@ -4161,6 +4330,19 @@
           "content_type"
         ],
         "title": "UploadOut",
+        "type": "object"
+      },
+      "Url": {
+        "properties": {
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "Url",
         "type": "object"
       },
       "UseSaved": {
@@ -7399,6 +7581,29 @@
         ]
       }
     },
+    "/api/v1/auth/nonce": {
+      "get": {
+        "description": "A one-time value for an Apple or Google sign-in (10 minutes).",
+        "operationId": "apps_signin_api_nonce",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NonceOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Nonce",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
     "/api/v1/auth/refresh": {
       "post": {
         "description": "New tokens for a refresh token (from the body, or the web app's cookie).",
@@ -7482,6 +7687,187 @@
         "summary": "Coach Sign Up",
         "tags": [
           "Sign-in"
+        ]
+      }
+    },
+    "/api/v1/auth/social/{provider}": {
+      "post": {
+        "description": "Sign in with an identity token from Apple or Google. A new person gets a sign-up\nticket, as with an email code; the sign-in method is linked when they finish.",
+        "operationId": "apps_signin_api_social_sign_in",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "title": "Provider",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Social Sign In",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
+    "/api/v1/auth/social/{provider}/link": {
+      "post": {
+        "description": "Add Apple or Google sign-in to the signed-in account (e.g. an Apple relay address).",
+        "operationId": "apps_signin_api_link_social",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "title": "Provider",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Link Social",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
+    "/api/v1/billing/checkout": {
+      "post": {
+        "description": "A Stripe Checkout page to subscribe the gym (its owner only).",
+        "operationId": "apps_billing_api_checkout",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Url"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Checkout",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/api/v1/billing/plans": {
+      "get": {
+        "operationId": "apps_billing_api_plans",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlanOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Plans",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/api/v1/billing/portal": {
+      "post": {
+        "description": "Stripe's Customer Portal: cards, invoices, changing or cancelling the plan.",
+        "operationId": "apps_billing_api_portal",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Url"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Portal",
+        "tags": [
+          "Billing"
         ]
       }
     },

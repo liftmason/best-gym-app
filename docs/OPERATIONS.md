@@ -197,3 +197,26 @@ The athlete app is installable (a PWA): `/manifest.webmanifest`, a service worke
 `/sw.js` that caches the CSS/JS and shows an offline page when there's no signal, and an
 "Install the app" card on the athlete's Home (a button on Android/Chrome; the Share → Add
 to Home Screen steps on iPhone). Sets are not queued offline yet (build plan, "Still open").
+
+## Sign in with Apple and Google
+
+Set the client ids tokens are issued to, comma-separated. Each provider is off until its ids are set.
+- `APPLE_CLIENT_IDS`: the iOS bundle id, and the web Services ID.
+- `GOOGLE_CLIENT_IDS`: the iOS, Android and web client ids.
+
+The app asks `GET /api/v1/auth/nonce` for a nonce before each sign-in and gives the provider its SHA-256.
+
+## Billing (Stripe)
+
+Billing is off until `BILLING_ENABLED=1`; everything is allowed until then. Production refuses `BILLING_ENABLED` without both Stripe keys. To turn it on:
+
+1. **Plans:** in the admin, create them with their limits and the Stripe price id; tick "public" for the ones offered. Set `DEFAULT_PLAN` to the plan new gyms get.
+2. **Keys:** `STRIPE_SECRET_KEY`, and in Stripe add a webhook endpoint for `https://<api host>/api/v1/billing/webhook` with these events:
+   - `checkout.session.completed`
+   - `customer.subscription.created`, `customer.subscription.updated` and `customer.subscription.deleted`
+   - `invoice.paid` and `invoice.payment_failed`
+
+   Its signing secret is `STRIPE_WEBHOOK_SECRET`.
+3. **Local testing:** `stripe listen --forward-to localhost:8000/api/v1/billing/webhook` prints a signing secret to use.
+
+A failed payment gives the gym 7 days of full access, then coach programming is read-only until it's paid. Athletes are never affected.

@@ -151,15 +151,35 @@ def user_for_email(email):
     return User.objects.filter(email__iexact=email).first()
 
 
-def ticket(email):
-    return signing.dumps({"email": email}, salt=TICKET_SALT)
+def ticket(email, identity=None):
+    """A sign-up ticket: the verified email, and an Apple or Google identity (kind, subject)
+    to link when the account is made."""
+    return signing.dumps({"email": email, "identity": list(identity) if identity else None}, salt=TICKET_SALT)
+
+
+def ticket_claims(value):
+    try:
+        claims = signing.loads(value or "", salt=TICKET_SALT, max_age=TICKET_MAX_AGE)
+        claims["email"]  # noqa: B018 - must be there
+        return claims
+    except signing.BadSignature, KeyError, TypeError:
+        raise TicketRefused("Verify your email again to carry on.") from None
 
 
 def ticket_email(value):
-    try:
-        return signing.loads(value or "", salt=TICKET_SALT, max_age=TICKET_MAX_AGE)["email"]
-    except signing.BadSignature, KeyError, TypeError:
-        raise TicketRefused("Verify your email again to carry on.") from None
+    return ticket_claims(value)["email"]
+
+
+def link_ticket(user, value):
+    """Link what a sign-up ticket verified to the new account: its email, and the Apple or
+    Google identity it came from."""
+    claims = ticket_claims(value)
+    link_email(user, claims["email"])
+    if claims.get("identity"):
+        from .social import link
+
+        kind, subject = claims["identity"]
+        link(user, kind, subject, claims["email"])
 
 
 def link_email(user, email):

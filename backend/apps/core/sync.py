@@ -67,4 +67,7 @@ NOT_SYNCED = [
     "signin.EmailCode",
     "signin.DeviceSession",
     "signin.RefreshToken",
+    "billing.Plan",
+    "billing.Subscription",
+    "billing.StripeEvent",
 ]

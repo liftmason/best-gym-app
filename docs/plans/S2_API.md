@@ -81,6 +81,11 @@ All four accepted as recommended (26 September 2026).
 
 ## 3. Steps
 
+**S2b is done (27 September 2026).** As built:
+- **Apple and Google:** the app asks for a nonce (`GET /auth/nonce`), gives the provider its SHA-256, and sends the nonce back with the token; each nonce works once. Endpoints are under `/auth/social/{provider}`.
+- **Entitlements:** a refusal is a 402 (`not_entitled`). The athlete limit is checked when inviting and when joining. Programming writes (board, library, templates, applying) go through `programmer_of`, so a lapsed payment makes them read-only. Nothing an athlete does for themselves is gated.
+- **Stripe:** Checkout and the Portal are for the gym's owner only. Checkout puts the gym's id on the subscription, so webhook events find their gym in any order.
+
 **S2a is done (27 September 2026).** As built:
 - Joining through an invite is `/join/{token}` (preview, accept, signup), which leaves `/invites/…` to the coach's own invites.
 - A program's planned sessions are `/planned-sessions/{id}`, apart from the logged `/sessions`; template parts have their own path parameters (`template_week_id`, …).

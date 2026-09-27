@@ -5,6 +5,7 @@ the email on an invite only pre-fills the form (docs/EXPO_MIGRATION.md, "Sign-in
 from django.db import transaction
 from django.utils import timezone
 
+from apps.billing import entitlements
 from apps.core import errors
 from apps.workouts.models import copy_defaults_to
 
@@ -55,6 +56,7 @@ def create(coach, email="", starting_template=None, base_url=None):
         or starting_template.kind not in (TemplateKind.PROGRAM, TemplateKind.WEEK)
     ):
         raise InvalidInvite("That template isn't one of this gym's programs or saved weeks.")
+    entitlements.require(coach.gym, entitlements.ADD_ATHLETE)
     invite = Invite.objects.create(
         coach=coach, gym=coach.gym, email=email, starting_template=starting_template
     )
@@ -109,6 +111,7 @@ def accept(invite_id, *, user=None, name="", email="", password=None, timezone_n
     if not invite.is_usable:
         raise InviteUnusable()
     gym = invite.gym
+    entitlements.require(gym, entitlements.ADD_ATHLETE)
     if user is not None:
         check_can_join(user)
     else:

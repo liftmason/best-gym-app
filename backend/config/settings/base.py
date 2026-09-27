@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "apps.ratelimit",
     "apps.signin",
     "apps.api",
+    "apps.billing",
 ]
 
 MIDDLEWARE = [
@@ -147,6 +148,19 @@ REVIEW_ACCOUNT_EMAIL = os.environ.get("REVIEW_ACCOUNT_EMAIL", "").strip().lower(
 REVIEW_ACCOUNT_CODE = os.environ.get("REVIEW_ACCOUNT_CODE", "").strip()
 DEMO_SIGNIN_CODE = ""
 DEMO_EMAIL_DOMAIN = "ironridge.example"
+
+# Sign in with Apple and Google: the client ids tokens must be issued to (the iOS bundle id
+# and the web Services ID for Apple; the iOS, Android and web client ids for Google),
+# comma-separated. Blank turns that provider off.
+APPLE_CLIENT_IDS = [c.strip() for c in os.environ.get("APPLE_CLIENT_IDS", "").split(",") if c.strip()]
+GOOGLE_CLIENT_IDS = [c.strip() for c in os.environ.get("GOOGLE_CLIENT_IDS", "").split(",") if c.strip()]
+
+# Billing (apps/billing): off, every check passes and no upgrade prompts show. Turning it on
+# means setting DEFAULT_PLAN to the plan new gyms get, and the Stripe keys.
+BILLING_ENABLED = os.environ.get("BILLING_ENABLED") == "1"
+DEFAULT_PLAN = os.environ.get("DEFAULT_PLAN", "unlimited")
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
 # Email: invites, reminders and the digest. EMAIL_PROVIDER is "resend" or "postmark" (with
 # EMAIL_API_KEY) to send for real, or blank / "console" to print email instead. Anything
