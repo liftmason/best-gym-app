@@ -6,8 +6,11 @@ on:
   pull_request:
 
 jobs:
-  test:
+  backend:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
     services:
       postgres:
         image: postgres:16
@@ -23,12 +26,15 @@ jobs:
       DATABASE_URL: postgres://gymtrainer:gymtrainer@localhost:5432/gymtrainer
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.12"
-          cache: pip
-          cache-dependency-path: requirements-dev.txt
-      - run: pip install -r requirements-dev.txt
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: Install Python and the locked dependencies
+        run: |
+          uv python install
+          uv sync --locked
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
       - name: Lint
         run: |
           ruff check .
@@ -45,14 +51,3 @@ jobs:
           python manage.py collectstatic --noinput
       - name: Unit tests
         run: pytest tests/unit
-      - name: Start MinIO (stands in for Cloudflare R2's form-video bucket)
-        run: |
-          docker run -d --name storage -p 9000:9000 \
-            -e MINIO_ROOT_USER=gymtrainer -e MINIO_ROOT_PASSWORD=gymtrainer-local-only \
-            cgr.dev/chainguard/minio:latest server /data
-          for i in $(seq 1 30); do curl -sf http://localhost:9000/minio/health/live && break; sleep 1; done
-          python manage.py storage_setup
-      - name: Install Playwright browser
-        run: playwright install --with-deps chromium
-      - name: End-to-end tests
-        run: pytest tests/e2e

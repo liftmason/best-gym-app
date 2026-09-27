@@ -1,0 +1,77 @@
+import pytest
+from django.core.management import call_command
+
+from apps.accounts.models import User
+
+pytestmark = pytest.mark.django_db
+
+
+def test_create_user_logs_in_by_email_and_has_no_username():
+    user = User.objects.create_user("Coach@IronRidge.Example", "pw-123456", name="Dana Whitfield")
+    assert user.email == "Coach@ironridge.example"  # domain is normalised
+    assert not hasattr(User, "username") or User.username is None
+    assert User.USERNAME_FIELD == "email"
+    assert user.check_password("pw-123456")
+    assert not user.is_staff and not user.is_superuser
+    assert user.timezone == "UTC"
+
+
+def test_create_superuser_sets_flags():
+    admin = User.objects.create_superuser("admin@example.com", "pw-123456")
+    assert admin.is_staff and admin.is_superuser
+
+
+def test_email_is_required():
+    with pytest.raises(ValueError):
+        User.objects.create_user("", "pw")
+
+
+@pytest.mark.parametrize(
+    "name,email,expected",
+    [("Dana Whitfield", "d@x.com", "DW"), ("Maya", "m@x.com", "M"), ("", "theo@x.com", "TH")],
+)
+def test_initials(name, email, expected):
+    assert User(name=name, email=email).initials == expected
+
+
+def test_seed_demo_seeds_an_empty_database_or_replaces_the_demo_gym():
+    from django.core.management.base import CommandError
+
+    call_command("seed_demo")
+    with pytest.raises(CommandError):
+        call_command("seed_demo")
+    call_command("seed_demo", "--reset")
+    assert User.objects.count() == 8  # Dana, the six mockup athletes and Riley (phase 9)
+    dana = User.objects.get(email="dana@ironridge.example")
+    assert dana.name == "Dana Whitfield" and dana.is_staff
+    assert dana.check_password("demo-password-123")
+
+
+def test_timezone_is_validated_not_enumerated():
+    from django.core.exceptions import ValidationError
+
+    user = User(email="tz@example.com", timezone="Mars/Olympus_Mons")
+    with pytest.raises(ValidationError):
+        user.full_clean(exclude=["password"])
+    user.timezone = "Europe/London"
+    user.full_clean(exclude=["password"])  # no error
+    field = User._meta.get_field("timezone")
+    assert not field.choices, "choices would bake the machine's tzdata into the migration"
+
+
+def test_seed_demo_on_a_public_site(settings):
+    """The free-tier trial seeds once at start-up, with its own password and no admin."""
+    from django.core.management.base import CommandError
+
+    settings.DEMO_PASSWORD = ""
+    with pytest.raises(CommandError):
+        call_command("seed_demo")
+    settings.DEMO_PASSWORD, settings.DEMO_STAFF = "trial-password-456", False
+    call_command("seed_demo", "--if-empty")
+    dana = User.objects.get(email="dana@ironridge.example")
+    assert dana.check_password("trial-password-456") and not dana.is_staff and not dana.is_superuser
+    dana.name = "Changed by the client"
+    dana.save()
+    call_command("seed_demo", "--if-empty")  # a restart leaves the data alone
+    dana.refresh_from_db()
+    assert dana.name == "Changed by the client"

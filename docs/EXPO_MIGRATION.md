@@ -6,11 +6,16 @@ GymTrainer moves from server-rendered Django + HTMX pages to a single Expo (Reac
 
 ## Handoff
 
-**Status (26 September 2026).** The design below is approved. No migration code has been written; `main` is still the Django + HTMX app from `docs/BUILD_PLAN.md`, deployed as a free-tier trial with an empty database and no real users. The offline storage spike is done and its working code is in the appendix.
+**Status (26 September 2026).** The design below is approved, and **sub-project 0 is done** (branch `s0-restructure`, PR #2; plan in `docs/plans/S0_RESTRUCTURE.md`):
+- The HTML pages are deleted, and every rule they held moved into tested services first.
+- Django lives in `backend/` on Python 3.14 with a `uv` lockfile.
+- The schema is fresh: UUIDv7 ids, coaching and gym-membership links, owner columns on synced tables, constraints and indexes.
+
+Nothing is deployed: the free-tier Render blueprint is disconnected. The offline storage spike is done, and its working code is in the appendix.
 
 **Read in this order:** this document; `docs/AUDIT_2026-09.md` (the evidence behind section 2 and the checklist for sub-project 1); `mockup/index.html` (the visual spec, still authoritative for look and wording); `docs/BUILD_PLAN.md` for the domain rules and data model it describes, ignoring its stack and deployment choices.
 
-**Next step:** write the implementation plan for sub-project 0 (restructure and fresh schema), then build it.
+**Next step:** once PR #2 is merged, write the plan for sub-project 1 (backend hardening: the S1 items in `docs/AUDIT_2026-09.md`), then build it. `docs/plans/S0_TEST_TRIAGE.md` lists the permission checks and rate limits that sub-project 2's API must re-apply.
 
 **How to work.** Each sub-project in "Order of work" gets its own short spec (only where this document leaves real decisions open), then an implementation plan, then the build, one branch and PR per sub-project. Keep the Django service tests passing throughout; write tests before fixes for the audit items. When this document and the code disagree, raise it rather than silently diverging; update this document when a decision changes.
 
@@ -63,6 +68,24 @@ Each row was decided by the owner on 26 September 2026 after weighing the altern
 | Athletes when a coach's billing lapses | Can always log and view their own data | Locking athletes out of their own history. |
 | Old HTML pages | Deleted at the start of sub-project 0 | Keeping them in step through a schema rewrite for pages about to be replaced. |
 | Hosting | Render (Virginia) for backend and Postgres, Cloudflare Pages for the web app, EAS for phone builds, about $14/month at launch | **Railway** (cheapest managed, backups DIY), **Fly.io** (managed Postgres from $38/month), **Hetzner + Kamal** (cheapest raw but self-managed; two price rises in 2026), **Neon** (extra vendor, cold starts). |
+
+### Decided during sub-project 0
+
+The owner answered these on 26 September 2026 (details in `docs/plans/S0_RESTRUCTURE.md`, section 2).
+
+| # | Decision | Chosen |
+|---|---|---|
+| A | Deleting the pages without losing the rules they held | Move every rule and screen calculation from views and forms into services, with service tests, **before** deleting the pages |
+| B | Where UUIDv7 comes from | Upgrade to **Python 3.14** and use the standard library's `uuid.uuid7` |
+| C | What a message thread belongs to | The **coaching link**: one thread per coach–athlete period |
+| D | Archiving an athlete, now that coaching is a link | Archiving **ends the coaching link**; joining a new coach starts a new link on the same athlete profile, history included |
+| E | The free-tier trial on Render | Taken down before S0 merged (the blueprint is disconnected) |
+| F | Schema-only parts of later fixes (the athlete in the alert key, the rate-limit counter table, the snapshot version) | Built into S0's fresh schema; the behaviour that uses them comes in S1 |
+
+As built:
+- The profile classes kept the names `Coach` and `Athlete`, and `athlete.coach`, `athlete.gym` and `coach.gym` read from the active link.
+- Owner columns (`athlete`, `gym`) are filled from the parent row automatically on save and in bulk creates. `apps/core/sync.py` lists which tables sync, and a guard test enforces it.
+- An ended coaching link's thread takes no new messages from either side.
 
 ## Offline storage spike (done)
 
@@ -246,7 +269,7 @@ Each row is its own sub-project with a spec, a plan and a build.
 
 | # | Sub-project | Size |
 |---|---|---|
-| 0 | Restructure and fresh schema: move Django to `backend/`; UUIDs; coaching and gym link tables; `athlete_id`/`gym_id` on synced tables; constraints; fresh migrations; carry the service tests over. Delete the HTML views, templates, HTMX/Alpine static files and their tests (git history and the mockup remain the reference). | M |
+| 0 ✓ | **Done 26 September 2026.** Restructure and fresh schema: move Django to `backend/`; UUIDs; coaching and gym link tables; `athlete_id`/`gym_id` on synced tables; constraints; fresh migrations; carry the service tests over. Delete the HTML views, templates, HTMX/Alpine static files and their tests (git history and the mockup remain the reference). | M |
 | 1 | Backend hardening: the audit fixes in section 2. | S–M |
 | 2 | API and sign-in: Django Ninja; generated TypeScript types; email codes; Apple and Google; tokens and device sessions; entitlements and Stripe; the permission sweep. | L |
 | 3 | Sync backend: change-log triggers; bootstrap, pull and push; the action registry; idempotency; visibility rules. | M–L |
