@@ -72,6 +72,8 @@ jobs:
           cache-dependency-path: app/package-lock.json
       - name: Install the locked packages
         run: npm ci
+      - name: The API types match backend/openapi.json
+        run: npm run api:types && git diff --exit-code src/api/schema.d.ts
       - name: Type-check
         run: npm run typecheck
       - name: Lint

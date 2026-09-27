@@ -10,6 +10,7 @@ npm start           # the dev server: press a for Android (Expo Go), w for the w
 npm run typecheck
 npm run lint
 npm test
+npm run api:types   # after the backend's openapi.json changes (CI fails if stale)
 ```
 
 The backend must be running for the app to do anything (`make run` from the repo root).
@@ -18,7 +19,8 @@ The backend must be running for the app to do anything (`make run` from the repo
 
 - `src/app/`: routes (Expo Router): `(auth)` signing in, `(training)` the athlete, `(coaching)` the coach.
 - `src/ui/`: the theme and component kit, from the mockup's design tokens.
-- `src/api/`: the API client, generated from `backend/openapi.json`.
+- `src/api/`: the API client, typed from `backend/openapi.json`, with tokens and refresh. Set
+  `EXPO_PUBLIC_API_URL` for a deployed backend; in development it's port 8000 on the dev machine.
 - `src/db/`: the local database (SQLite behind one queue).
 - `src/sync/`: pull, push and the outbox.
 - `src/domain/`: rules the phone runs offline, checked against `shared/rules-cases.json`.
