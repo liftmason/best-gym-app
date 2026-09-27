@@ -77,6 +77,22 @@ Package manager: npm (it comes with Node; nothing to add).
 **As built:**
 - **Routes:** these live in `app/src/app/` (Expo's current template), not `app/app/`. The other folders sit beside them in `src/`.
 - **Shared rules:** they use `big.js`, so decimals round exactly as Python's `Decimal` does.
+- **Mode homes:** `/home` (training) and `/dashboard` (coaching). Route groups don't add to the
+  URL, so an `index` in each group would clash with `/`.
+- **Refresh:** only after a 401, never ahead of the expiry time. A phone's clock can be wrong,
+  and each refresh rotates the token. Requests that expire together share one refresh.
+- **Guards:** `Stack.Protected` guards the signed-in routes and sign-in. `/join/[token]` is
+  open either way.
+- **A new email's sign-up ticket** stays in memory, not in the URL.
+- **openapi-typescript** declares TypeScript 5 as a peer, but works with 6 (an npm `overrides`
+  entry).
+- **Backend additions:**
+  - `GET auth/signup/starters`: the new-coach form lists the server's packs.
+  - `join/{token}/signup` now declares its tokens in the schema.
+  - A body that isn't JSON is answered in the API's error shape.
+  - `make run-lan` serves the backend to a phone.
+- **Apple and Google buttons:** not built yet. They need a development build and the owner's
+  accounts (decision B).
 
 
 **S4a**
