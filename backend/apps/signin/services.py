@@ -258,6 +258,7 @@ def devices(user):
 
 def sign_out_device(user, session_id):
     """Sign out one of the user's devices; NotFound for anyone else's."""
-    updated = devices(user).filter(pk=session_id).update(revoked_at=timezone.now())
-    if not updated:
+    session = devices(user).filter(pk=session_id).first()  # look up first: refused means no write
+    if session is None:
         raise errors.NotFound()
+    sign_out(session)
