@@ -43,7 +43,8 @@
           "microphonePermission": "Form videos are recorded with sound.",
           "photosPermission": "Choose a form video from your library for your coach."
         }
-      ]
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true,

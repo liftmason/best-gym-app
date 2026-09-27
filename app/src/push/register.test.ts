@@ -51,6 +51,7 @@ test('refused permission or no push: nothing is sent', async () => {
 test('a tapped push opens what it is about', () => {
   expect(pushTarget({ type: 'message', sync: true })).toBe('/messages');
   expect(pushTarget({ type: 'week', sync: true })).toBe('/home');
-  expect(pushTarget({ type: 'message', athlete_id: 'a1' })).toBe('/'); // a coach's
+  expect(pushTarget({ type: 'message', athlete_id: 'a1' })).toBe('/athletes/a1?tab=messages'); // a coach's
+  expect(pushTarget({ type: 'video', athlete_id: 'a1' })).toBe('/athletes/a1?tab=sessions');
   expect(pushTarget({ sync: true })).toBe('/');
 });

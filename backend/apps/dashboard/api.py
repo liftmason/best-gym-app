@@ -156,6 +156,7 @@ class FeedRow(Schema):
     text: str
     created_at: datetime.datetime
     read: bool
+    link: str  # the app's path to the item: /athletes/<id>?tab=…&focus=… (alerts.link_for)
 
 
 class FeedOut(Schema):
@@ -178,6 +179,7 @@ def feed(request, before: str = "", limit: int = 50):
                 "text": r.text,
                 "created_at": r.created_at,
                 "read": r.read_at is not None,
+                "link": alerts.link_for(r),
             }
             for r in rows
         ],

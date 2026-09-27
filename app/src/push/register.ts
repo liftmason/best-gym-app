@@ -77,9 +77,12 @@ export function handlePushes(onSync: () => void, onOpen: (data: PushData) => voi
   };
 }
 
-/** Where a tapped push goes: the athlete's messages or week; a coach's go to their home until their screens exist (S6). */
-export function pushTarget(data: PushData): '/messages' | '/home' | '/' {
-  if (data.athlete_id) return '/';
+/**
+ * Where a tapped push goes. The athlete's: their messages or week. A coach's (it names the
+ * athlete): that athlete, on messages for a message, else their sessions (an issue, a video).
+ */
+export function pushTarget(data: PushData): string {
+  if (data.athlete_id) return `/athletes/${data.athlete_id}?tab=${data.type === 'message' ? 'messages' : 'sessions'}`;
   if (data.type === 'message') return '/messages';
   if (data.type === 'week') return '/home';
   return '/';

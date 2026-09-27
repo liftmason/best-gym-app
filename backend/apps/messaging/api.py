@@ -5,14 +5,17 @@ marking read is its own POST (audit M20)."""
 import datetime
 import uuid
 
+from django.db.models import Count, F, Max, OuterRef, Q, Subquery
 from ninja import Router, Schema, Status
 
 from apps.accounts import coaching
+from apps.accounts.models import CoachingStatus
 from apps.api.main import coach_of, limit
 from apps.api.pagination import page
+from apps.api.schemas import AthleteRef, athlete_ref
 
 from . import services
-from .models import Thread
+from .models import Message, Thread
 
 router = Router(tags=["Messages"])
 
@@ -36,6 +39,47 @@ class MessageIn(Schema):
 
 class Marked(Schema):
     marked: int
+
+
+class ThreadRow(Schema):
+    athlete: AthleteRef
+    last_body: str
+    last_at: datetime.datetime
+    last_from: str  # athlete or coach
+    unread: int  # the athlete's messages the coach hasn't read
+
+
+@router.get("/threads", response=list[ThreadRow])
+def threads(request):
+    """The coach's conversations with their current athletes that have messages, the latest
+    first, with how many of the athlete's are unread. A fixed number of queries."""
+    coach = coach_of(request)
+    last = Message.objects.filter(thread=OuterRef("pk")).order_by("-sent_at", "-id")
+    rows = (
+        Thread.objects.filter(coaching__coach=coach, coaching__status=CoachingStatus.ACTIVE)
+        .select_related("athlete__user")
+        .annotate(
+            last_at=Max("messages__sent_at"),
+            unread=Count(
+                "messages",
+                filter=Q(messages__read_at__isnull=True, messages__sender=F("athlete__user")),
+            ),
+            last_body=Subquery(last.values("body")[:1]),
+            last_sender=Subquery(last.values("sender_id")[:1]),
+        )
+        .filter(last_at__isnull=False)
+        .order_by("-last_at", "id")
+    )
+    return [
+        {
+            "athlete": athlete_ref(t.athlete),
+            "last_body": t.last_body,
+            "last_at": t.last_at,
+            "last_from": "athlete" if t.last_sender == t.athlete.user_id else "coach",
+            "unread": t.unread,
+        }
+        for t in rows
+    ]
 
 
 def _athlete(request, athlete_id):

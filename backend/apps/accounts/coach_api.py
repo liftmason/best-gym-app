@@ -9,7 +9,7 @@ from django.conf import settings
 from ninja import Router, Schema, Status
 
 from apps.api.main import coach_of, limit
-from apps.api.schemas import AthleteRef, athlete_ref
+from apps.api.schemas import AthleteRef, WeekTypeRef, athlete_ref, week_type_ref
 from apps.core import errors
 
 from . import coaching, invites, metrics, services, units
@@ -31,6 +31,12 @@ class MetricOut(Schema):
     source: str | None
 
 
+class HeaderWeek(Schema):
+    id: uuid.UUID
+    label: str  # "Wk 3"
+    week_type: WeekTypeRef | None
+
+
 class AthleteOut(Schema):
     athlete: AthleteRef
     email: str
@@ -43,6 +49,12 @@ class AthleteOut(Schema):
     hide_history_before_link: bool
     metrics: list[MetricOut]
     missing_metrics: list[str]
+    # The header (the mockup's #cdHead): this week, the last 7 days' compliance and its band,
+    # and the streak of scheduled days done.
+    week: HeaderWeek | None
+    compliance: int | None
+    band: str
+    streak: int
 
 
 def _metrics(athlete, unit):
@@ -68,7 +80,18 @@ def _metrics(athlete, unit):
 
 
 def _athlete_out(athlete, unit):
+    from apps.dashboard import summary
+    from apps.workouts import history
+
+    (row,) = summary.roster_rows([athlete], [])
+    week = row["week"]
     return {
+        "week": {"id": week.pk, "label": week.label, "week_type": week_type_ref(week.week_type)}
+        if week
+        else None,
+        "compliance": row["compliance"],
+        "band": row["band"],
+        "streak": history.streak(athlete),
         "athlete": athlete_ref(athlete),
         "email": athlete.user.email,
         "units": athlete.units,

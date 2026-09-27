@@ -7,7 +7,7 @@ import {
   useFonts,
 } from '@expo-google-fonts/inter';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { router, Stack } from 'expo-router';
+import { router, Stack, type Href } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef } from 'react';
 
@@ -49,7 +49,7 @@ export default function RootLayout() {
   useEffect(
     () =>
       handlePushes(syncNow, (data) => {
-        if (canGoNow.current) router.navigate(pushTarget(data));
+        if (canGoNow.current) router.navigate(pushTarget(data) as Href);
         else tapped.current = pushTarget(data);
       }),
     [],
@@ -57,7 +57,7 @@ export default function RootLayout() {
   useEffect(() => {
     canGoNow.current = canGo;
     if (canGo && tapped.current) {
-      router.navigate(tapped.current);
+      router.navigate(tapped.current as Href);
       tapped.current = null;
     }
   }, [canGo]);
