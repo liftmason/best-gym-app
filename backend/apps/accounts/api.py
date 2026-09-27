@@ -8,6 +8,7 @@ from ninja import Router, Schema, Status
 from apps.api.main import limit
 from apps.billing import entitlements
 from apps.core import errors
+from apps.signin.api import TokensOut
 
 from . import invites
 from .models import Invite
@@ -176,7 +177,7 @@ def accept_invite(request, token: str):
     return _joined(invites.accept(_invite(token).pk, user=request.user))
 
 
-@router.post("/join/{token}/signup", auth=None, response={201: None}, tags=["Joining"])
+@router.post("/join/{token}/signup", auth=None, response={201: TokensOut}, tags=["Joining"])
 def join_new(request, token: str, data: JoinNewIn):
     """Join as a new account, for an email verified by `auth/email/verify` (its ticket).
     Answers with the new account's tokens, like signing in."""

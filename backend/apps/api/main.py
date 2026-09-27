@@ -12,7 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import Http404
 from ninja import NinjaAPI
-from ninja.errors import AuthenticationError
+from ninja.errors import AuthenticationError, HttpError
 from ninja.errors import ValidationError as SchemaError
 from ninja.security import HttpBearer
 
@@ -76,6 +76,14 @@ def _http404(request, exc):
 @api.exception_handler(AuthenticationError)
 def _signed_out(request, exc):
     return error(request, 401, "not_signed_in", errors.DEFAULT_MESSAGES[401])
+
+
+@api.exception_handler(HttpError)
+def _http_error(request, exc):
+    """Ninja's own refusals (a body that isn't JSON), in the API's shape."""
+    if exc.status_code == 400:
+        return error(request, 400, "invalid_request", "The request couldn't be read.")
+    return error(request, exc.status_code, f"http_{exc.status_code}", str(exc))
 
 
 @api.exception_handler(SchemaError)
