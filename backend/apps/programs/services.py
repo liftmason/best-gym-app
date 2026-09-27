@@ -286,10 +286,26 @@ def set_focus_note(week, note, by=None):
     return week
 
 
+@transaction.atomic
 def set_published(week, published):
+    """Show the week to the athlete, or take it back. Every row under it is touched so the
+    change log records it: its days, sessions and prescriptions reach the phone (or leave
+    it) now, not whenever each was last edited."""
     week.published = published
     week.published_at = timezone.now() if published else None
     week.save(update_fields=["published", "published_at"])
+    touch_week(week)
+
+
+def touch_week(week):
+    """A no-op update of every row under the week, so the sync triggers log each one."""
+    from .models import PrescriptionTag
+
+    ProgramDay.objects.filter(week=week).update(id=F("id"))
+    ProgramSession.objects.filter(day__week=week).update(id=F("id"))
+    Prescription.objects.filter(session__day__week=week).update(id=F("id"))
+    PrescribedSet.objects.filter(prescription__session__day__week=week).update(id=F("id"))
+    PrescriptionTag.objects.filter(prescription__session__day__week=week).update(id=F("id"))
 
 
 # ---------------------------------------------------------------- sessions and prescriptions
