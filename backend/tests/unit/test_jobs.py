@@ -1,5 +1,4 @@
-"""Phase 8: form videos, the morning digest, units, the installable app, error pages and
-rate limits."""
+"""The scheduled jobs: the coach's morning digest and the hourly cron and nightly commands."""
 
 import datetime
 import zoneinfo
@@ -87,3 +86,8 @@ def test_cron_command_runs_everything(coach, athlete, capsys):
 
 
 # ---------------------------------------------------------------- rate limits
+
+
+def test_nightly_command_runs(capsys):
+    call_command("nightly")
+    assert "synced alerts" in capsys.readouterr().out

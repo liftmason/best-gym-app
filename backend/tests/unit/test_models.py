@@ -1,3 +1,6 @@
+"""Model basics: units, the starter library, maxes and bodyweights, time zones, profiles
+and invites."""
+
 import datetime
 from decimal import Decimal
 

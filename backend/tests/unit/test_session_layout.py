@@ -1,6 +1,6 @@
-"""Phase 9, from the client's spreadsheet: RIR ranges and rep ranges, warm-up drills,
-section headings and supersets, short-answer check-in questions, program notes, and the
-anonymised demo athlete on "Meso 1"."""
+"""How a session is laid out, from the client's spreadsheet: RIR ranges and rep ranges,
+warm-up drills, section headings and supersets, program notes, and the anonymised demo
+athlete on "Meso 1"."""
 
 import pytest
 from django.core.management import call_command
