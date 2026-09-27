@@ -4,6 +4,9 @@ Events call these as they happen: `message_sent`, `thread_read`, `issue_reported
 `issue_resolved`, `sync_prs` (after a session is finished or edited, and after the
 coach decides on a PR) and `max_updates`.
 
+Events also push to the other side's phone (apps/signin/push.py): the coach hears of
+athlete messages, issues and form videos; the athlete of coach messages.
+
 Conditions are checked by `sync_athlete` (dashboard load and the nightly job):
 a program running out within PROGRAM_WARNING_DAYS (or no program at all), missing
 metrics, and sessions missed in the last MISSED_LOOKBACK_DAYS. A condition's row is
@@ -18,6 +21,7 @@ from django.utils import timezone
 
 from apps.accounts import coaching
 from apps.core import ids
+from apps.signin import push
 
 from .models import Notification, NotificationKind
 
@@ -75,15 +79,24 @@ def _remove(athlete, kind, keep_keys=()):
 # ---------------------------------------------------------------- events
 
 
+def _coach_user(athlete):
+    return athlete.coach.user if athlete.active_coaching else None
+
+
 def message_sent(message):
     thread = message.thread
     athlete = thread.athlete
+    body = " ".join(message.body.split())
     if message.sender_id == athlete.user_id:
-        body = " ".join(message.body.split())
         text = f"“{body[:120]}{'…' if len(body) > 120 else ''}”"
         notify(athlete, NotificationKind.MESSAGE, f"thread:{thread.pk}", text, _tab(athlete, "messages"))
+        push.to_user(
+            _coach_user(athlete), athlete.user.name, body, {"type": "message", "athlete_id": str(athlete.pk)}
+        )
     else:
         handled(athlete, NotificationKind.MESSAGE, f"thread:{thread.pk}")  # the coach replied
+        sender = message.sender.name if message.sender else "Your coach"
+        push.to_user(athlete.user, sender, body, {"type": "message"})
 
 
 def thread_read(thread):
@@ -93,6 +106,12 @@ def thread_read(thread):
 def issue_reported(issue):
     text = issue.get_kind_display() + (f" — “{issue.text[:100]}”" if issue.text else "")
     notify(issue.athlete, NotificationKind.ISSUE, f"issue:{issue.pk}", text, _tab(issue.athlete, "sessions"))
+    push.to_user(
+        _coach_user(issue.athlete),
+        f"{issue.athlete.user.name} reported an issue",
+        text,
+        {"type": "issue", "athlete_id": str(issue.athlete_id)},
+    )
 
 
 def issue_resolved(issue):
@@ -107,6 +126,13 @@ def video_uploaded(video, reopen=True):
     notify(
         athlete, NotificationKind.VIDEO, f"video:{video.pk}", text, _tab(athlete, "sessions"), reopen=reopen
     )
+    if reopen:
+        push.to_user(
+            _coach_user(athlete),
+            f"{athlete.user.name} uploaded a form video",
+            video.exercise_name,
+            {"type": "video", "athlete_id": str(athlete.pk)},
+        )
 
 
 def video_reviewed(video):

@@ -27,10 +27,19 @@ def email(provider, key):
     return backend, {setting: key, "REQUESTS_TIMEOUT": EMAIL_TIMEOUT}
 
 
+def push(provider):
+    """PUSH_PROVIDER, checked: a typo stops the site rather than silently sending nothing."""
+    provider = provider.strip().lower()
+    if provider not in ("", "console", "expo", "memory"):
+        raise ImproperlyConfigured(f"PUSH_PROVIDER {provider!r} isn't one of: console, expo")
+    return provider
+
+
 def production_problems(
     *,
     email_provider,
     from_email,
+    push_provider="console",
     site_url,
     review_email="",
     review_code="",
@@ -49,6 +58,8 @@ def production_problems(
         problems.append('set EMAIL_PROVIDER (resend, postmark, or "console" to send no email)')
     elif email_provider != "console" and "localhost" in from_email:
         problems.append("set DEFAULT_FROM_EMAIL to a real sender address")
+    if not push_provider:
+        problems.append('set PUSH_PROVIDER (expo, or "console" to send no push notifications)')
     if billing and not (stripe_key and stripe_webhook_secret):
         problems.append("BILLING_ENABLED needs STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET")
     if "localhost" in site_url:

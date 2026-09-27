@@ -7,3 +7,5 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 from django.core.mail.utils import DNS_NAME  # noqa: E402
 
 DNS_NAME._fqdn = "testserver"
+
+PUSH_PROVIDER = "memory"  # apps.signin.push.outbox

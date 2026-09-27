@@ -60,6 +60,8 @@ class DeviceSession(core.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     last_used_at = models.DateTimeField(default=timezone.now)
     revoked_at = models.DateTimeField(null=True, blank=True)
+    # The device's Expo push token (apps/signin/push.py); blank until the app registers one.
+    push_token = models.CharField(max_length=200, blank=True, db_index=True)
 
     class Meta:
         ordering = ["-last_used_at"]

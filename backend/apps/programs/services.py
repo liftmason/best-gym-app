@@ -300,6 +300,19 @@ def set_published(week, published):
     week.published_at = timezone.now() if published else None
     week.save(update_fields=["published", "published_at"])
     touch_week(week)
+    _tell_athlete(week, published)
+
+
+def _tell_athlete(week, published):
+    """A push to the athlete's phone: a new week to look at, or (unpublished) a silent sync."""
+    from apps.signin import push
+
+    user = week.program.athlete.user
+    if not published:
+        push.nudge(user)
+    elif week.program.active:
+        starts = f"{week.start_date.day} {week.start_date:%B}"
+        push.to_user(user, "New training week", f"Your week from {starts} is ready.", {"type": "week"})
 
 
 def touch_week(week):

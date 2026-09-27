@@ -3343,6 +3343,19 @@
         "title": "PushOut",
         "type": "object"
       },
+      "PushTokenIn": {
+        "properties": {
+          "token": {
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "title": "PushTokenIn",
+        "type": "object"
+      },
       "Pushed": {
         "properties": {
           "athletes": {
@@ -7878,6 +7891,56 @@
           }
         },
         "summary": "Nonce",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
+    "/api/v1/auth/push-token": {
+      "delete": {
+        "description": "No more notifications on this device (signing out does this too).",
+        "operationId": "apps_signin_api_forget_push_token",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Forget Push Token",
+        "tags": [
+          "Sign-in"
+        ]
+      },
+      "put": {
+        "description": "This device's Expo push token, for notifications (the app sends it after sign-in).",
+        "operationId": "apps_signin_api_register_push_token",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushTokenIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Register Push Token",
         "tags": [
           "Sign-in"
         ]

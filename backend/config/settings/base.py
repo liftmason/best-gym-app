@@ -182,3 +182,9 @@ LOGGING = {
     "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "line"}},
     "root": {"handlers": ["console"], "level": "INFO"},
 }
+
+# Push notifications (apps/signin/push.py): "expo" sends through Expo's push service; blank
+# or "console" logs them. EXPO_ACCESS_TOKEN is only needed if the Expo project turns on
+# "enhanced push security".
+PUSH_PROVIDER = checks.push(os.environ.get("PUSH_PROVIDER", ""))
+EXPO_ACCESS_TOKEN = os.environ.get("EXPO_ACCESS_TOKEN", "")

@@ -74,6 +74,12 @@ services:
         sync: false
       - key: DEFAULT_FROM_EMAIL
         sync: false
+      # Push notifications through Expo (production won't start without PUSH_PROVIDER).
+      - key: PUSH_PROVIDER
+        value: expo
+      # Only if the Expo project turns on "enhanced push security".
+      - key: EXPO_ACCESS_TOKEN
+        sync: false
       # Form videos: a Cloudflare R2 bucket (docs/OPERATIONS.md). Without them uploads are off.
       - key: STORAGE_ENDPOINT
         sync: false
@@ -108,6 +114,10 @@ services:
       - key: EMAIL_API_KEY
         sync: false
       - key: DEFAULT_FROM_EMAIL
+        sync: false
+      - key: PUSH_PROVIDER
+        value: expo
+      - key: EXPO_ACCESS_TOKEN
         sync: false
       - key: STORAGE_ENDPOINT
         sync: false
