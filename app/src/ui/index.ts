@@ -7,6 +7,7 @@ export { FlowHead } from './flow-head';
 export { Scale } from './scale';
 export { RIR_CHOICES, SetRow, type Measure, type SetValues } from './set-row';
 export { Sheet } from './sheet';
+export { Sparkline } from './sparkline';
 export { Text } from './text';
 export { colors, fonts, radius, shadows, space, type, weekTypeColours } from './theme';
 export { WeekStrip, type StripDay } from './week-strip';

@@ -116,12 +116,11 @@ def chart_lifts(athlete, since=None):
 
     tracked = list(tracked_exercises(athlete.gym))
     logged = history.exercise_history(athlete, limit=2, since=since)
-    others = (
-        Exercise.objects.filter(pk__in=[k for k, v in logged.items() if any(e.best_e1rm for e in v)])
-        .exclude(pk__in=[e.pk for e in tracked])
-        .order_by("name")
-    )
-    return tracked + list(others)
+    others = Exercise.objects.filter(
+        pk__in=[k for k, v in logged.items() if any(e.best_e1rm for e in v)]
+    ).exclude(pk__in=[e.pk for e in tracked])
+    # By name in Python, not the database's collation, so the phone orders them the same.
+    return tracked + sorted(others, key=lambda e: (e.name, str(e.pk)))
 
 
 def progress_lifts(athlete):

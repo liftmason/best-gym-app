@@ -5,6 +5,7 @@
  */
 import parity from '../../../shared/parity.json';
 
+import { chartLifts, e1rmPoints, phaseBands, progressChange } from './charts';
 import { forDay } from './habits';
 import {
   bestE1rm,
@@ -158,6 +159,17 @@ describe.each(['kg', 'lb'] as const)('the server and the phone agree, in %s', (u
 
   test('history: PRs, streaks, compliance and each lift', () => {
     expect(historyJson(w, unit)).toEqual(expected.history);
+  });
+
+  test('the progress charts', () => {
+    const lifts = chartLifts(w);
+    const charts = Object.fromEntries(
+      lifts.map((e) => {
+        const points = e1rmPoints(w, e.id);
+        return [e.id, { points, bands: phaseBands(points), change: progressChange(w, e.id) }];
+      }),
+    );
+    expect({ lifts: lifts.map((e) => e.id), charts }).toEqual(expected.charts);
   });
 });
 

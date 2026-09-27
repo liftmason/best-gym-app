@@ -59,6 +59,8 @@ export type ExerciseRow = {
   cue?: string;
 };
 export type CategoryRow = { id: Id; name: string };
+export type BodyweightRow = { id: Id; date: string; kg: string };
+export type TrackedLiftRow = { id: Id; exercise_id: Id; order: number };
 export type LogRow = {
   id: Id;
   program_session_id: Id | null;
@@ -227,6 +229,8 @@ export function makeWorld(tables: Tables, athlete: Athlete, clock: Clock, histor
     setsOf: group(sets, (s) => s.session_exercise_id),
     maxes,
     habits: habits.filter((h) => h.archived_at === null),
+    bodyweights: sortBy(rows<BodyweightRow>('accounts_bodyweightentry'), (b) => b.date, (b) => b.id),
+    tracked: sortBy(rows<TrackedLiftRow>('exercises_trackedlift'), (t) => t.order, (t) => t.id),
     habitLogsOf: group(rows<HabitLogRow>('programs_habitlog'), (l) => l.habit_id),
     questions: questions.filter((q) => !q.archived),
     answersOf: group(sortBy(rows<AnswerRow & { order: number }>('workouts_checkinanswer'), (a) => a.order, (a) => a.id), (a) => a.session_log_id),
