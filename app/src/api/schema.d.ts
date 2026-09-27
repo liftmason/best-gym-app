@@ -3131,6 +3131,8 @@ export interface components {
             key: string;
             /** Kind */
             kind: string;
+            /** Link */
+            link: string;
             /** Read */
             read: boolean;
             /** Text */
