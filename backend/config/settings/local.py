@@ -3,6 +3,8 @@ import warnings
 from .base import *  # noqa: F403
 
 DEBUG = True
+# Seeded demo users (make seed) sign in with this code; codes print to the console.
+DEMO_SIGNIN_CODE = "123456"
 SECRET_KEY = SECRET_KEY or "local-dev-only-not-secret"  # noqa: F405
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
 STORAGES["staticfiles"] = {  # noqa: F405

@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "apps.messaging",
     "apps.dashboard",
     "apps.ratelimit",
+    "apps.signin",
 ]
 
 MIDDLEWARE = [
@@ -128,6 +129,13 @@ LOG_CLIENT_IP = os.environ.get("LOG_CLIENT_IP") == "1"
 # seed_demo: the password its new demo users get, and whether the demo coach is an admin.
 DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD", "demo-password-123")
 DEMO_STAFF = True
+
+# Sign-in codes (apps/signin). The app-review account (App Store, Play) gets a fixed code;
+# in development the seeded demo users (@DEMO_EMAIL_DOMAIN) do (local settings).
+REVIEW_ACCOUNT_EMAIL = os.environ.get("REVIEW_ACCOUNT_EMAIL", "").strip().lower()
+REVIEW_ACCOUNT_CODE = os.environ.get("REVIEW_ACCOUNT_CODE", "").strip()
+DEMO_SIGNIN_CODE = ""
+DEMO_EMAIL_DOMAIN = "ironridge.example"
 
 # Email: invites, reminders and the digest. EMAIL_PROVIDER is "resend" or "postmark" (with
 # EMAIL_API_KEY) to send for real, or blank / "console" to print email instead. Anything

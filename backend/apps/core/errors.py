@@ -13,6 +13,12 @@ class Invalid(ValueError):
     status = 400
 
 
+class NotSignedIn(Exception):
+    """No valid sign-in (missing, expired or revoked token): 401. The app refreshes or signs in again."""
+
+    status = 401
+
+
 class NotFound(Exception):
     """Not there, or not the caller's: 404 (the API never says which)."""
 
@@ -39,6 +45,7 @@ class TooMany(Exception):
 
 DEFAULT_MESSAGES = {
     400: "Check what you entered.",
+    401: "Sign in again.",
     404: "Not found.",
     409: "That can't be done right now.",
     410: "That link can't be used any more.",
