@@ -1,7 +1,6 @@
 """Phase 7: habits, charts and undo on the program board."""
 
 import datetime
-import json
 from decimal import Decimal
 
 import pytest
@@ -12,7 +11,7 @@ from apps.library import services as library_services
 from apps.library.models import TemplateHabit, TemplateKind
 from apps.programs import habits, undo
 from apps.programs import services as program_services
-from apps.programs.models import EditHistory, Habit, HabitLog, LoadBasis, Prescription, WeekType
+from apps.programs.models import EditHistory, Habit, HabitLog, LoadBasis, WeekType
 from apps.workouts import charts, sessions
 
 from ..conftest import ex
@@ -20,10 +19,6 @@ from ..conftest import ex
 pytestmark = pytest.mark.django_db
 HX = {"HTTP_HX_REQUEST": "true"}
 DAY = datetime.timedelta(days=1)
-
-
-def toast(response):
-    return json.loads(response["HX-Trigger"])["toast"]["message"]
 
 
 @pytest.fixture
@@ -86,37 +81,6 @@ def test_weekly_targets(athlete):
     assert habits.streak(h, today) == 2
 
 
-def test_athlete_ticks_today_and_yesterday_only(athlete_client, athlete):
-    h = habit(athlete)
-    response = athlete_client.post(f"/app/habits/{h.pk}/tick/", {"day": "today"}, **HX)
-    assert "habit-row done" in response.content.decode()
-    athlete_client.post(f"/app/habits/{h.pk}/tick/", {"day": "yesterday"}, **HX)
-    assert set(h.logs.values_list("date", flat=True)) == {athlete.today(), athlete.today() - DAY}
-    athlete_client.post(f"/app/habits/{h.pk}/tick/", {"day": "today"}, **HX)  # untick
-    assert not h.logs.filter(date=athlete.today()).exists()
-    with pytest.raises(habits.CannotTick):
-        habits.toggle(h, athlete.today() - 2 * DAY)
-    assert "Today's habits" in athlete_client.get("/app/").content.decode()
-
-
-def test_coach_prescribes_and_stops_habits(coach_client, athlete, program):
-    base = f"/coach/athletes/{athlete.pk}/"
-    response = coach_client.post(
-        base + "habits/add/", {"name": "Sleep 8 hours", "emoji": "😴", "cadence": "daily", "note": ""}, **HX
-    )
-    assert "Sleep 8 hours" in response.content.decode()
-    again = coach_client.post(
-        base + "habits/add/", {"name": "sleep 8 HOURS", "emoji": "😴", "cadence": "daily", "note": ""}, **HX
-    )
-    assert "already has" in toast(again)
-    h = Habit.objects.get()
-    tick(h, 1)
-    assert "Sleep 8 hours" in coach_client.get(base + "program/").content.decode()
-    coach_client.post(base + f"habits/{h.pk}/remove/", **HX)
-    h.refresh_from_db()
-    assert h.archived_at and h.logs.count() == 1  # archived, history kept
-
-
 def test_applying_a_template_prescribes_its_habits(athlete, coach, gym):
     template = library_services.new_template(gym, TemplateKind.PROGRAM, coach.user)
     library_services.add_slot(template.weeks.get().sessions.first(), ex(gym, "sn"))
@@ -131,32 +95,6 @@ def test_applying_a_template_prescribes_its_habits(athlete, coach, gym):
 
 
 # ---------------------------------------------------------------- undo
-
-
-def test_undo_restores_edits_within_a_week(coach_client, athlete, program, gym):
-    week = program.weeks.last()
-    base = f"/coach/athletes/{athlete.pk}/program/"
-    days = list(week.days.all())
-    coach_client.post(base + "add/", {"day": days[0].pk, "exercise": ex(gym, "sn").pk}, **HX)
-    rx = Prescription.objects.get()
-    coach_client.post(
-        base + f"rx/{rx.pk}/",
-        {"sets": "5", "rep_scheme": "2", "load_basis": "percent", "load_value": "80"},
-        **HX,
-    )
-    coach_client.post(base + f"rx/{rx.pk}/move/", {"day": days[3].pk, "index": "0"}, **HX)
-    html = coach_client.get(base + f"?week={week.pk}").content.decode()
-    assert "Undo: Move Snatch" in html
-
-    assert "Undone: Move Snatch" in toast(coach_client.post(base + f"weeks/{week.pk}/undo/", **HX))
-    rx.refresh_from_db()
-    assert rx.session.day == days[0] and rx.load_value == Decimal("80")
-    coach_client.post(base + f"weeks/{week.pk}/undo/", **HX)  # the edit
-    rx.refresh_from_db()
-    assert rx.load_value != Decimal("80")
-    coach_client.post(base + f"weeks/{week.pk}/undo/", **HX)  # the add
-    assert not Prescription.objects.exists()
-    assert "Nothing to undo" in toast(coach_client.post(base + f"weeks/{week.pk}/undo/", **HX))
 
 
 def test_undo_never_removes_a_logged_session(athlete, program, gym, coach):
@@ -194,48 +132,23 @@ def _log(athlete, program, gym, days_ago, kg, reps=1):
     sessions.finish(log, 7, "")
 
 
-def test_e1rm_chart_has_phase_bands_and_bodyweight(athlete, program, gym):
+def test_e1rm_points_carry_phase_bands_and_bodyweight(athlete, program, gym):
     BodyweightEntry.objects.create(athlete=athlete, date=athlete.today() - 20 * DAY, kg=65, source="athlete")
     BodyweightEntry.objects.create(athlete=athlete, date=athlete.today() - 5 * DAY, kg=64, source="athlete")
     for days_ago, kg in [(12, 70), (8, 72), (3, 75)]:
         _log(athlete, program, gym, days_ago, kg)
     points = charts.e1rm_points(athlete, ex(gym, "sn"))
     assert [p[1] for p in points] == [Decimal("72.33"), Decimal("74.40"), Decimal("77.50")]
-    svg = charts.e1rm_chart(athlete, ex(gym, "sn"), "kg")
-    assert "ACCUMULATION" in svg and "stroke-dasharray" in svg and "bw 64 kg" in svg
-    assert "Not enough" in charts.e1rm_chart(athlete, ex(gym, "cj"), "kg")
+    assert [p[2] for p in points] == [Decimal("65"), Decimal("65"), Decimal("64")]  # bodyweight then
+    ((week_type, first, last),) = charts.phase_bands(points)  # one block covers all three
+    assert week_type.name == "Accumulation" and (first, last) == (0, 2)
+    assert charts.e1rm_points(athlete, ex(gym, "cj")) == []
 
 
 def test_weekly_volume(athlete, program, gym):
     _log(athlete, program, gym, 1, 100, reps=3)
     rows = charts.weekly(athlete)
     assert len(rows) == 8 and sum(v for _s, v, _c in rows) == Decimal("300")
-
-
-def test_overview_and_progress_pages(coach_client, athlete, program, gym, client):
-    for days_ago, kg in [(8, 72), (3, 75)]:
-        _log(athlete, program, gym, days_ago, kg)
-    html = coach_client.get(f"/coach/athletes/{athlete.pk}/overview/").content.decode()
-    assert (
-        "Estimated 1RM trend" in html and "<circle" in html and "Lifetime PRs" in html and "75 kg ×1" in html
-    )
-    chart = coach_client.get(
-        f"/coach/athletes/{athlete.pk}/overview/",
-        {"lift": ex(gym, "cj").pk},
-        HTTP_HX_REQUEST="true",
-        HTTP_HX_TARGET="e1rmChart",
-    ).content.decode()
-    assert chart.startswith('<svg class="spark" id="e1rmChart"') and "Not enough" in chart
-    client.force_login(athlete.user)
-    progress = client.get("/app/progress/").content.decode()
-    assert "Snatch e1RM" in progress and "▲ +3 kg" in progress
-
-
-def test_rail_shows_sparklines(coach_client, athlete, program, gym):
-    for days_ago, kg in [(8, 72), (3, 75)]:
-        _log(athlete, program, gym, days_ago, kg)
-    html = coach_client.get(f"/coach/athletes/{athlete.pk}/program/library/").content.decode()
-    assert '<svg width="52" height="18"' in html
 
 
 def test_a_new_habit_counts_yesterday_ticked_late(athlete):

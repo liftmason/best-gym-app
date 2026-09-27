@@ -21,8 +21,6 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
-    "django_htmx",
-    "template_partials",
     "anymail",
     "apps.accounts",
     "apps.exercises",
@@ -43,8 +41,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django_htmx.middleware.HtmxMiddleware",
-    "apps.accounts.middleware.UserTimezoneMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -60,9 +56,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "apps.dashboard.context_processors.shell_frames",
-                "apps.dashboard.context_processors.coach_alerts",
-                "apps.accounts.context_processors.gym",
             ],
         },
     },
@@ -79,9 +72,6 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = "accounts.User"
-LOGIN_URL = "accounts:login"
-LOGIN_REDIRECT_URL = "index"
-LOGOUT_REDIRECT_URL = "accounts:login"
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # reset links last one day
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -97,7 +87,6 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static"]
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},

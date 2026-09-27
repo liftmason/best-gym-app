@@ -9,9 +9,9 @@ from apps.exercises.models import Exercise
 
 def with_history(exercises, athlete, unit):
     """Attach the athlete's history to each exercise: `hist` is None if never logged, else
-    {"line": "78 kg ×1 · 2 days ago", "trend": "up", "spark", "date", "log": [(date, top set)]}."""
+    {"line": "78 kg ×1 · 2 days ago", "trend": "up", "series", "date", "log": [(date, top set)]}."""
     from apps.workouts import history
-    from apps.workouts.charts import rail_spark
+    from apps.workouts.charts import rail_series
 
     logs = history.exercise_history(athlete, [e.pk for e in exercises])
     today = athlete.today()
@@ -22,7 +22,7 @@ def with_history(exercises, athlete, unit):
             {
                 "line": history.last_line(entries[0], unit, today),
                 "trend": trend,
-                "spark": rail_spark(entries, trend),
+                "series": rail_series(entries),
                 "date": entries[0].date,
                 "log": [(e.date, history.set_text(e.top, unit)) for e in entries],
             }

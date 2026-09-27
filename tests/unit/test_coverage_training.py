@@ -199,7 +199,7 @@ def test_lifetime_prs_and_the_progress_chart(program, athlete, gym):
     assert pr["heaviest"].load_kg == Decimal("83") and pr["heaviest_date"] == athlete.today() - 2 * DAY
     assert pr["e1rm"] and pr["e1rm_date"] in (athlete.today() - 7 * DAY, athlete.today() - 2 * DAY)
     points = charts.e1rm_points(athlete, ex(gym, "sn"))
-    _svg, change = charts.progress_chart(athlete, ex(gym, "sn"), "kg")
+    change = charts.progress_change(athlete, ex(gym, "sn"), "kg")
     assert change == {
         "change": round(float(points[-1][1] - points[0][1])),
         "drop": abs(round(float(points[-1][1] - points[0][1]))),

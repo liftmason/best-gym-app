@@ -8,36 +8,21 @@ from decimal import Decimal
 import pytest
 from django.contrib.auth import authenticate
 from django.core import mail
-from django.utils import timezone
 
 from apps import ratelimit
 from apps.accounts import invites, metrics, services
-from apps.accounts.access import home_url_for
 from apps.accounts.models import Athlete, BodyweightEntry, Invite, InviteStatus, MaxEntry
 from apps.exercises import services as library
 from apps.exercises.models import Category, Exercise, Measure, Tag, TrackedLift
 from apps.programs.models import WeekType
 
 from ..conftest import PASSWORD, cat, ex, lift_field
-from ..factories import AthleteFactory, CoachFactory, GymFactory, UserFactory
+from ..factories import AthleteFactory, CoachFactory, GymFactory
 
 pytestmark = pytest.mark.django_db
 
 
 # ---------------------------------------------------------------- landing and sign-in
-
-
-def test_landing_by_profile(coach, athlete, gym):
-    assert home_url_for(coach.user) == "/coach/"
-    assert home_url_for(athlete.user) == "/app/"
-    both = CoachFactory(gym=gym)
-    Athlete.objects.create(user=both.user, coach=coach, gym=gym)
-    assert home_url_for(both.user) == "/coach/"  # the coach app wins
-    nobody = UserFactory()
-    assert home_url_for(nobody) == "/accounts/no-profile/"
-    athlete.archived_at = timezone.now()
-    athlete.save()
-    assert home_url_for(athlete.user) == "/accounts/no-profile/"  # archived counts as none
 
 
 def test_sign_in_ignores_the_emails_case(coach):

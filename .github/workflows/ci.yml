@@ -47,14 +47,3 @@ jobs:
           python manage.py collectstatic --noinput
       - name: Unit tests
         run: pytest tests/unit
-      - name: Start MinIO (stands in for Cloudflare R2's form-video bucket)
-        run: |
-          docker run -d --name storage -p 9000:9000 \
-            -e MINIO_ROOT_USER=gymtrainer -e MINIO_ROOT_PASSWORD=gymtrainer-local-only \
-            cgr.dev/chainguard/minio@sha256:bd014394a80898e68c149f2311fdf8d5a2c2f3bb2c33b9327ae6d02b4b065ae1 server /data
-          for i in $(seq 1 30); do curl -sf http://localhost:9000/minio/health/live && break; sleep 1; done
-          python manage.py storage_setup
-      - name: Install Playwright browser
-        run: playwright install --with-deps chromium
-      - name: End-to-end tests
-        run: pytest tests/e2e

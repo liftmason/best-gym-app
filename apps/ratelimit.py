@@ -1,21 +1,13 @@
-"""Simple rate limits for the endpoints worth abusing: sign-in, password reset, sign-up,
-invite links, messages, video uploads, invites. Counts live in the database cache, so all
-of the web workers share them.
-
-    @rate_limit("login", 10, 15 * 60, key=by_ip)
-
-Over the limit, a request gets a 429 (an HTMX request gets a toast instead of a page).
+"""Rate limits: counters in the database cache, shared by every web worker, in fixed windows.
+The page decorators went with the pages (sub-project 0); the API re-applies the limits listed
+in docs/plans/S0_TEST_TRIAGE.md, and sub-project 1 moves the counters to their own table
+(audit C1, C2).
 """
 
 import time
-from functools import wraps
 
 from django.conf import settings
 from django.core.cache import cache
-from django.http import HttpResponse
-from django.shortcuts import render
-
-from apps import hx
 
 
 def client_ip(request):
@@ -32,14 +24,6 @@ def client_ip(request):
     return request.META.get("REMOTE_ADDR", "")
 
 
-def by_ip(request):
-    return client_ip(request)
-
-
-def by_user(request):
-    return f"user:{request.user.pk}" if request.user.is_authenticated else f"ip:{client_ip(request)}"
-
-
 def hit(name, key, limit, window):
     """Count one attempt; True if it's within the limit. Fixed windows of `window` seconds."""
     bucket = int(time.time() // window)
@@ -50,25 +34,6 @@ def hit(name, key, limit, window):
         cache.add(cache_key, 0, timeout=window + 60)
         count = cache.incr(cache_key)
     return count <= limit
-
-
-def too_many(request, message="Too many attempts. Wait a few minutes and try again."):
-    if getattr(request, "htmx", False):
-        return hx.toast(HttpResponse(status=429), message, "err")
-    return render(request, "429.html", {"message": message}, status=429)
-
-
-def rate_limit(name, limit, window, key=by_ip, methods=("POST",)):
-    def decorator(view):
-        @wraps(view)
-        def wrapped(request, *args, **kwargs):
-            if request.method in methods and not hit(name, key(request), limit, window):
-                return too_many(request)
-            return view(request, *args, **kwargs)
-
-        return wrapped
-
-    return decorator
 
 
 LOGIN_WINDOW = 15 * 60

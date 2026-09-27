@@ -1,17 +1,14 @@
 """Phase 5: templates, saved weeks and sessions, and applying them to an athlete."""
 
 import datetime
-import json
 from decimal import Decimal
 
 import pytest
 
-from apps.accounts.models import Coach, Gym, Invite
 from apps.exercises.deletion import delete_exercise, deletion_impact
 from apps.exercises.models import Exercise, Tag
-from apps.exercises.starter import install_pack
 from apps.library import apply, services
-from apps.library.models import SlotKind, Template, TemplateKind, TemplateSlot
+from apps.library.models import SlotKind, TemplateKind, TemplateSlot
 from apps.programs import services as program_services
 from apps.programs.models import LoadBasis, Prescription, ProgramWeek, WeekType
 from apps.workouts import sessions as workout_sessions
@@ -25,10 +22,6 @@ DAY = datetime.timedelta(days=1)
 
 def tag(gym, name):
     return Tag.objects.get(gym=gym, name=name)
-
-
-def toast(response):
-    return json.loads(response["HX-Trigger"])["toast"]["message"]
 
 
 @pytest.fixture
@@ -94,82 +87,6 @@ def test_saving_a_board_week_and_a_program(athlete, coach, gym, program):
     assert session.slots.get().exercise.key == "sn"
     whole = services.save_program(gym, coach.user, program, "From Maya")
     assert whole.kind == TemplateKind.PROGRAM and whole.weeks.count() == 1  # only weeks with work
-
-
-def test_editor_actions(coach_client, template, gym):
-    base = f"/coach/library/{template.pk}/"
-    assert "Comp Cycle" in coach_client.get(base).content.decode()
-    session = template.weeks.first().sessions.first()
-    response = coach_client.post(
-        base + "slots/add/", {"exercise": ex(gym, "bsq").pk, "session": session.pk}, **HX
-    )
-    assert "Back Squat" in toast(response) and session.slots.count() == 2
-    assert "Select a session" in toast(
-        coach_client.post(base + "slots/add/", {"exercise": ex(gym, "bsq").pk}, **HX)
-    )
-    response = coach_client.post(
-        base + "slots/add-tag/",
-        {"session": session.pk, "tag": [tag(gym, "overhead").pk, tag(gym, "strength").pk]},
-        **HX,
-    )
-    assert "Tag slot [overhead, strength]" in toast(response)
-    slot = session.slots.last()
-    assert slot.kind == SlotKind.TAG and set(slot.exercise.tags.values_list("name", flat=True)) >= {
-        "overhead",
-        "strength",
-    }
-    coach_client.post(base + "meta/", {"name": "Renamed", "sessions_per_week": "4"}, **HX)
-    template.refresh_from_db()
-    assert (template.name, template.sessions_per_week) == ("Renamed", 4)
-    coach_client.post(base + f"weeks/{template.weeks.last().pk}/remove/", **HX)
-    assert template.weeks.count() == 1
-
-
-def test_slot_modal_switches_between_fixed_and_tag(coach_client, template, gym):
-    slot = template.weeks.first().sessions.first().slots.get()
-    url = f"/coach/library/{template.pk}/slots/{slot.pk}/"
-    assert "Fixed exercise" in coach_client.get(url).content.decode()
-    dose = {"sets": "4", "rep_scheme": "3", "load_basis": "percent", "load_value": "75"}
-    bad = coach_client.post(
-        url, {**dose, "kind": "tag", "tags": [tag(gym, "overhead").pk], "default": ex(gym, "sn").pk}, **HX
-    )
-    assert "carries every tag" in bad.content.decode()  # snatch isn't tagged "overhead"
-    response = coach_client.post(
-        url, {**dose, "kind": "tag", "tags": [tag(gym, "overhead").pk], "default": ex(gym, "pp").pk}, **HX
-    )
-    assert response["HX-Retarget"] == "#tplEditor"
-    slot.refresh_from_db()
-    assert (slot.kind, slot.exercise.key, slot.sets, slot.load_value) == ("tag", "pp", 4, Decimal("75"))
-
-
-def test_saved_weeks_and_sessions_drop_into_templates(coach_client, coach, gym, template):
-    first_week = template.weeks.first()
-    saved_week = services.save_template_week(gym, coach.user, first_week, "Three day")
-    saved_session = services.save_session(gym, coach.user, first_week.sessions.first(), "Snatch day")
-    base = f"/coach/library/{template.pk}/"
-    assert "Three day" in coach_client.get(base + "pick/week/").content.decode()
-    coach_client.post(base + f"pick/week/{saved_week.pk}/", **HX)
-    assert template.weeks.count() == 3
-    coach_client.post(base + f"pick/session/{saved_session.pk}/", {"week": first_week.pk}, **HX)
-    assert first_week.sessions.last().name == "Snatch day" and first_week.sessions.count() == 4
-
-
-def test_list_pages(coach_client, template):
-    html = coach_client.get("/coach/programming/templates/").content.decode()
-    assert "Comp Cycle" in html and "2 weeks · 6 sessions · written for 3×/week · 2 tag slots" in html
-    assert "No saved weeks yet" in coach_client.get("/coach/programming/weeks/").content.decode()
-    response = coach_client.post("/coach/programming/sessions/new/")
-    assert Template.objects.get(kind="session").weeks.get().sessions.count() == 1
-    assert response["Location"].startswith("/coach/library/")
-
-
-def test_other_gyms_templates_are_out_of_reach(client, make_user, template):
-    other_gym = Gym.objects.create(name="Elsewhere")
-    install_pack(other_gym, "weightlifting")
-    other = Coach.objects.create(user=make_user("sam@example.com", "Sam"), gym=other_gym)
-    client.force_login(other.user)
-    assert client.get(f"/coach/library/{template.pk}/").status_code == 404
-    assert "Comp Cycle" not in client.get("/coach/programming/templates/").content.decode()
 
 
 # ---------------------------------------------------------------- planning
@@ -247,72 +164,7 @@ def test_starting_at_a_future_week_replaces_empties_and_moves_the_rest(
     assert later.days.first().date == later.start_date and later.days.first().sessions.exists()
 
 
-def test_apply_preview_views(coach_client, athlete, template, program):
-    base = f"/coach/athletes/{athlete.pk}/program/"
-    response = coach_client.post(
-        "/coach/programming/apply/", {"template": template.pk, "athlete": athlete.pk}, **HX
-    )
-    assert response["HX-Redirect"] == base
-    html = coach_client.get(base).content.decode()
-    assert "Previewing" in html and "wk-tab ghost" in html and "2 new weeks" in html
-    html = coach_client.post(base + "apply/", {"days_sent": "1", "day": ["0", "3"]}, **HX).content.decode()
-    assert "3 new weeks" in html and "2×/week" in html
-    html = coach_client.post(base + "apply/", {"view": "1"}, **HX).content.decode()
-    assert "week-board ghost" in html
-    assert ProgramWeek.objects.filter(program=program).count() == 2  # nothing written yet
-    response = coach_client.post(base + "apply/confirm/", **HX)
-    assert "“Comp Cycle” applied — 3 weeks" in toast(response)
-    assert ProgramWeek.objects.filter(program=program).count() == 5
-    assert "Previewing" not in coach_client.get(base).content.decode()
-
-
-def test_cancel_changes_nothing(coach_client, athlete, template, program):
-    base = f"/coach/athletes/{athlete.pk}/program/"
-    coach_client.post(
-        base + "apply/start/", {"kind": "program"}, HTTP_HX_REQUEST="true", HTTP_HX_TARGET="programEditor"
-    )
-    response = coach_client.post(base + "apply/cancel/", **HX)
-    assert "nothing changed" in toast(response) and program.weeks.count() == 2
-
-
-def test_save_week_and_template_from_the_board(coach_client, athlete, gym, program):
-    week = program.weeks.first()
-    base = f"/coach/athletes/{athlete.pk}/program/"
-    assert "no sessions to save" in toast(coach_client.get(base + f"weeks/{week.pk}/save/", **HX))
-    program_services.add_prescription(week.days.first(), ex(gym, "sn"), athlete)
-    assert "Save week to library" in coach_client.get(base + f"weeks/{week.pk}/save/", **HX).content.decode()
-    response = coach_client.post(base + f"weeks/{week.pk}/save/", {"name": "Snatch week"}, **HX)
-    assert (
-        "Programming › Weeks" in toast(response)
-        and Template.objects.filter(kind="week", name="Snatch week").exists()
-    )
-    coach_client.post(base + "save/", {"name": "Block copy"}, **HX)
-    assert Template.objects.filter(kind="program", name="Block copy").exists()
-
-
 # ---------------------------------------------------------------- invites and deleting
-
-
-def test_invite_with_a_starting_template_makes_a_draft_program(client, coach, template):
-    invite = Invite.objects.create(coach=coach, starting_template=template)
-    client.post(
-        f"/join/{invite.token}/",
-        {
-            "name": "Priya",
-            "email": "priya@example.com",
-            "password": "correct-horse-battery-9",
-            "browser_timezone": "",
-        },
-    )
-    athlete = invite.coach.athletes.get(user__email="priya@example.com")
-    program = athlete.programs.active().get()
-    assert program.name == "Comp Cycle" and program.weeks.count() == 2
-    assert not program.weeks.filter(published=True).exists()
-    assert program.start_date == athlete.gym.week_start_for(athlete.today()) + apply.WEEK
-
-
-def test_invite_form_offers_templates(coach_client, template):
-    assert "Comp Cycle" in coach_client.get("/coach/invites/new/", **HX).content.decode()
 
 
 def test_deleting_an_exercise_updates_template_slots(template, gym, step_up):

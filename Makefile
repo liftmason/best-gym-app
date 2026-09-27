@@ -3,7 +3,7 @@ PY := .venv/bin/python
 -include .env
 export
 
-.PHONY: dev install db migrate seed run test e2e lint fmt check
+.PHONY: dev install db migrate seed run test lint fmt check
 
 dev: install db migrate seed run
 
@@ -26,9 +26,6 @@ run:
 
 test:
 	$(PY) -m pytest tests/unit
-
-e2e:
-	$(PY) -m pytest tests/e2e
 
 lint:
 	.venv/bin/ruff check .

@@ -3,7 +3,9 @@
 
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from django.urls import reverse
+
+# Where the athlete fills in their numbers (the app's route; see alerts._tab).
+NUMBERS_PATH = "/app/profile/numbers/"
 
 
 def invite_url(base_url, invite):
@@ -31,7 +33,7 @@ def send_metrics_reminder(base_url, athlete, missing_keys):
         "athlete": athlete,
         "coach": athlete.coach,
         "labels": labels,
-        "url": f"{base_url.rstrip('/')}{reverse('app:numbers')}",
+        "url": f"{base_url.rstrip('/')}{NUMBERS_PATH}",
     }
     subject = render_to_string("emails/metrics_reminder_subject.txt", context).strip()
     body = render_to_string("emails/metrics_reminder.txt", context)

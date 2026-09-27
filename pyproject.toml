@@ -5,8 +5,6 @@ requires-python = ">=3.14"
 # Exact versions are pinned in uv.lock; install with `uv sync` (CI: `uv sync --locked`).
 dependencies = [
     "Django>=5.2.8,<5.3",  # 5.2.8 is the first 5.2 release that supports Python 3.14
-    "django-htmx>=1.23",
-    "django-template-partials>=24.4",
     "dj-database-url>=2.3",
     "psycopg[binary]>=3.2",
     "whitenoise>=6.9",
@@ -19,7 +17,6 @@ dependencies = [
 dev = [
     "pytest>=8.3",
     "pytest-django>=4.10",
-    "pytest-playwright>=0.7",
     "time-machine>=2.16",
     "factory-boy>=3.3",
     "ruff==0.16.9",  # same version as .pre-commit-config.yaml
@@ -37,14 +34,9 @@ extend-exclude = ["mockup", "static", "staticfiles", "**/migrations/*"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "DJ"]
 
-[tool.ruff.lint.per-file-ignores]
-"apps/workouts/charts.py" = ["E501"]  # SVG markup reads best one element per line
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.test"
 testpaths = ["tests"]
 addopts = "--strict-markers"
-markers = [
-    "allow_browser_errors(*texts): browser console errors containing these texts are expected (e.g. going offline on purpose)",
-]
 filterwarnings = ["ignore:No directory at:UserWarning"]

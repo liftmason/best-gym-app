@@ -14,7 +14,6 @@ dismissed row stays dismissed.
 import datetime
 
 from django.db import transaction
-from django.urls import reverse
 from django.utils import timezone
 
 from .models import Notification, NotificationKind
@@ -24,7 +23,9 @@ MISSED_LOOKBACK_DAYS = 7
 
 
 def _tab(athlete, tab):
-    return reverse("coach:athlete_tab", args=[athlete.pk, tab])
+    # The coach-app screen for the athlete's tab. The HTML pages are gone; where these paths
+    # land in the Expo app is decided with its routes (sub-projects 2 and 6), here in one place.
+    return f"/coach/athletes/{athlete.pk}/{tab}/"
 
 
 def notify(athlete, kind, key, text, link, reopen=True):
