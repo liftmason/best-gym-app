@@ -9,6 +9,7 @@ import zoneinfo
 
 from django.utils import timezone
 
+from apps.accounts import coaching
 from apps.accounts.metrics import missing_metrics
 from apps.workouts import history
 from apps.workouts.models import SessionLog
@@ -26,7 +27,7 @@ RECENT_DAYS, RECENT_LIMIT = 7, 8
 
 
 def active_athletes(coach):
-    return list(coach.athletes.filter(archived_at__isnull=True).select_related("user", "gym", "coach__user"))
+    return list(coaching.athletes_for(coach))
 
 
 def pct(done, scheduled):

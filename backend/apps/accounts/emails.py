@@ -17,7 +17,7 @@ def send_invite_email(base_url, invite):
     context = {
         "invite": invite,
         "coach": invite.coach,
-        "gym": invite.coach.gym,
+        "gym": invite.gym,
         "join_url": invite_url(base_url, invite),
     }
     subject = render_to_string("emails/invite_subject.txt", context).strip()

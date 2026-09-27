@@ -10,7 +10,8 @@ from django.db import transaction
 from apps.exercises.starter import PACKS, install_pack
 from apps.workouts.models import install_default_questions
 
-from .models import Athlete, Coach, Gym, MaxUpdates, Units, User, WeekStart
+from . import coaching
+from .models import Coach, Gym, GymRole, MaxUpdates, Units, User, WeekStart
 
 
 class AccountExists(Exception):
@@ -69,7 +70,9 @@ def sign_up_coach(*, name, email, gym_name, units, starter, timezone, password=N
     install_pack(gym, starter)
     install_default_questions(gym)
     user = User.objects.create_user(email, password, name=name, timezone=tz)
-    return Coach.objects.create(user=user, gym=gym)
+    coach = Coach.objects.create(user=user)
+    coaching.join_gym(coach, gym, GymRole.OWNER)
+    return coach
 
 
 def set_units(athlete, value):
@@ -124,14 +127,12 @@ def set_max_updates(athlete, value):
 
 def coach_athletes(coach):
     """The coach's own active athletes."""
-    return coach.athletes.filter(archived_at__isnull=True)
+    return coaching.athletes_for(coach)
 
 
 def coach_athlete(coach, athlete_id):
     """One of the coach's own active athletes (Athlete.DoesNotExist for anyone else)."""
-    return Athlete.objects.select_related("user", "gym", "coach__user").get(
-        pk=athlete_id, coach=coach, archived_at__isnull=True
-    )
+    return coaching.athlete_for(coach, athlete_id)
 
 
 def roster(coach, q=""):

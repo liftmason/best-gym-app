@@ -40,7 +40,7 @@ def client():
 
 def new_key(athlete, content_type):
     ext = {"video/quicktime": "mov", "video/webm": "webm"}.get(content_type, "mp4")
-    return f"form-videos/{athlete.gym_id}/{athlete.pk}/{uuid.uuid4().hex}.{ext}"
+    return f"form-videos/{athlete.gym.pk}/{athlete.pk}/{uuid.uuid4().hex}.{ext}"
 
 
 def upload_url(key, size, content_type):

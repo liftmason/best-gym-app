@@ -3,6 +3,7 @@
 
 from django.utils import timezone
 
+from apps.accounts.models import Coaching, CoachingStatus
 from apps.dashboard import alerts
 
 from .models import Message, Thread
@@ -16,16 +17,21 @@ class EmptyMessage(Exception):
 
 
 class NotInThread(Exception):
-    """Only the thread's coach and athlete can write in it."""
+    """Only the thread's coach and athlete can write in it, while the coaching lasts."""
 
 
 def participants(thread):
     return {thread.coach.user_id, thread.athlete.user_id}
 
 
+def _open(thread):
+    """Read from the database: the link may have ended since the thread was loaded."""
+    return Coaching.objects.filter(pk=thread.coaching_id, status=CoachingStatus.ACTIVE).exists()
+
+
 def send(thread, sender, body):
     """A message from the thread's coach or athlete. Alerts the other side."""
-    if sender.pk not in participants(thread):
+    if sender.pk not in participants(thread) or not _open(thread):
         raise NotInThread()
     body = (body or "").strip()
     if not body:
@@ -59,7 +65,7 @@ def thread_for(athlete):
 def unread_count(athlete):
     """Messages from the athlete's current coach they haven't read yet."""
     return (
-        Message.objects.filter(thread__athlete=athlete, thread__coach=athlete.coach, read_at__isnull=True)
+        Message.objects.filter(thread__coaching=athlete.active_coaching, read_at__isnull=True)
         .exclude(sender=athlete.user)
         .count()
     )

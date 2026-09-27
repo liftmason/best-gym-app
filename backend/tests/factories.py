@@ -7,6 +7,7 @@ when a test needs the starter library, since installing a pack is the slow part.
 import factory
 from factory.django import DjangoModelFactory
 
+from apps.accounts import coaching
 from apps.accounts.models import Athlete, Coach, Gym, User
 from apps.exercises.starter import install_pack
 
@@ -45,7 +46,14 @@ class CoachFactory(DjangoModelFactory):
         model = Coach
 
     user = factory.SubFactory(UserFactory)
-    gym = factory.SubFactory(GymFactory)
+    gym = factory.SubFactory(GymFactory)  # joined through a GymMembership
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        gym = kwargs.pop("gym")
+        coach = model_class.objects.create(**kwargs)
+        coaching.join_gym(coach, gym)
+        return coach
 
 
 class AthleteFactory(DjangoModelFactory):
@@ -53,5 +61,12 @@ class AthleteFactory(DjangoModelFactory):
         model = Athlete
 
     user = factory.SubFactory(UserFactory)
-    coach = factory.SubFactory(CoachFactory)
-    gym = factory.SelfAttribute("coach.gym")
+    coach = factory.SubFactory(CoachFactory)  # linked through a Coaching; None for no coach
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        coach = kwargs.pop("coach")
+        athlete = model_class.objects.create(**kwargs)
+        if coach is not None:
+            coaching.start(coach, athlete)
+        return athlete

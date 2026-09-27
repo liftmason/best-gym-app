@@ -315,14 +315,14 @@ def _athlete(coach, gym, today):
     athlete, _ = Athlete.objects.update_or_create(
         user=user,
         defaults={
-            "coach": coach,
-            "gym": gym,
             "height_cm": Decimal("178"),
             "years_training": "1-3",
             "units": "lb",
-            "archived_at": None,
         },
     )
+    from .seed_demo import coach_athlete
+
+    coach_athlete(coach, athlete)
     athlete.session_logs.all().delete()  # demo data only: rebuilt on every seed
     athlete.issues.all().delete()
     athlete.programs.all().delete()

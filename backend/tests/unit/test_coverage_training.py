@@ -274,7 +274,7 @@ def storage(monkeypatch, settings):
 
 def test_keys_and_signed_uploads(athlete, storage):
     key = videos.new_key(athlete, "video/quicktime")
-    assert key.startswith(f"form-videos/{athlete.gym_id}/{athlete.pk}/") and key.endswith(".mov")
+    assert key.startswith(f"form-videos/{athlete.gym.pk}/{athlete.pk}/") and key.endswith(".mov")
     url = videos.upload_url(key, 1234, "video/mp4")  # presigning needs no network
     assert "X-Amz-Signature" in url and "content-length" in url.lower()
 

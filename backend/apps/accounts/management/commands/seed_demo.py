@@ -18,11 +18,13 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
+from apps.accounts import coaching
 from apps.accounts.models import (
     Athlete,
     BodyweightEntry,
     Coach,
     Gym,
+    GymRole,
     MaxEntry,
     MeasurementSource,
     User,
@@ -120,6 +122,13 @@ def _next_date(today, month, day):
     return candidate if candidate >= today else datetime.date(today.year + 1, month, day)
 
 
+def coach_athlete(coach, athlete):
+    """Make `coach` the athlete's active coach (the demo may have ended or changed it)."""
+    if athlete.coach != coach or athlete.active_coaching is None:
+        coaching.end(athlete)
+        coaching.start(coach, athlete)
+
+
 class Command(BaseCommand):
     help = "Create or refresh the mockup's demo data (Iron Ridge, Dana the coach, six athletes)."
 
@@ -144,7 +153,9 @@ class Command(BaseCommand):
 
         email, name, title = COACH
         coach_user = self._user(email, name, is_staff=True)
-        coach, _ = Coach.objects.update_or_create(user=coach_user, defaults={"gym": gym, "title": title})
+        coach, _ = Coach.objects.update_or_create(user=coach_user, defaults={"title": title})
+        if coach.gym != gym:
+            coaching.join_gym(coach, gym, GymRole.OWNER)
 
         athletes_by_email = {}
         for spec in ATHLETES:
@@ -156,17 +167,15 @@ class Command(BaseCommand):
             athlete, _ = Athlete.objects.update_or_create(
                 user=user,
                 defaults={
-                    "coach": coach,
-                    "gym": gym,
                     "weight_class": spec["class"],
                     "competition_name": comp_name,
                     "competition_date": comp_date,
                     "height_cm": Decimal(spec["height"]) if spec["height"] else None,
                     "years_training": spec["years"],
                     "units": "kg",
-                    "archived_at": None,
                 },
             )
+            coach_athlete(coach, athlete)
             athlete.bodyweights.all().delete()
             BodyweightEntry.objects.bulk_create(
                 [

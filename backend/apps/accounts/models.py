@@ -1,6 +1,7 @@
 import datetime
 import secrets
 import zoneinfo
+from functools import cached_property
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
@@ -17,6 +18,10 @@ def validate_timezone(value):
     because the available zone list depends on the machine's tzdata version."""
     if value not in zoneinfo.available_timezones():
         raise ValidationError(f"{value!r} is not a known time zone")
+
+
+# Active links (no end) first, then the most recently ended.
+ACTIVE_FIRST = models.F("ended_at").desc(nulls_first=True)
 
 
 class Units(models.TextChoices):
@@ -96,8 +101,9 @@ class User(core.Model, AbstractUser):
 
     @property
     def athlete_profile(self):
+        """The athlete profile while it has an active coach."""
         athlete = getattr(self, "athlete", None) if self.pk else None
-        return athlete if athlete and athlete.archived_at is None else None
+        return athlete if athlete and athlete.active_coaching else None
 
     @property
     def zoneinfo(self):
@@ -140,8 +146,10 @@ class Gym(core.Model):
 
 
 class Coach(core.Model):
+    """A person's coach profile. Their gym comes from their GymMembership (one active
+    at a time for now); their athletes from Coaching links (accounts/coaching.py)."""
+
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="coach")
-    gym = models.ForeignKey(Gym, on_delete=models.PROTECT, related_name="coaches")
     title = models.CharField(max_length=60, default="Head coach", blank=True)
     digest = models.BooleanField(default=True, help_text="Email a morning digest of new attention items.")
     last_digest_at = models.DateTimeField(null=True, blank=True)
@@ -149,9 +157,45 @@ class Coach(core.Model):
     def __str__(self):
         return str(self.user)
 
+    @cached_property
+    def membership(self):
+        """The active gym membership (the latest if none is active)."""
+        return self.memberships.select_related("gym").order_by(ACTIVE_FIRST, "-started_at").first()
+
+    @property
+    def gym(self):
+        return self.membership.gym if self.membership else None
+
     @property
     def gym_zone(self):
         return zoneinfo.ZoneInfo(self.gym.timezone)
+
+
+class GymRole(models.TextChoices):
+    OWNER = "owner", "Owner"
+    COACH = "coach", "Coach"
+
+
+class GymMembership(core.Model):
+    """A coach's membership of a gym. One active membership per coach for now; the table
+    allows a coach to move gyms, or belong to more than one later."""
+
+    coach = models.ForeignKey(Coach, on_delete=models.PROTECT, related_name="memberships")
+    gym = models.ForeignKey(Gym, on_delete=models.PROTECT, related_name="memberships")
+    role = models.CharField(max_length=10, choices=GymRole.choices, default=GymRole.COACH)
+    started_at = models.DateTimeField(default=timezone.now)
+    ended_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-started_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["coach"], condition=models.Q(ended_at__isnull=True), name="one_active_gym_per_coach"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.coach} at {self.gym}"
 
 
 class YearsTraining(models.TextChoices):
@@ -167,12 +211,12 @@ class MaxUpdates(models.TextChoices):
 
 
 class Athlete(core.Model):
-    """Archive, never delete, so session history survives.
-    Bodyweight and maxes are history tables (BodyweightEntry, MaxEntry)."""
+    """A person's athlete profile. Their training history belongs to them, not to a coach:
+    coaches come and go through Coaching links (accounts/coaching.py), and "archiving" an
+    athlete ends the link. Bodyweight and maxes are history tables (BodyweightEntry,
+    MaxEntry). Deleting is only for privacy (accounts/erase.py)."""
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="athlete")
-    coach = models.ForeignKey(Coach, on_delete=models.PROTECT, related_name="athletes")
-    gym = models.ForeignKey(Gym, on_delete=models.PROTECT, related_name="athletes")
     weight_class = models.CharField(max_length=20, blank=True)
     competition_name = models.CharField(max_length=120, blank=True)
     competition_date = models.DateField(null=True, blank=True)
@@ -186,13 +230,42 @@ class Athlete(core.Model):
         help_text="When a session beats a working max: update it straight away, or wait for the coach.",
     )
     joined_at = models.DateTimeField(default=timezone.now)
-    archived_at = models.DateTimeField(null=True, blank=True)
+    hide_history_before_link = models.BooleanField(
+        default=False, help_text="A new coach sees only training from the day their coaching link started."
+    )
 
     class Meta:
         ordering = ["user__name"]
 
     def __str__(self):
         return str(self.user)
+
+    @cached_property
+    def coaching(self):
+        """The active coaching link, else the latest one. Lists of athletes prefetch it
+        (coaching.athletes_for), so reading `coach` and `gym` costs no query there."""
+        if getattr(self, "active_links", None):
+            return self.active_links[0]
+        return (
+            self.coachings.select_related("coach__user", "gym").order_by(ACTIVE_FIRST, "-started_at").first()
+        )
+
+    @property
+    def active_coaching(self):
+        link = self.coaching
+        return link if link and link.status == CoachingStatus.ACTIVE else None
+
+    @property
+    def coach(self):
+        return self.coaching.coach if self.coaching else None
+
+    @property
+    def gym(self):
+        return self.coaching.gym if self.coaching else None
+
+    def forget_coaching(self):
+        """Drop the cached link after starting or ending one."""
+        self.__dict__.pop("coaching", None)
 
     @property
     def timezone(self):
@@ -214,6 +287,43 @@ class Athlete(core.Model):
         for entry in self.maxes.select_related("exercise").order_by("exercise_id", "-date", "-id"):
             latest.setdefault(entry.exercise_id, entry)
         return latest
+
+
+class CoachingStatus(models.TextChoices):
+    ACTIVE = "active", "Active"
+    ENDED = "ended", "Ended"
+
+
+class Coaching(core.Model):
+    """A coach coaching an athlete, from `started_at` until `ended_at`. One active link per
+    athlete for now (the table allows more later). `gym` is the coach's gym when the link
+    started. A coach sees the athlete's data only while the link is active
+    (coaching.can_view)."""
+
+    coach = models.ForeignKey(Coach, on_delete=models.PROTECT, related_name="coachings")
+    athlete = models.ForeignKey(Athlete, on_delete=models.PROTECT, related_name="coachings")
+    gym = models.ForeignKey(Gym, on_delete=models.PROTECT, related_name="coachings")
+    status = models.CharField(max_length=10, choices=CoachingStatus.choices, default=CoachingStatus.ACTIVE)
+    started_at = models.DateTimeField(default=timezone.now)
+    ended_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-started_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["athlete"],
+                condition=models.Q(status=CoachingStatus.ACTIVE),
+                name="one_active_coach_per_athlete",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(status=CoachingStatus.ACTIVE, ended_at__isnull=True)
+                | models.Q(status=CoachingStatus.ENDED, ended_at__isnull=False),
+                name="coaching_ended_when_status_ended",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.coach} coaching {self.athlete}"
 
 
 class MeasurementSource(models.TextChoices):
@@ -285,6 +395,7 @@ class Invite(core.Model):
     program when the athlete joins, for the coach to review and publish."""
 
     coach = models.ForeignKey(Coach, on_delete=models.CASCADE, related_name="invites")
+    gym = models.ForeignKey(Gym, on_delete=models.CASCADE, related_name="invites")
     email = models.EmailField(blank=True)
     starting_template = models.ForeignKey(
         "library.Template", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
@@ -311,7 +422,3 @@ class Invite(core.Model):
     @property
     def is_usable(self):
         return self.status == InviteStatus.PENDING and not self.is_expired
-
-    @property
-    def gym(self):
-        return self.coach.gym

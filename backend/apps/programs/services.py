@@ -126,7 +126,7 @@ def start_new_program(athlete, name, first_day, weeks, week_type, by):
         raise InvalidProgram("Give the block a name of up to 80 characters.")
     if not 1 <= int(weeks) <= MAX_PROGRAM_WEEKS:
         raise InvalidProgram(f"Between 1 and {MAX_PROGRAM_WEEKS} weeks.")
-    if week_type.gym_id != athlete.gym_id or week_type.archived:
+    if week_type.gym_id != athlete.gym.pk or week_type.archived:
         raise InvalidProgram("Pick one of your week types.")
     return start_program(athlete, name, first_day, int(weeks), week_type, by=by)
 
@@ -262,7 +262,7 @@ def clear_week(week, by=None):
 
 def set_week_type(week, week_type, by=None):
     """One of the gym's week types; an archived one only if the week already has it."""
-    if week_type.gym_id != week.program.athlete.gym_id or (
+    if week_type.gym_id != week.program.athlete.gym.pk or (
         week_type.archived and week_type.pk != week.week_type_id
     ):
         raise NotAllowed("That week type isn't available.")
@@ -338,7 +338,7 @@ def add_prescription(day, exercise, athlete, session_id=None, index=None, by=Non
     """Add `exercise` to the day (its first session unless one is given), at the end or,
     when dragged in from the library, at position `index`. The exercise must be one of the
     athlete's gym's, and not archived."""
-    if exercise.gym_id != athlete.gym_id or exercise.archived:
+    if exercise.gym_id != athlete.gym.pk or exercise.archived:
         raise NotAllowed("That exercise isn't in this gym's library.")
     if session_id:
         # Dropped onto a session: that session decides the day, anywhere in the same program.

@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from apps.workouts.models import copy_defaults_to
 
+from . import coaching
 from .models import Athlete, Invite, InviteStatus, User
 from .services import AccountExists, check_new_account, email_taken, valid_timezone
 
@@ -16,15 +17,11 @@ class InviteUnusable(Exception):
 
 
 class AlreadyAthlete(Exception):
-    """This account already has an active athlete profile."""
+    """This account's athlete profile already has an active coach."""
 
 
 class InvalidInvite(Exception):
     """With the message to show."""
-
-
-class ArchivedAthlete(Exception):
-    """This account's athlete profile was archived by a coach; one profile per account."""
 
 
 def template_choices(gym):
@@ -53,11 +50,13 @@ def create(coach, email="", starting_template=None, base_url=None):
             raise InvalidInvite("Enter a valid email address.") from None
 
     if starting_template is not None and (
-        starting_template.gym_id != coach.gym_id
+        starting_template.gym_id != coach.gym.pk
         or starting_template.kind not in (TemplateKind.PROGRAM, TemplateKind.WEEK)
     ):
         raise ValueError("That template isn't one of this gym's programs or saved weeks.")
-    invite = Invite.objects.create(coach=coach, email=email, starting_template=starting_template)
+    invite = Invite.objects.create(
+        coach=coach, gym=coach.gym, email=email, starting_template=starting_template
+    )
     if email and base_url:
         from .emails import send_invite_email
 
@@ -78,23 +77,23 @@ def pending(coach):
 
 
 def check_can_join(user):
-    """Raise if this signed-in account can't take an athlete profile."""
+    """Raise if this signed-in account can't join a coach: its athlete profile, if it has
+    one, must be without a coach (archived athletes join a new coach with their history)."""
     if user.athlete_profile:
         raise AlreadyAthlete()
-    if hasattr(user, "athlete"):
-        raise ArchivedAthlete()
 
 
 @transaction.atomic
 def accept(invite_id, *, user=None, name="", email="", password=None, timezone_name=""):
     """Join through an invite: as the signed-in `user`, or as a new account (name, email,
-    optional password). Creates the athlete profile with the gym's units, copies the gym's
-    check-in questions, applies the starting template as an unpublished draft, and marks the
-    invite accepted. The invite row is locked, so two people can't use one link."""
-    invite = Invite.objects.select_for_update().select_related("coach__gym", "coach__user").get(pk=invite_id)
+    optional password). Creates the athlete profile with the gym's units (or reuses the
+    account's coachless one), links it to the coach, copies the gym's check-in questions,
+    applies the starting template as an unpublished draft, and marks the invite accepted.
+    The invite row is locked, so two people can't use one link."""
+    invite = Invite.objects.select_for_update().select_related("gym", "coach__user").get(pk=invite_id)
     if not invite.is_usable:
         raise InviteUnusable()
-    gym = invite.coach.gym
+    gym = invite.gym
     if user is not None:
         check_can_join(user)
     else:
@@ -104,7 +103,8 @@ def accept(invite_id, *, user=None, name="", email="", password=None, timezone_n
         user = User.objects.create_user(
             email, password, name=name, timezone=valid_timezone(timezone_name, gym.timezone)
         )
-    athlete = Athlete.objects.create(user=user, coach=invite.coach, gym=gym, units=gym.units)
+    athlete = getattr(user, "athlete", None) or Athlete.objects.create(user=user, units=gym.units)
+    coaching.start(invite.coach, athlete)
     copy_defaults_to(athlete)
     if invite.starting_template_id:
         _apply_starting_template(invite, athlete)

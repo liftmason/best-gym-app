@@ -5,7 +5,8 @@ from decimal import Decimal
 
 import pytest
 
-from apps.accounts.models import Coach, MaxEntry, MaxUpdates
+from apps.accounts import coaching
+from apps.accounts.models import MaxEntry, MaxUpdates
 from apps.dashboard import alerts
 from apps.dashboard.models import NotificationKind
 from apps.messaging.models import Message, Thread
@@ -15,6 +16,7 @@ from apps.workouts import sessions
 from apps.workouts.models import IssueReport
 
 from ..conftest import ex
+from ..factories import CoachFactory
 
 pytestmark = pytest.mark.django_db
 DAY = datetime.timedelta(days=1)
@@ -80,9 +82,9 @@ def test_missed_sessions_leave_once_logged(coach, athlete, gym, program):
 def test_threads_are_per_coach(coach, athlete, make_user):
     old = Thread.for_athlete(athlete)
     Message.objects.create(thread=old, sender=coach.user, body="Old coach's note")
-    other = Coach.objects.create(user=make_user("sam@example.com", "Sam"), gym=coach.gym)
-    athlete.coach = other
-    athlete.save()
+    other = CoachFactory(user=make_user("sam@example.com", "Sam"), gym=coach.gym)
+    coaching.end(athlete)
+    coaching.start(other, athlete)
     assert not Thread.for_athlete(athlete).messages.exists()  # a fresh thread with the new coach
 
 

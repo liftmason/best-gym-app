@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.utils import timezone
 
-from apps.accounts import units
+from apps.accounts import coaching, units
 from apps.accounts.models import Athlete, BodyweightEntry, Gym, Invite, InviteStatus, MaxEntry
 from apps.exercises.models import Exercise
 from apps.exercises.starter import install_pack
@@ -92,14 +92,13 @@ def test_today_uses_the_persons_time_zone(athlete, monkeypatch):
 
 def test_archived_athlete_is_not_an_athlete_profile(athlete):
     assert athlete.user.athlete_profile == athlete
-    athlete.archived_at = timezone.now()
-    athlete.save()
+    coaching.end(athlete)
     athlete.user.refresh_from_db()
     assert athlete.user.athlete_profile is None
 
 
 def test_invite_usability(coach):
-    invite = Invite.objects.create(coach=coach)
+    invite = Invite.objects.create(coach=coach, gym=coach.gym)
     assert invite.is_usable and len(invite.token) >= 20
     invite.expires_at = timezone.now() - datetime.timedelta(seconds=1)
     assert not invite.is_usable
@@ -114,6 +113,6 @@ def test_measurements_must_be_positive(athlete):
 
 
 def test_one_user_can_be_coach_and_athlete(coach):
-    Athlete.objects.create(user=coach.user, coach=coach, gym=coach.gym)
+    coaching.start(coach, Athlete.objects.create(user=coach.user))
     coach.user.refresh_from_db()
     assert coach.user.coach_profile and coach.user.athlete_profile

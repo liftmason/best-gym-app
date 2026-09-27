@@ -16,6 +16,7 @@ import datetime
 from django.db import transaction
 from django.utils import timezone
 
+from apps.accounts import coaching
 from apps.core import ids
 
 from .models import Notification, NotificationKind
@@ -31,7 +32,10 @@ def _tab(athlete, tab):
 
 
 def notify(athlete, kind, key, text, link, reopen=True):
-    """Add or update the coach's row. `reopen` brings a handled or dismissed row back."""
+    """Add or update the coach's row. `reopen` brings a handled or dismissed row back.
+    Nothing for an athlete without an active coach."""
+    if athlete.active_coaching is None:
+        return None
     recipient = athlete.coach.user
     now = timezone.now()
     row, created = Notification.objects.get_or_create(
@@ -267,9 +271,7 @@ def sync_athlete(athlete, today=None):
 
 
 def sync_coach(coach):
-    for athlete in coach.athletes.filter(archived_at__isnull=True).select_related(
-        "user", "gym", "coach__user"
-    ):
+    for athlete in coaching.athletes_for(coach):
         sync_athlete(athlete)
 
 
@@ -277,7 +279,7 @@ def feed(coach):
     """The coach's feed: newest first, for their current athletes."""
     return (
         Notification.objects.in_feed()
-        .filter(recipient=coach.user, athlete__coach=coach, athlete__archived_at__isnull=True)
+        .filter(recipient=coach.user, athlete__in=coaching.athletes_for(coach).values("pk"))
         .select_related("athlete__user")
     )
 

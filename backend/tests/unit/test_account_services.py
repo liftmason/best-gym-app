@@ -130,10 +130,6 @@ def test_revoked_and_expired_invites_are_unusable(coach):
 def test_accounts_that_cannot_take_an_athlete_profile(coach, athlete):
     with pytest.raises(invites.AlreadyAthlete):
         invites.accept(invites.create(coach).pk, user=athlete.user)
-    athlete.archived_at = timezone.now()
-    athlete.save()
-    with pytest.raises(invites.ArchivedAthlete):
-        invites.accept(invites.create(coach).pk, user=athlete.user)
     with pytest.raises(services.AccountExists):
         invites.accept(invites.create(coach).pk, name="Maya", email="MAYA@example.com")
 

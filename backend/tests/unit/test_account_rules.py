@@ -6,10 +6,9 @@ from decimal import Decimal
 
 import pytest
 from django.core import mail
-from django.utils import timezone
 
 from apps import ratelimit
-from apps.accounts import metrics, services
+from apps.accounts import coaching, metrics, services
 from apps.accounts.models import Athlete, MaxEntry, MaxUpdates
 from apps.programs import services as program_services
 from apps.programs.models import WeekType
@@ -136,8 +135,7 @@ def test_gym_settings_refused(coach, overrides):
 
 def test_roster_is_the_coachs_active_athletes(coach, athlete, gym):
     archived = AthleteFactory(coach=coach)
-    archived.archived_at = timezone.now()
-    archived.save()
+    coaching.end(archived)
     AthleteFactory(coach=CoachFactory(gym=gym))  # another coach's
     cards = services.roster(coach)
     assert [c["athlete"] for c in cards] == [athlete] and cards[0]["missing"] > 0

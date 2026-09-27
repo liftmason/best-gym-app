@@ -19,7 +19,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         call_command("nightly", stdout=self.stdout)
         expired, abandoned = videos.expire()
-        sent = sum(1 for coach in Coach.objects.select_related("user", "gym") if digest.send(coach))
+        sent = sum(1 for coach in Coach.objects.select_related("user") if digest.send(coach))
         self.stdout.write(
             self.style.SUCCESS(
                 f"cron: {expired} video(s) expired, {abandoned} unfinished upload(s) removed, "

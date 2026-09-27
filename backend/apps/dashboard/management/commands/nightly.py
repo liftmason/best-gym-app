@@ -16,7 +16,7 @@ class Command(BaseCommand):
     help = "Nightly maintenance: bring every coach's attention feed up to date."
 
     def handle(self, *args, **options):
-        coaches = Coach.objects.select_related("user", "gym")
+        coaches = Coach.objects.select_related("user")
         for coach in coaches:
             alerts.sync_coach(coach)
         self.stdout.write(self.style.SUCCESS(f"nightly: synced alerts for {coaches.count()} coach(es)"))

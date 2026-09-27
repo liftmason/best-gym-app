@@ -185,6 +185,11 @@ Delete every migration; write the new models; generate one `0001` per app.
 | `Athlete.archived_at` | ending the `Coaching` link (decision D) |
 | `Invite(coach, …)` | `Invite(coach, gym, …)`; accepting creates the `Coaching` link |
 
+*As built:* the classes keep the names `Coach` and `Athlete` (`user.coach`, `user.athlete`);
+the renames would have touched every file for no change in meaning. `athlete.coach` and
+`athlete.gym` remain, as read-only properties of the active link (else the latest one), and
+`coach.gym` comes from the active membership.
+
 Every "this coach's athletes" query goes through one service
 (`accounts.coaching.athletes_for(coach)`), and every "may this coach see this athlete's data"
 check through `accounts.coaching.can_view(coach, athlete, on=date)`, which applies the
