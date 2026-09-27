@@ -8,6 +8,8 @@ TABLES = [
     "accounts.Gym",
     "accounts.Coach",
     "accounts.Athlete",
+    "accounts.GymMembership",
+    "accounts.Coaching",
     "programs.Program",
     "programs.Prescription",
     "workouts.SessionLog",
@@ -27,8 +29,12 @@ class Command(BaseCommand):
             self.stdout.write(f"{label:28} {model.objects.count():>8}")
         SessionLog = apps.get_model("workouts.SessionLog")
         Message = apps.get_model("messaging.Message")
+        # Postgres sorts NULLs first in descending order, so leave open sessions out.
         newest_session = (
-            SessionLog.objects.order_by("-finished_at").values_list("finished_at", flat=True).first()
+            SessionLog.objects.filter(finished_at__isnull=False)
+            .order_by("-finished_at")
+            .values_list("finished_at", flat=True)
+            .first()
         )
         newest_message = Message.objects.order_by("-sent_at").values_list("sent_at", flat=True).first()
         self.stdout.write(f"newest finished session: {newest_session}")

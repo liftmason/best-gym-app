@@ -13,6 +13,9 @@ envVarGroups:
         value: config.settings.production
       - key: SECRET_KEY
         generateValue: true
+      # Error reporting: the DSN of a Sentry project (blank leaves it off).
+      - key: SENTRY_DSN
+        sync: false
       - key: PYTHON_VERSION
         value: 3.14.7
 
@@ -41,7 +44,8 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
-      # Email for invites and password resets. Set these in the Render dashboard.
+      # Email for invites, reminders and the digest. Set these in the Render dashboard:
+      # resend or postmark with its key (production won't start without EMAIL_PROVIDER).
       - key: EMAIL_PROVIDER
         sync: false
       - key: EMAIL_API_KEY

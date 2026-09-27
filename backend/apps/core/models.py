@@ -63,6 +63,13 @@ class Model(models.Model):
         super().save(*args, **kwargs)
 
 
+def lock(obj):
+    """Lock `obj`'s row until the transaction ends (SELECT … FOR UPDATE), so a second
+    request doing the same thing waits and then sees the first one's result. Call inside
+    transaction.atomic."""
+    type(obj)._base_manager.select_for_update().filter(pk=obj.pk).values_list("pk", flat=True).get()
+
+
 def check_same_gym(gym_id, **refs):
     """ValidationError naming each referenced row (exercise, tag, week type…) that belongs to
     another gym than `gym_id`. For models' clean(); the services refuse the same things."""

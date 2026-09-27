@@ -4,6 +4,20 @@ from .base import *  # noqa: F403
 
 if not SECRET_KEY:  # noqa: F405
     raise ImproperlyConfigured("SECRET_KEY must be set in production")
+_problems = checks.production_problems(  # noqa: F405
+    email_provider=EMAIL_PROVIDER,  # noqa: F405
+    from_email=DEFAULT_FROM_EMAIL,  # noqa: F405
+    site_url=SITE_URL,  # noqa: F405
+)
+if _problems:
+    raise ImproperlyConfigured("Production settings: " + "; ".join(_problems))
+
+# Error reporting (audit H9): off until a Sentry project exists and SENTRY_DSN is set.
+SENTRY_DSN = os.environ.get("SENTRY_DSN", "")  # noqa: F405
+if SENTRY_DSN:
+    import sentry_sdk
+
+    sentry_sdk.init(dsn=SENTRY_DSN, send_default_pii=False, traces_sample_rate=0)
 
 DEBUG = False
 

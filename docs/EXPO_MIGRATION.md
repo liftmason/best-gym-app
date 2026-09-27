@@ -11,11 +11,13 @@ GymTrainer moves from server-rendered Django + HTMX pages to a single Expo (Reac
 - Django lives in `backend/` on Python 3.14 with a `uv` lockfile.
 - The schema is fresh: UUIDv7 ids, coaching and gym-membership links, owner columns on synced tables, constraints and indexes.
 
+**Sub-project 1 is done** (branch `s1-hardening`; plan in `docs/plans/S1_HARDENING.md`): every S1 item in the audit is fixed with a test. The owner decided that "program runs out" counts published weeks only.
+
 Nothing is deployed: the free-tier Render blueprint is disconnected. The offline storage spike is done, and its working code is in the appendix.
 
 **Read in this order:** this document; `docs/AUDIT_2026-09.md` (the evidence behind section 2 and the checklist for sub-project 1); `mockup/index.html` (the visual spec, still authoritative for look and wording); `docs/BUILD_PLAN.md` for the domain rules and data model it describes, ignoring its stack and deployment choices.
 
-**Next step:** once PR #2 is merged, write the plan for sub-project 1 (backend hardening: the S1 items in `docs/AUDIT_2026-09.md`), then build it. `docs/plans/S0_TEST_TRIAGE.md` lists the permission checks and rate limits that sub-project 2's API must re-apply.
+**Next step:** once sub-project 1 is merged, write the plan for sub-project 2 (the API and sign-in). `docs/plans/S0_TEST_TRIAGE.md` lists the permission checks and rate limits the API must re-apply.
 
 **How to work.** Each sub-project in "Order of work" gets its own short spec (only where this document leaves real decisions open), then an implementation plan, then the build, one branch and PR per sub-project. Keep the Django service tests passing throughout; write tests before fixes for the audit items. When this document and the code disagree, raise it rather than silently diverging; update this document when a decision changes.
 
@@ -27,7 +29,6 @@ Nothing is deployed: the free-tier Render blueprint is disconnected. The offline
 |---|---|---|
 | Product name and domain | Owner | Before sub-project 8 (email authentication, the API address in the apps, store listings) |
 | Whether web Safari embeds YouTube under cross-origin isolation or links out | Whoever builds the exercise demo view (sub-project 5) | Sub-project 5 |
-| Whether "program runs out" should count unpublished weeks (audit M12) | Owner, asked during sub-project 1 | Sub-project 1 |
 | Plan limits and prices | Owner | When billing is turned on (after launch) |
 | Hosting account (moving off the current free-tier Render account to the owner's own) | Owner | Sub-project 8 |
 
@@ -270,7 +271,7 @@ Each row is its own sub-project with a spec, a plan and a build.
 | # | Sub-project | Size |
 |---|---|---|
 | 0 ✓ | **Done 26 September 2026.** Restructure and fresh schema: move Django to `backend/`; UUIDs; coaching and gym link tables; `athlete_id`/`gym_id` on synced tables; constraints; fresh migrations; carry the service tests over. Delete the HTML views, templates, HTMX/Alpine static files and their tests (git history and the mockup remain the reference). | M |
-| 1 | Backend hardening: the audit fixes in section 2. | S–M |
+| 1 ✓ | **Done 26 September 2026.** Backend hardening: the audit fixes in section 2. | S–M |
 | 2 | API and sign-in: Django Ninja; generated TypeScript types; email codes; Apple and Google; tokens and device sessions; entitlements and Stripe; the permission sweep. | L |
 | 3 | Sync backend: change-log triggers; bootstrap, pull and push; the action registry; idempotency; visibility rules. | M–L |
 | 4 | App foundation: Expo project; database layer; sync engine; sign-in screens; theme and component kit; push notification setup; web hosting headers. | L |

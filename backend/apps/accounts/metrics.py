@@ -180,13 +180,24 @@ def save_coach_metric(athlete, key, raw, date=None, entry_units=None):
     return spec
 
 
+class RemindedRecently(Exception):
+    """The athlete was already reminded in the last REMIND_WINDOW."""
+
+
+REMIND_WINDOW = 24 * 60 * 60  # one reminder email per athlete a day (audit M25)
+
+
 def remind(athlete, base_url):
     """Email the athlete about their missing metrics; returns the missing keys (nothing is
-    sent when everything is filled in)."""
+    sent when everything is filled in). RemindedRecently if they had one in the last day."""
+    from apps import ratelimit
+
     from .emails import send_metrics_reminder
 
     missing = missing_metrics(athlete)
     if missing:
+        if not ratelimit.hit("metrics-remind", athlete.pk, 1, REMIND_WINDOW):
+            raise RemindedRecently()
         send_metrics_reminder(base_url, athlete, missing)
     return missing
 

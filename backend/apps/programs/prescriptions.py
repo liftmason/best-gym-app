@@ -117,8 +117,10 @@ def suggested_weight(rx, athlete, gym_units):
     entry = athlete.current_max(source)
     if entry is None:
         return None
-    kg = entry.kg * Decimal(rx.load_value) / 100
-    return f"≈ {units.display(kg, gym_units)} of {source.name} max {units.display(entry.kg, gym_units)}"
+    from apps.workouts.sessions import plate_round  # the athlete's player rounds the same way
+
+    kg = plate_round(entry.kg * Decimal(rx.load_value) / 100, gym_units)
+    return f"≈ {format(kg, 'f')} {gym_units} of {source.name} max {units.display(entry.kg, gym_units)}"
 
 
 DEFAULTS = {
@@ -181,9 +183,11 @@ def keep_warmups_first(session):
     so the board, the drag-and-drop positions and the player all agree."""
     items = list(session_items(session).order_by("order", "id"))
     ordered = sorted(items, key=lambda i: not i.warmup)
-    for order, item in enumerate(ordered):
-        if item.order != order:
-            type(item).objects.filter(pk=item.pk).update(order=order)
+    changed = [item for order, item in enumerate(ordered) if item.order != order]
+    for item in changed:
+        item.order = ordered.index(item)
+    if changed:
+        type(changed[0]).objects.bulk_update(changed, ["order"])
 
 
 def layout(items, get=lambda item: item):

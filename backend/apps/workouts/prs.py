@@ -66,9 +66,8 @@ def apply(log):
     created = []
     if log.finished and log.athlete.max_updates == MaxUpdates.AUTO:
         for c in session_candidates(log):
-            entry = _use(log.athlete, c.set_log, MeasurementSource.SESSION)
-            alerts.max_updated(entry)
-            created.append(entry)
+            created.append(_use(log.athlete, c.set_log, MeasurementSource.SESSION))
+    alerts.max_updates(log, created)
     alerts.sync_prs(log.athlete)  # PRs waiting for the coach, in their feed
     return created
 
@@ -87,31 +86,36 @@ def _use(athlete, set_log, source):
 
 
 def pending(athlete):
-    """For the coach to review: per exercise with a max, the best logged set that beats it."""
+    """For the coach to review: per exercise with a max, the best logged set that beats it.
+    The database picks the one best set per exercise (DISTINCT ON), so this reads a row per
+    lift rather than every qualifying set (audit M16)."""
+    from django.db.models import Q
+
     maxes = athlete.current_maxes()
     if not maxes:
         return []
+    beats = Q()
+    for exercise_id, current in maxes.items():
+        beats |= Q(
+            session_exercise__exercise_id=exercise_id,
+            load_kg__gt=current.kg,
+            session_exercise__session_log__date__gte=current.date,
+        )
     sets = (
         SetLog.objects.filter(
+            beats,
             done=True,
             max_dismissed=False,
             reps__gte=1,
-            load_kg__isnull=False,
             session_exercise__session_log__athlete=athlete,
             session_exercise__session_log__finished_at__isnull=False,
-            session_exercise__exercise_id__in=maxes.keys(),
         )
         .select_related("session_exercise__session_log", "session_exercise__exercise")
-        .order_by("-load_kg", "-reps")
+        .order_by("session_exercise__exercise_id", "-load_kg", "-reps")
+        .distinct("session_exercise__exercise_id")
     )
-    found = {}
-    for s in sets:
-        se = s.session_exercise
-        if se.exercise_id in found:
-            continue
-        if _beats(s, maxes[se.exercise_id], se.session_log.date):
-            found[se.exercise_id] = Candidate(s, maxes[se.exercise_id])
-    return sorted(found.values(), key=lambda c: c.exercise.name)
+    found = [Candidate(s, maxes[s.session_exercise.exercise_id]) for s in sets]
+    return sorted(found, key=lambda c: c.exercise.name)
 
 
 def pending_set(athlete, set_id):

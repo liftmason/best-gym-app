@@ -3,9 +3,11 @@
 Copying is the heart of it: weeks, sessions and slots are copied (never shared)
 between templates, the library and athletes' programs, so editing one never changes
 another. `copy_dose` moves every PrescriptionBase field, the per-set overrides and
-the tags between a Prescription and a TemplateSlot, in either direction.
+the tags between a Prescription and a TemplateSlot, in either direction; `copy_doses`
+does a batch in three queries (audit M15).
 """
 
+import uuid
 from decimal import Decimal
 
 from django.db import transaction
@@ -50,52 +52,83 @@ def bump(value, basis, points):
     return max(Decimal("1"), Decimal(value) + Decimal(points))
 
 
-def copy_dose(src, dst, points=None):
-    """Copy every dose field (and the per-set overrides) from `src` onto `dst` and save.
-    `points` bumps percentage loads. `dst` must have its parent and exercise set."""
-    for field in COPIED_FIELDS:
-        setattr(dst, field, getattr(src, field))
-    dst.load_value = bump(dst.load_value, dst.load_basis, points)
-    dst.pk = None
-    dst.save()
-    overrides = dst.set_overrides.model
-    parent = dst.set_overrides.field.name
+def copy_doses(pairs, points=None):
+    """Copy every dose field and the per-set overrides from each `src` onto its `dst`, and
+    save the lot: one query for the rows and one for their overrides. `pairs` is
+    [(src, dst)], every `dst` a new row of one model with its parent and exercise set.
+    `points` bumps percentage loads. Prefetch the sources' set_overrides."""
+    if not pairs:
+        return []
+    for src, dst in pairs:
+        for field in COPIED_FIELDS:
+            setattr(dst, field, getattr(src, field))
+        dst.load_value = bump(dst.load_value, dst.load_basis, points)
+        dst.pk, dst._state.adding = uuid.uuid7(), True  # always a new row
+    model = type(pairs[0][1])
+    model.objects.bulk_create([dst for _src, dst in pairs])
+    rel = model._meta.get_field("set_overrides")
+    overrides = rel.related_model
     overrides.objects.bulk_create(
         [
             overrides(
-                **{parent: dst},
+                **{rel.field.name: dst},
                 set_number=s.set_number,
                 rep_scheme=s.rep_scheme,
                 reps=s.reps,
                 load_value=bump(s.load_value, src.load_basis, points),
             )
+            for src, dst in pairs
             for s in src.set_overrides.all()
         ]
     )
-    return dst
+    return [dst for _src, dst in pairs]
+
+
+def copy_dose(src, dst, points=None):
+    """copy_doses for one row."""
+    return copy_doses([(src, dst)], points)[0]
+
+
+def add_tags(field, rows_tags):
+    """Tag new rows in one query: `field` is the tags field (TemplateSlot.tags or
+    Prescription.tag_slot_tags), `rows_tags` [(row, tags)]."""
+    through = field.remote_field.through
+    row_name, tag_name = field.m2m_field_name(), field.m2m_reverse_field_name()
+    through.objects.bulk_create(
+        [through(**{row_name: row, tag_name: tag}) for row, tags in rows_tags for tag in tags]
+    )
 
 
 def _src_tags(src):
     return list(src.tags.all()) if isinstance(src, TemplateSlot) else list(src.tag_slot_tags.all())
 
 
-def slot_from(src, session, order, points=None):
-    """A TemplateSlot copied from a slot or a program prescription (tag slots stay tag slots)."""
-    tags = _src_tags(src)
-    kind = SlotKind.TAG if tags else SlotKind.EXERCISE
-    slot = copy_dose(
-        src, TemplateSlot(session=session, order=order, kind=kind, exercise=src.exercise), points
-    )
-    slot.tags.set(tags)
-    return slot
+def _items(src):
+    """A template or program session's slots or prescriptions, with what copying reads."""
+    if isinstance(src, TemplateSession):
+        return src.slots.prefetch_related("tags", "set_overrides")
+    return src.prescriptions.prefetch_related("tag_slot_tags", "set_overrides")
 
 
-def copy_session(src, week, order, name=None, points=None):
-    """Copy a template session (or a program session) with all its exercises."""
+def slots_from(items, session, points=None):
+    """TemplateSlots copied from slots or program prescriptions (tag slots stay tag slots)."""
+    pairs, tagged = [], []
+    for i, src in enumerate(items):
+        tags = _src_tags(src)
+        kind = SlotKind.TAG if tags else SlotKind.EXERCISE
+        dst = TemplateSlot(session=session, order=i, kind=kind, exercise_id=src.exercise_id)
+        pairs.append((src, dst))
+        tagged.append((dst, tags))
+    slots = copy_doses(pairs, points)
+    add_tags(TemplateSlot._meta.get_field("tags"), tagged)
+    return slots
+
+
+def copy_session(src, week, order, name=None, points=None, items=None):
+    """Copy a template session (or a program session) with all its exercises. `items`: the
+    session's slots or prescriptions, when the caller has them prefetched."""
     session = TemplateSession.objects.create(week=week, order=order, name=src.name if name is None else name)
-    items = src.slots.all() if isinstance(src, TemplateSession) else src.prescriptions.all()
-    for i, item in enumerate(items):
-        slot_from(item, session, i, points)
+    slots_from(_items(src) if items is None else items, session, points)
     return session
 
 
@@ -103,14 +136,17 @@ def copy_week(src, template, order, points=None):
     week = TemplateWeek.objects.create(
         template=template, order=order, week_type=src.week_type, focus_note=src.focus_note
     )
-    for i, session in enumerate(src.sessions.all()):
-        copy_session(session, week, i, points=points)
+    for i, session in enumerate(src.sessions.prefetch_related("slots__tags", "slots__set_overrides")):
+        copy_session(session, week, i, points=points, items=session.slots.all())
     return week
 
 
 def _renumber(queryset):
-    for order, pk in enumerate(queryset.values_list("pk", flat=True)):
-        queryset.model.objects.filter(pk=pk).exclude(order=order).update(order=order)
+    items = list(queryset.only("pk", "order"))
+    changed = [item for order, item in enumerate(items) if item.order != order]
+    for item in changed:
+        item.order = items.index(item)
+    queryset.model.objects.bulk_update(changed, ["order"])
 
 
 # ---------------------------------------------------------------- templates

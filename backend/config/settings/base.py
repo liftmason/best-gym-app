@@ -5,6 +5,8 @@ from pathlib import Path
 
 import dj_database_url
 
+from . import checks
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "")
@@ -109,9 +111,6 @@ FORM_VIDEOS = {
     "keep_days": 90,  # deleted this long after upload
 }
 
-# The database cache holds rate-limit counts (apps/ratelimit.py), shared by every web worker.
-# Its table is created by a migration (dashboard 0002_cache_table).
-CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache", "LOCATION": "cache"}}
 
 # The site's address for links in emails sent outside a request (the coach digest).
 SITE_URL = os.environ.get("SITE_URL", os.environ.get("RENDER_EXTERNAL_URL", "http://localhost:8000")).rstrip(
@@ -130,20 +129,17 @@ LOG_CLIENT_IP = os.environ.get("LOG_CLIENT_IP") == "1"
 DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD", "demo-password-123")
 DEMO_STAFF = True
 
-# Email: invites and password resets. Set EMAIL_PROVIDER to "resend" or "postmark"
-# and EMAIL_API_KEY to send for real; otherwise email is printed to the console.
+# Email: invites, reminders and the digest. EMAIL_PROVIDER is "resend" or "postmark" (with
+# EMAIL_API_KEY) to send for real, or blank / "console" to print email instead. Anything
+# else stops the site from starting (config/settings/checks.py).
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Platform <no-reply@localhost>")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
-EMAIL_PROVIDER = os.environ.get("EMAIL_PROVIDER", "").lower()
-_email_key = os.environ.get("EMAIL_API_KEY", "")
-if EMAIL_PROVIDER == "resend" and _email_key:
-    EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
-    ANYMAIL = {"RESEND_API_KEY": _email_key}
-elif EMAIL_PROVIDER == "postmark" and _email_key:
-    EMAIL_BACKEND = "anymail.backends.postmark.EmailBackend"
-    ANYMAIL = {"POSTMARK_SERVER_TOKEN": _email_key}
-else:
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_PROVIDER = os.environ.get("EMAIL_PROVIDER", "").strip().lower()
+EMAIL_BACKEND, ANYMAIL = checks.email(EMAIL_PROVIDER, os.environ.get("EMAIL_API_KEY", ""))
+
+# Server errors are emailed to the admin account (when email is set up); Sentry reports
+# them too once SENTRY_DSN is set (production settings).
+ADMINS = [("Admin", os.environ["ADMIN_EMAIL"])] if os.environ.get("ADMIN_EMAIL") else []
 
 LOGGING = {
     "version": 1,

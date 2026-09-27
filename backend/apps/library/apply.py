@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from django.db import transaction
 from django.db.models import F
 
+from apps.core import models as core
 from apps.exercises.models import Exercise
 from apps.programs import services as program_services
 from apps.programs.models import Prescription, ProgramDay, ProgramSession, ProgramWeek
@@ -64,7 +65,11 @@ def default_days(template):
 def _recent_by_exercise(athlete):
     from apps.workouts.history import exercise_history
 
-    return {ex_id: entries[0].date for ex_id, entries in exercise_history(athlete, limit=1).items()}
+    # (date, session start): a later session on the same day counts as more recent.
+    return {
+        ex_id: (entries[0].date, entries[0].started_at)
+        for ex_id, entries in exercise_history(athlete, limit=1).items()
+    }
 
 
 def resolve(slot, athlete_recent, mode, tag_pool):
@@ -72,6 +77,8 @@ def resolve(slot, athlete_recent, mode, tag_pool):
     if not slot.is_tag or mode != RECENT:
         return slot.exercise
     tag_ids = {t.pk for t in slot.tags.all()}
+    if not tag_ids:
+        return slot.exercise  # no tags would match every exercise
     candidates = [e for e in tag_pool if tag_ids <= e.tag_ids and e.pk in athlete_recent]
     if not candidates:
         return slot.exercise
@@ -162,9 +169,16 @@ def placements(athlete):
     return options
 
 
-def placement_for(athlete, value):
+def placement_for(athlete, value, fallback=False):
+    """The placement `value` names. CannotApply if it isn't on offer any more (the week
+    started since the preview, say), unless `fallback`: then the first option."""
     options = placements(athlete)
-    return next((p for p in options if p.value == value), options[0])
+    placement = next((p for p in options if p.value == value), None)
+    if placement is None:
+        if not fallback:
+            raise CannotApply("That start isn't available any more. Pick where the weeks go again.")
+        placement = options[0]
+    return placement
 
 
 # ---------------------------------------------------------------- confirm
@@ -181,12 +195,17 @@ def _write_week(program, order, start_date, planned, publish):
     days = ProgramDay.objects.bulk_create(
         [ProgramDay(week=week, date=start_date + datetime.timedelta(days=i)) for i in range(7)]
     )
+    pairs, tagged = [], []
     for offset, session_plan in planned.days.items():
         session = ProgramSession.objects.create(day=days[offset], order=0, name=session_plan.source.name)
         for i, (slot, exercise) in enumerate(session_plan.exercises):
-            rx = services.copy_dose(slot, Prescription(session=session, order=i, exercise=exercise))
+            rx = Prescription(session=session, order=i, exercise=exercise)
+            pairs.append((slot, rx))
             if slot.is_tag:
-                rx.tag_slot_tags.set(slot.tags.all())
+                tagged.append((rx, slot.tags.all()))
+    # The week's exercises, their set overrides and tags in three queries (audit M15).
+    services.copy_doses(pairs)
+    services.add_tags(Prescription._meta.get_field("tag_slot_tags"), tagged)
     if publish:
         program_services.set_published(week, True)
     return week
@@ -196,6 +215,7 @@ def _write_week(program, order, start_date, planned, publish):
 def confirm(athlete, template, days, mode, placement_value, publish, by):
     """Write the planned weeks and prescribe the template's habits (skipping ones the
     athlete already has); returns (program, first new week, habits added)."""
+    core.lock(athlete)  # one program change at a time per athlete (audit M7)
     planned = plan(template, athlete, days, mode)
     if not planned:
         raise CannotApply(
@@ -318,7 +338,7 @@ def preview(template, athlete, draft):
     """What the board shows while previewing: the planned weeks as ghosts (label, start
     date), the one being shown, the placement, and the summary counts."""
     planned = plan(template, athlete, draft["days"], draft["mode"])
-    placement = placement_for(athlete, draft["start"])
+    placement = placement_for(athlete, draft["start"], fallback=True)  # shown, so it's honest
     first_order = placement.start_order if placement.program else 0
     ghosts = [
         {

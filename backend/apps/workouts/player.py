@@ -61,8 +61,7 @@ def set_rows(se, p, unit):
             seconds = p.duration_seconds if p else None
             if p:
                 load_value = o.load_value if o and o.load_value is not None else p.load_value
-                kg = sessions.target_kg(p, load_value)
-                load = sessions.plate_round(kg, unit) if kg else ""
+                load = sessions.suggested_load(p, load_value, unit) or ""
                 reps = (o.reps if o and o.reps is not None else p.reps) or ""
         if seconds is None:
             time = ""

@@ -6,46 +6,14 @@ import zoneinfo
 import pytest
 from django.core import mail
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.utils import timezone
 
 from apps.dashboard import alerts, digest
-from apps.exercises.models import Exercise
-from apps.programs import services as program_services
-from apps.programs.models import WeekType
-from apps.workouts import sessions, videos
-from apps.workouts.models import FormVideo
+
+from ..factories import CoachFactory
 
 pytestmark = pytest.mark.django_db
-MB = 1024 * 1024
-
-
-@pytest.fixture
-def log(athlete, coach):
-    week_type = WeekType.objects.get(gym=coach.gym, name="Accumulation")
-    program = program_services.start_program(athlete, "Block", athlete.today(), 1, week_type, by=coach.user)
-    day = program.weeks.get().days.get(date=athlete.today())
-    program_services.add_prescription(day, Exercise.objects.get(gym=coach.gym, key="sn"), athlete)
-    return sessions.start(athlete, day.sessions.get())
-
-
-@pytest.fixture
-def stored(monkeypatch):
-    """Pretend the bucket holds whatever was signed for (no network in unit tests)."""
-    deleted = []
-    monkeypatch.setattr(videos, "stored_size", lambda key: FormVideo.objects.get(key=key).size)
-    monkeypatch.setattr(videos, "delete", lambda key: deleted.append(key))
-    monkeypatch.setattr(videos, "view_url", lambda key: f"https://bucket.example/{key}?signed")
-    return deleted
-
-
-def upload(client, log, size=5 * MB, content_type="video/mp4"):
-    se = log.exercises.get()
-    return client.post(
-        f"/app/log/{log.pk}/videos/start/", {"se": se.pk, "size": size, "content_type": content_type}
-    )
-
-
-# ---------------------------------------------------------------- form videos
 
 
 # ---------------------------------------------------------------- the digest
@@ -82,12 +50,63 @@ def test_cron_command_runs_everything(coach, athlete, capsys):
     assert "synced alerts" in out and "digest(s) sent" in out
 
 
-# ---------------------------------------------------------------- units, the app, errors
-
-
-# ---------------------------------------------------------------- rate limits
-
-
 def test_nightly_command_runs(capsys):
     call_command("nightly")
     assert "synced alerts" in capsys.readouterr().out
+
+
+def _two_new_items(coach, athlete):
+    from apps.dashboard.models import Notification
+
+    alerts.sync_athlete(athlete)
+    Notification.objects.update(created_at=_at_gym_hour(coach, 7) - datetime.timedelta(hours=10))
+
+
+def test_a_missed_seven_oclock_run_sends_later_that_day(coach, athlete):
+    # H10: only the 7am run counted, so a missed run lost the day's digest.
+    _two_new_items(coach, athlete)
+    assert digest.send(coach, _at_gym_hour(coach, 10)) == 2
+
+
+def test_a_failed_send_is_tried_again_next_hour(coach, athlete, monkeypatch):
+    # H10: the send time was saved before sending, so a failure dropped those items.
+    _two_new_items(coach, athlete)
+
+    def broken(*args, **kwargs):
+        raise ConnectionError("email provider down")
+
+    monkeypatch.setattr(digest, "send_mail", broken)
+    with pytest.raises(ConnectionError):
+        digest.send(coach, _at_gym_hour(coach, 7))
+    coach.refresh_from_db()
+    assert coach.last_digest_at is None
+    monkeypatch.undo()
+    assert digest.send(coach, _at_gym_hour(coach, 8)) == 2
+
+
+def test_one_coach_failing_does_not_stop_the_others(coach, athlete, gym, monkeypatch):
+    other = CoachFactory(gym=gym)
+    sent = []
+
+    def send(c, now=None):
+        if c == coach:
+            raise ConnectionError("boom")
+        sent.append(c)
+        return 1
+
+    monkeypatch.setattr(digest, "send", send)
+    with pytest.raises(CommandError):  # the job reports failure, after doing the rest
+        call_command("cron")
+    assert sent == [other]
+
+
+def test_backup_check_reports_counts_and_the_newest_finished_session(athlete, capsys):
+    from apps.workouts.models import SessionLog
+
+    finished = timezone.now() - datetime.timedelta(hours=2)
+    SessionLog.objects.create(athlete=athlete, date=athlete.today(), finished_at=finished)
+    SessionLog.objects.create(athlete=athlete, date=athlete.today())  # still open
+    call_command("backup_check")
+    out = capsys.readouterr().out
+    assert "workouts.SessionLog" in out and " 2\n" in out
+    assert f"newest finished session: {finished}" in out

@@ -12,6 +12,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.accounts import units
+from apps.core import models as core
 from apps.programs.models import LoadBasis
 from apps.programs.prescriptions import layout
 
@@ -49,6 +50,15 @@ class NotYetUnlocked(Exception):
 def _open(log):
     if not log.editable():
         raise SessionClosed()
+
+
+def _locked(log):
+    """Lock the log's row and re-read it, so a double submit or a retried request waits for
+    the first and then sees what it wrote (audit H13). Checks it's still editable."""
+    core.lock(log)
+    log.refresh_from_db()
+    _open(log)
+    return log
 
 
 def _dec(value):
@@ -130,12 +140,28 @@ def prescribed(se):
     )
 
 
-def plate_round(kg, unit):
-    """A kg value shown in `unit`, rounded to the nearest plate step (display only)."""
-    step = PLATE_STEP[unit]
-    value = (units.from_kg(kg, unit) / step).quantize(Decimal("1"), rounding=ROUND_HALF_UP) * step
+def _tidy(value):
     # normalize() alone would write 80 as "8E+1".
     return value.quantize(Decimal("1")) if value == value.to_integral_value() else value.normalize()
+
+
+def plate_round(kg, unit):
+    """A kg value shown in `unit`, rounded to the nearest plate step (display only). Converted
+    exactly first, so it rounds once: 63.747 kg is 63.5, not 63.75 then 64."""
+    step = PLATE_STEP[unit]
+    value = Decimal(kg) if unit == "kg" else Decimal(kg) / units.KG_PER_LB
+    return _tidy((value / step).quantize(Decimal("1"), rounding=ROUND_HALF_UP) * step)
+
+
+def suggested_load(p, load_value, unit):
+    """The load to show for a set, in `unit`: a percentage of the max rounded to the nearest
+    plate, or a fixed weight exactly as prescribed. None when there's no load to suggest."""
+    kg = target_kg(p, load_value)
+    if not kg:
+        return None
+    if p.load_basis == LoadBasis.PERCENT:
+        return plate_round(kg, unit)
+    return _tidy(units.from_kg(kg, unit))
 
 
 def target_kg(p, load_value):
@@ -316,7 +342,9 @@ def log_set(se, number, *, load=None, reps=None, time=None, time_unit="s", rir=N
     )
 
 
+@transaction.atomic
 def save_set(se, set_number, *, load_kg, reps, duration_seconds, rir, done):
+    log = _locked(se.session_log)
     row, _ = SetLog.objects.update_or_create(
         session_exercise=se,
         set_number=set_number,
@@ -328,7 +356,6 @@ def save_set(se, set_number, *, load_kg, reps, duration_seconds, rir, done):
             "done": done,
         },
     )
-    log = se.session_log
     if log.finished:
         prs.apply(log)  # an edit within the 24 hours can change what the session set
     return row
@@ -338,7 +365,7 @@ def save_set(se, set_number, *, load_kg, reps, duration_seconds, rir, done):
 def finish(log, rpe, comment=""):
     """Finish (or, within 24 hours, change) a session: RPE 1-10 and an optional comment.
     Session PRs are worked out again from the logged sets."""
-    _open(log)
+    _locked(log)
     try:
         rpe = int(rpe)
     except TypeError, ValueError:

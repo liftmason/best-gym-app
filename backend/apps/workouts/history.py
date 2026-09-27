@@ -10,6 +10,7 @@
 """
 
 import datetime
+import uuid
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
 
@@ -29,10 +30,11 @@ class Entry:
     """One exercise in one finished session, as the history strip and PRs read it."""
 
     date: datetime.date
-    log_id: int
-    session_exercise_id: int
-    exercise_id: int | None
+    log_id: uuid.UUID
+    session_exercise_id: uuid.UUID
+    exercise_id: uuid.UUID | None
     name: str
+    started_at: datetime.datetime | None = None  # the session's; orders same-day entries
     sets: list = field(default_factory=list)  # done SetLogs, in order
 
     @property
@@ -118,7 +120,12 @@ def _entries(athlete, exercise_ids=None, exclude_log=None):
         entry = entries.get(se.pk)
         if entry is None:
             entry = entries[se.pk] = Entry(
-                se.session_log.date, se.session_log_id, se.pk, se.exercise_id, se.exercise_name
+                se.session_log.date,
+                se.session_log_id,
+                se.pk,
+                se.exercise_id,
+                se.exercise_name,
+                se.session_log.started_at,
             )
         entry.sets.append(s)
     return list(entries.values())  # dicts keep insertion order: newest first
@@ -237,33 +244,31 @@ def finished_session_ids(athlete):
     )
 
 
-def scheduled_days(athlete, until):
+def scheduled_days(athlete, until, since=None):
     """(date, done) for every day with a session in a published week of the athlete's
-    active program, up to and including `until`, newest first."""
+    active program, from `since` (if given) up to and including `until`, newest first."""
     from apps.programs.models import ProgramDay
 
-    days = (
-        ProgramDay.objects.filter(
-            week__program__athlete=athlete,
-            week__program__active=True,
-            week__published=True,
-            date__lte=until,
-            sessions__isnull=False,
-        )
-        .distinct()
-        .prefetch_related("sessions")
-        .order_by("-date")
+    days = ProgramDay.objects.filter(
+        week__program__athlete=athlete,
+        week__program__active=True,
+        week__published=True,
+        date__lte=until,
+        sessions__isnull=False,
     )
+    if since is not None:
+        days = days.filter(date__gte=since)
+    days = days.distinct().prefetch_related("sessions").order_by("-date")
     done_ids = finished_session_ids(athlete)
     return [(d.date, any(s.pk in done_ids for s in d.sessions.all())) for d in days]
 
 
-def compliance(athlete, today, days=7, end=None):
-    """(done, scheduled) over the `days` calendar days ending `end` (default today).
-    Today counts only once it's done, so it isn't a miss before the day is over."""
+def compliance(athlete, today, days=7, end=None, start=None):
+    """(done, scheduled) from `start` to `end` (default: the `days` calendar days ending
+    today). Today counts only once it's done, so it isn't a miss before the day is over."""
     end = end or today
-    start = end - datetime.timedelta(days=days - 1)
-    rows = [(d, done) for d, done in scheduled_days(athlete, end) if d >= start and (d < today or done)]
+    start = start or end - datetime.timedelta(days=days - 1)
+    rows = [(d, done) for d, done in scheduled_days(athlete, end, since=start) if d < today or done]
     return sum(1 for _d, done in rows if done), len(rows)
 
 
