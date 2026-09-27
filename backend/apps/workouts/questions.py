@@ -93,12 +93,12 @@ def archive(question):
 @transaction.atomic
 def move(owner, question_id, direction):
     """Swap a question with its neighbour ("up" or "down"); renumbers the list."""
-    if direction not in ("up", "down"):
-        raise InvalidQuestion("Move a question up or down.")
     questions = list(active(owner).select_for_update())
     ids = [q.pk for q in questions]
-    if question_id not in ids:
+    if question_id not in ids:  # whose it is before anything else: not found, not "invalid"
         raise CheckinQuestion.DoesNotExist()
+    if direction not in ("up", "down"):
+        raise InvalidQuestion("Move a question up or down.")
     i = ids.index(question_id)
     j = i - 1 if direction == "up" else i + 1
     if 0 <= j < len(questions):

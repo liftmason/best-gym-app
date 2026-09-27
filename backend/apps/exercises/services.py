@@ -86,11 +86,11 @@ def move_in_order(rows, pk, direction):
     """Swap one row of an ordered list with its neighbour and renumber, in one update.
     NotFound if the row isn't in the list (someone else's); Invalid for a direction other
     than up or down."""
+    keys = [r.pk for r in rows]
+    if pk not in keys:  # whose it is before anything else: not found, not "invalid"
+        raise errors.NotFound()
     if direction not in ("up", "down"):
         raise errors.Invalid(f"Move up or down, not {direction!r}.")
-    keys = [r.pk for r in rows]
-    if pk not in keys:
-        raise errors.NotFound()
     i = keys.index(pk)
     j = i - 1 if direction == "up" else i + 1
     if 0 <= j < len(rows):

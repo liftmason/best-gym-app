@@ -43,7 +43,7 @@ PARAMS = {
     "issue_id": ("athlete", lambda w: w["issue"].pk),
     "habit_id": ("athlete", lambda w: w["habit"].pk),
     "question_id": ("athlete", lambda w: w["question"].pk),
-    "index": ("athlete", lambda w: 0),  # an option of a question
+    "index": ("gym", lambda w: 0),  # an option's position: the route's other id decides whose
     "week_id": ("athlete", lambda w: w["week"].pk),
     "day_id": ("athlete", lambda w: w["week"].days.first().pk),
     "session_id": ("athlete", lambda w: w["rx"].session_id),
@@ -56,6 +56,9 @@ PARAMS = {
     "template_session_id": ("gym", lambda w: w["template"].weeks.first().sessions.first().pk),
     "slot_id": ("gym", lambda w: w["slot"].pk),
     "template_habit_id": ("gym", lambda w: w["template_habit"].pk),
+    "week_type_id": ("gym", lambda w: w["gym"].week_types.first().pk),
+    "tracked_id": ("gym", lambda w: w["gym"].tracked_lifts.first().pk),
+    "default_question_id": ("gym", lambda w: w["default_question"].pk),
 }
 
 # Endpoints whose path parameter is itself the credential, so anyone holding it may use it.
@@ -191,6 +194,7 @@ def world(gym):
         "template": template,
         "slot": library.add_slot(template.weeks.first().sessions.first(), snatch),
         "template_habit": library.add_habit(template, "Sleep", "😴", "daily"),
+        "default_question": questions.add(gym, "choice"),
         "rx": program_services.add_prescription(program.weeks.first().days.first(), snatch, athlete),
     }
 

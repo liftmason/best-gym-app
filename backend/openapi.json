@@ -2399,6 +2399,30 @@
         "title": "NewWeek",
         "type": "object"
       },
+      "NewWeekType": {
+        "properties": {
+          "colour": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Colour"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "NewWeekType",
+        "type": "object"
+      },
       "Note": {
         "properties": {
           "note": {
@@ -2793,6 +2817,19 @@
         "title": "ProgramOut",
         "type": "object"
       },
+      "Pushed": {
+        "properties": {
+          "athletes": {
+            "title": "Athletes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "athletes"
+        ],
+        "title": "Pushed",
+        "type": "object"
+      },
       "QuestionOut": {
         "properties": {
           "detail_label": {
@@ -3011,6 +3048,24 @@
           "missing"
         ],
         "title": "Reminded",
+        "type": "object"
+      },
+      "Removed": {
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "uses": {
+            "title": "Uses",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "archived",
+          "uses"
+        ],
+        "title": "Removed",
         "type": "object"
       },
       "Review": {
@@ -3336,6 +3391,44 @@
           }
         },
         "title": "SetRow",
+        "type": "object"
+      },
+      "SettingsOut": {
+        "properties": {
+          "coach_title": {
+            "title": "Coach Title",
+            "type": "string"
+          },
+          "digest": {
+            "title": "Digest",
+            "type": "boolean"
+          },
+          "gym_name": {
+            "title": "Gym Name",
+            "type": "string"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          },
+          "units": {
+            "title": "Units",
+            "type": "string"
+          },
+          "week_start": {
+            "title": "Week Start",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "gym_name",
+          "timezone",
+          "units",
+          "week_start",
+          "coach_title",
+          "digest"
+        ],
+        "title": "SettingsOut",
         "type": "object"
       },
       "Slot": {
@@ -3797,6 +3890,38 @@
         "title": "TopPr",
         "type": "object"
       },
+      "Track": {
+        "properties": {
+          "exercise_id": {
+            "format": "uuid",
+            "title": "Exercise Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "exercise_id"
+        ],
+        "title": "Track",
+        "type": "object"
+      },
+      "TrackedOut": {
+        "properties": {
+          "exercise": {
+            "$ref": "#/components/schemas/Lift"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "exercise"
+        ],
+        "title": "TrackedOut",
+        "type": "object"
+      },
       "Undone": {
         "properties": {
           "undone": {
@@ -4181,6 +4306,68 @@
           "published"
         ],
         "title": "WeekSummary",
+        "type": "object"
+      },
+      "WeekTypeIn": {
+        "properties": {
+          "colour": {
+            "title": "Colour",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "colour"
+        ],
+        "title": "WeekTypeIn",
+        "type": "object"
+      },
+      "WeekTypeOut": {
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "colour": {
+            "title": "Colour",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "uses": {
+            "title": "Uses",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "colour",
+          "description",
+          "archived",
+          "uses"
+        ],
+        "title": "WeekTypeOut",
         "type": "object"
       },
       "WeekTypeRef": {
@@ -7331,6 +7518,299 @@
         ]
       }
     },
+    "/api/v1/default-questions": {
+      "get": {
+        "description": "The check-in questions new athletes get (each athlete has their own copy).",
+        "operationId": "apps_accounts_settings_api_default_questions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/QuestionOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Default Questions",
+        "tags": [
+          "Settings"
+        ]
+      },
+      "post": {
+        "operationId": "apps_accounts_settings_api_add_default_question",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewQuestion"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionOut"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Add Default Question",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/default-questions/{default_question_id}": {
+      "patch": {
+        "operationId": "apps_accounts_settings_api_reword_default_question",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "default_question_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Default Question Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Wording"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Reword Default Question",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/default-questions/{default_question_id}/archive": {
+      "post": {
+        "operationId": "apps_accounts_settings_api_archive_default_question",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "default_question_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Default Question Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Archive Default Question",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/default-questions/{default_question_id}/move": {
+      "post": {
+        "operationId": "apps_accounts_settings_api_move_default_question",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "default_question_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Default Question Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Direction"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/QuestionOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Move Default Question",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/default-questions/{default_question_id}/options": {
+      "post": {
+        "operationId": "apps_accounts_settings_api_add_default_option",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "default_question_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Default Question Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OptionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Add Default Option",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/default-questions/{default_question_id}/options/{index}": {
+      "delete": {
+        "operationId": "apps_accounts_settings_api_remove_default_option",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "default_question_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Default Question Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "index",
+            "required": true,
+            "schema": {
+              "title": "Index",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Remove Default Option",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
     "/api/v1/exercises": {
       "get": {
         "description": "The library, by category then name: search by name, tag, cue or category, and filter\nby every tag given. `archived` lists the archived ones instead.",
@@ -8108,6 +8588,34 @@
         ]
       }
     },
+    "/api/v1/push-default-questions": {
+      "post": {
+        "description": "Give every one of the coach's athletes fresh copies of the defaults (their old ones\nare archived, so past answers keep their questions).",
+        "operationId": "apps_accounts_settings_api_push_defaults",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pushed"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Push Defaults",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
     "/api/v1/roster": {
       "get": {
         "description": "The coach's athletes, sorted (attention, name, compliance, competition) and filtered\nby name or email.",
@@ -8158,6 +8666,68 @@
         "summary": "Roster",
         "tags": [
           "Dashboard"
+        ]
+      }
+    },
+    "/api/v1/settings": {
+      "get": {
+        "operationId": "apps_accounts_settings_api_settings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Settings",
+        "tags": [
+          "Settings"
+        ]
+      },
+      "put": {
+        "operationId": "apps_accounts_settings_api_update_settings",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsOut"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Update Settings",
+        "tags": [
+          "Settings"
         ]
       }
     },
@@ -9437,6 +10007,459 @@
         "summary": "Add Session",
         "tags": [
           "Templates"
+        ]
+      }
+    },
+    "/api/v1/trackable-lifts": {
+      "get": {
+        "description": "Lifts that could be added: active, measured in reps, not tracked yet.",
+        "operationId": "apps_accounts_settings_api_trackable_lifts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Lift"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Trackable Lifts",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/tracked-lifts": {
+      "get": {
+        "description": "The lifts the gym records maxes for, in order (up to six).",
+        "operationId": "apps_accounts_settings_api_tracked_lifts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TrackedOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Tracked Lifts",
+        "tags": [
+          "Settings"
+        ]
+      },
+      "post": {
+        "operationId": "apps_accounts_settings_api_track",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Track"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TrackedOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Track",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/tracked-lifts/{tracked_id}": {
+      "delete": {
+        "operationId": "apps_accounts_settings_api_untrack",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tracked_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tracked Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TrackedOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Untrack",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/tracked-lifts/{tracked_id}/move": {
+      "post": {
+        "operationId": "apps_accounts_settings_api_move_tracked",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tracked_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tracked Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Direction"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TrackedOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Move Tracked",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/week-types": {
+      "get": {
+        "description": "The gym's week types, active ones first in order, archived ones after.",
+        "operationId": "apps_accounts_settings_api_list_week_types",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WeekTypeOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "List Week Types",
+        "tags": [
+          "Settings"
+        ]
+      },
+      "post": {
+        "operationId": "apps_accounts_settings_api_add_week_type",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewWeekType"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WeekTypeOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Add Week Type",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/week-types/{week_type_id}": {
+      "put": {
+        "operationId": "apps_accounts_settings_api_update_week_type",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "week_type_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Week Type Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeekTypeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WeekTypeOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Update Week Type",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/week-types/{week_type_id}/move": {
+      "post": {
+        "operationId": "apps_accounts_settings_api_move_week_type",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "week_type_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Week Type Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Direction"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WeekTypeOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Move Week Type",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/week-types/{week_type_id}/remove": {
+      "post": {
+        "description": "Delete it, or archive it if weeks or templates use it (they keep it).",
+        "operationId": "apps_accounts_settings_api_remove_week_type",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "week_type_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Week Type Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Removed"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Remove Week Type",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/week-types/{week_type_id}/restore": {
+      "post": {
+        "operationId": "apps_accounts_settings_api_restore_week_type",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "week_type_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Week Type Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WeekTypeOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Restore Week Type",
+        "tags": [
+          "Settings"
         ]
       }
     }
