@@ -81,6 +81,14 @@ All four accepted as recommended (26 September 2026).
 
 ## 3. Steps
 
+**S2a is done (27 September 2026).** As built:
+- Joining through an invite is `/join/{token}` (preview, accept, signup), which leaves `/invites/…` to the coach's own invites.
+- A program's planned sessions are `/planned-sessions/{id}`, apart from the logged `/sessions`; template parts have their own path parameters (`template_week_id`, …).
+- History visibility applies to what a coach reads: sessions, check-ins, charts, PRs and metric history start at the link when the athlete hides earlier history. Current maxes and bodyweight stay visible, since programming needs them.
+- The permission sweep runs over every route. Two guards keep routes from shadowing each other: a literal word beside a sibling `{parameter}`, and one path split across two routers.
+- Weight class and competition stay read-only: the old site never edited them, so there was no rule to expose. Adding that is a product question.
+
+
 **S2a (one PR).**
 1. API skeleton: Ninja, the error convention, authentication, pagination, the OpenAPI check, and the sweep's framework with its first endpoints.
 2. Sign-in: the models, email codes, tokens and rotation, devices, web cookies, fixed codes and their production guard, coach sign-up, joining.

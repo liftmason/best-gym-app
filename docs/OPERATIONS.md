@@ -177,18 +177,18 @@ athletes' data goes in.
 ## Rate limits
 
 Counts live in the `ratelimit_counter` table, one row per key, shared by all workers; the
-hourly cron deletes expired rows. Only the admin's sign-in is limited until the API
-(sub-project 2) re-applies the rest (`docs/plans/S0_TEST_TRIAGE.md`). Over a limit a request
-gets "Slow down" (429).
+hourly cron deletes expired rows. Over a limit the API answers 429 with the usual error
+shape.
 
 | What | Limit |
 | --- | --- |
-| Sign-in (the site's and the admin's) | 10 tries per 15 minutes per address and email; 50 per address; 30 per email from any address |
-| Password reset | 5 per hour per address |
+| Sign-in codes | 5 per 15 minutes per email; 30 per address |
+| The admin's password sign-in | 10 tries per 15 minutes per address and email; 50 per address; 30 per email from any address |
 | Coach sign-up, joining by invite | 10 per hour per address |
 | Invites | 30 per hour per coach |
 | Messages | 30 per minute per person |
 | Form-video uploads | 20 per hour per athlete |
+| Bug reports | 20 per hour per person |
 | Metrics reminder emails | 1 per day per athlete |
 
 ## Installing the athlete app
