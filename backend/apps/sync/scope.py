@@ -94,12 +94,14 @@ def _value(value):
     return value
 
 
+def fields(label):
+    """The columns a phone gets for `label`: every concrete field but the hidden ones. The
+    phone's tables are generated from the same list (schema.py)."""
+    hidden = HIDDEN.get(label, set())
+    return [f for f in model(label)._meta.concrete_fields if f.name not in hidden and f.attname not in hidden]
+
+
 def serialize(label, obj):
     """A row as the phone stores it: every column (foreign keys as `<name>_id`), ids and
     decimals as strings, dates and times in ISO 8601."""
-    hidden = HIDDEN.get(label, set())
-    return {
-        f.attname: _value(getattr(obj, f.attname))
-        for f in obj._meta.concrete_fields
-        if f.name not in hidden and f.attname not in hidden
-    }
+    return {f.attname: _value(getattr(obj, f.attname)) for f in fields(label)}

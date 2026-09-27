@@ -74,6 +74,8 @@ jobs:
         run: npm ci
       - name: The API types match backend/openapi.json
         run: npm run api:types && git diff --exit-code src/api/schema.d.ts
+      - name: The local database matches shared/sync-schema.json
+        run: npm run db:schema && git diff --exit-code src/db/schema.generated.ts
       - name: Type-check
         run: npm run typecheck
       - name: Lint
