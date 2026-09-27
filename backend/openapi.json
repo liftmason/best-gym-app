@@ -3123,6 +3123,52 @@
         "title": "ProgramOut",
         "type": "object"
       },
+      "PullOut": {
+        "properties": {
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/Row"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "cursor": {
+            "title": "Cursor",
+            "type": "string"
+          },
+          "library": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Row"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Library"
+          },
+          "library_reset": {
+            "title": "Library Reset",
+            "type": "boolean"
+          },
+          "more": {
+            "title": "More",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "changes",
+          "cursor",
+          "more",
+          "library_reset",
+          "library"
+        ],
+        "title": "PullOut",
+        "type": "object"
+      },
       "Pushed": {
         "properties": {
           "athletes": {
@@ -3496,6 +3542,42 @@
           "missing_metrics"
         ],
         "title": "RosterRow",
+        "type": "object"
+      },
+      "Row": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "op": {
+            "title": "Op",
+            "type": "string"
+          },
+          "row": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Row"
+          },
+          "table": {
+            "title": "Table",
+            "type": "string"
+          }
+        },
+        "required": [
+          "table",
+          "id",
+          "op",
+          "row"
+        ],
+        "title": "Row",
         "type": "object"
       },
       "SaveIn": {
@@ -9674,6 +9756,44 @@
         "summary": "Update Settings",
         "tags": [
           "Settings"
+        ]
+      }
+    },
+    "/api/v1/sync/pull": {
+      "get": {
+        "description": "What changed since `cursor` (from bootstrap or the last pull), a page at a time.",
+        "operationId": "apps_sync_api_pull",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": true,
+            "schema": {
+              "title": "Cursor",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PullOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Pull",
+        "tags": [
+          "Sync"
         ]
       }
     },
