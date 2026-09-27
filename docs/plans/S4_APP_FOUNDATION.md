@@ -74,6 +74,11 @@ Package manager: npm (it comes with Node; nothing to add).
 
 ## 3. Steps
 
+**As built:**
+- **Routes:** these live in `app/src/app/` (Expo's current template), not `app/app/`. The other folders sit beside them in `src/`.
+- **Shared rules:** they use `big.js`, so decimals round exactly as Python's `Decimal` does.
+
+
 **S4a**
 1. The project, tooling and the CI job.
 2. The theme and component kit, and the kit screen.
