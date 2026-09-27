@@ -27,7 +27,7 @@ import type { Change, Outgoing, Transport } from './transport';
 
 export const PUSH_BATCH = 200; // backend apps/sync/push.py MAX_BATCH
 
-export type Who = { athleteId: string; userId: string; timezone: string; maxUpdates: string };
+export type Who = { athleteId: string; userId: string; timezone: string; maxUpdates: string; units?: 'kg' | 'lb' };
 
 export type SyncStatus = {
   running: boolean;
@@ -80,8 +80,8 @@ export function makeSyncEngine({ database, transport, who, now = () => new Date(
   }
 
   function context(id: string, at: string): ActionContext {
-    const { athleteId, userId, timezone, maxUpdates } = who();
-    return { id, at, athleteId, userId, day: localDate(at, timezone), maxUpdates };
+    const { athleteId, userId, timezone, maxUpdates, units = 'kg' } = who();
+    return { id, at, athleteId, userId, day: localDate(at, timezone), maxUpdates, units };
   }
 
   /** Applies every waiting action's effect again, in order. One that no longer fits is skipped here; the server decides. */

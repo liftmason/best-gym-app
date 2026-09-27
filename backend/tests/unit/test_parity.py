@@ -22,6 +22,7 @@ from decimal import Decimal
 import pytest
 from django.utils import timezone
 
+from apps.accounts import metrics
 from apps.accounts.models import BodyweightEntry, MaxEntry, MeasurementSource
 from apps.programs import dose as doses
 from apps.programs import habits
@@ -216,6 +217,8 @@ def build(athlete, coach, gym):
         HabitLog.objects.create(habit=habit_weekly, date=d)
     # Last, so the ids above stay as shared/offline-session.json knows them.
     program_services.set_week_type(w2, WeekType.objects.get(gym=gym, name="Intensification"), by=by)
+    athlete.height_cm, athlete.years_training = Decimal("168.5"), "3-5"
+    athlete.save(update_fields=["height_cm", "years_training"])
     for days_ago, kg in ((30, "64.20"), (5, "63.80")):
         BodyweightEntry.objects.create(
             athlete=athlete, date=today - days_ago * DAY, kg=Decimal(kg), source=MeasurementSource.ATHLETE
@@ -364,6 +367,25 @@ def charts_json(athlete, unit, since):
     return out
 
 
+def metrics_json(athlete):
+    """The Profile's training metrics: each one, and its current value."""
+    specs = metrics.metric_specs(athlete.gym)
+    current = metrics.current_metrics(athlete, specs)
+    return [
+        {
+            "key": m.key,
+            "label": m.label,
+            "kind": m.kind,
+            "value": dec(current[m.key]["value"])
+            if isinstance(current[m.key]["value"], Decimal)
+            else current[m.key]["value"],
+            "date": iso(current[m.key]["date"]),
+            "source": current[m.key]["source"],
+        }
+        for m in specs
+    ]
+
+
 def habits_json(athlete, date):
     return [
         {
@@ -401,6 +423,7 @@ def parity(athlete, coach, gym):
             "charts": charts_json(athlete, unit, since),
         }
     athlete.units = "kg"
+    expect["metrics"] = metrics_json(athlete)
     expect["habits"] = {iso(MONDAY + i * DAY): habits_json(athlete, MONDAY + i * DAY) for i in range(11)}
     return {
         "about": (
@@ -417,6 +440,8 @@ def parity(athlete, coach, gym):
             "timezone": athlete.user.timezone,
             "week_start": athlete.gym.week_start,
             "max_updates": athlete.max_updates,
+            "height_cm": dec(athlete.height_cm),
+            "years_training": athlete.years_training,
         },
         "snapshot": {
             "tables": {k: v for k, v in sorted(snapshot["tables"].items())},

@@ -61,6 +61,8 @@ class AthleteProfileOut(Schema):
     hide_history_before_link: bool
     week_start: int  # 0 Monday … 6 Sunday: the gym's training week (weekly habit targets)
     max_updates: str  # auto: a session's PR becomes the max; coach: the coach decides
+    height_cm: str | None  # the athlete's own metrics that aren't dated rows (metrics.py)
+    years_training: str | None  # <1, 1-3, 3-5, 5+
 
 
 class MeOut(Schema):
@@ -111,6 +113,8 @@ def me(request):
             "hide_history_before_link": athlete.hide_history_before_link,
             "week_start": athlete.gym.week_start if athlete.gym else 0,
             "max_updates": athlete.max_updates,
+            "height_cm": format(athlete.height_cm, "f") if athlete.height_cm is not None else None,
+            "years_training": athlete.years_training or None,
         }
         if athlete
         else None,

@@ -1,12 +1,14 @@
 {
  "about": "What the athlete's screens show, by the server's rules, from the rows a phone holds. Written by backend/tests/unit/test_parity.py (UPDATE_PARITY=1); checked by app/src/domain/parity.test.ts.",
  "athlete": {
+  "height_cm": "168.5",
   "id": "00000000-0000-7000-8000-000000000128",
   "max_updates": "approve",
   "timezone": "America/New_York",
   "units": "kg",
   "user_id": "00000000-0000-7000-8000-000000000127",
-  "week_start": 0
+  "week_start": 0,
+  "years_training": "3-5"
  },
  "expect": {
   "habits": {
@@ -5438,7 +5440,57 @@
      "wanted_day": "2026-10-05"
     }
    ]
-  }
+  },
+  "metrics": [
+   {
+    "date": "2026-09-19",
+    "key": "bodyweight",
+    "kind": "weight",
+    "label": "Bodyweight",
+    "source": "Athlete",
+    "value": "63.80"
+   },
+   {
+    "date": null,
+    "key": "height_cm",
+    "kind": "height",
+    "label": "Height",
+    "source": null,
+    "value": "168.5"
+   },
+   {
+    "date": "2026-07-26",
+    "key": "lift_00000000-0000-7000-8000-000000000029",
+    "kind": "weight",
+    "label": "Snatch 1RM",
+    "source": "Coach",
+    "value": "82.00"
+   },
+   {
+    "date": "2026-07-26",
+    "key": "lift_00000000-0000-7000-8000-000000000049",
+    "kind": "weight",
+    "label": "Clean & Jerk 1RM",
+    "source": "Coach",
+    "value": "104.00"
+   },
+   {
+    "date": "2026-07-26",
+    "key": "lift_00000000-0000-7000-8000-000000000064",
+    "kind": "weight",
+    "label": "Back Squat 1RM",
+    "source": "Coach",
+    "value": "135.00"
+   },
+   {
+    "date": null,
+    "key": "years_training",
+    "kind": "years",
+    "label": "Years training",
+    "source": null,
+    "value": "3\u20135"
+   }
+  ]
  },
  "now": "2026-09-24T16:00:00+00:00",
  "snapshot": {

@@ -7,6 +7,7 @@ import parity from '../../../shared/parity.json';
 
 import { chartLifts, e1rmPoints, phaseBands, progressChange } from './charts';
 import { forDay } from './habits';
+import { currentMetrics } from './metrics';
 import {
   bestE1rm,
   compliance,
@@ -183,4 +184,10 @@ test.each(Object.keys(parity.expect.habits))('habits on %s', (date) => {
     streak: i.streak,
   }));
   expect(items).toEqual((parity.expect.habits as Record<string, unknown>)[date]);
+});
+
+test('the training metrics', () => {
+  const w = world('kg');
+  const athlete = parity.athlete as unknown as { height_cm: string | null; years_training: string | null };
+  expect(currentMetrics(w, { heightCm: athlete.height_cm, yearsTraining: athlete.years_training })).toEqual(parity.expect.metrics);
 });

@@ -30,6 +30,8 @@ export const profile: TrainingProfile = {
   weekStart: parity.athlete.week_start,
   coachName: 'Dana Whitfield',
   gymName: 'Iron Ridge Weightlifting',
+  heightCm: parity.athlete.height_cm,
+  yearsTraining: parity.athlete.years_training,
 };
 
 export async function paritySession(overrides: Partial<TrainingProfile> = {}) {

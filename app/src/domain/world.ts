@@ -59,7 +59,7 @@ export type ExerciseRow = {
   cue?: string;
 };
 export type CategoryRow = { id: Id; name: string };
-export type BodyweightRow = { id: Id; date: string; kg: string };
+export type BodyweightRow = { id: Id; date: string; kg: string; source?: string };
 export type TrackedLiftRow = { id: Id; exercise_id: Id; order: number };
 export type CoachingRow = { id: Id; status: string; started_at: string };
 export type ThreadRow = { id: Id; coaching_id: Id };

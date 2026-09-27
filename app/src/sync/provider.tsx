@@ -21,12 +21,12 @@ export function SyncProvider({ profile, children }: { profile: TrainingProfile; 
   const [session, setSession] = useState<SyncSession | null>(null);
   const [failed, setFailed] = useState<'other-tab' | 'error' | null>(null);
   const [attempt, setAttempt] = useState(0);
-  const { athleteId, userId, timezone, maxUpdates } = profile;
+  const { athleteId, userId, timezone, maxUpdates, units } = profile;
 
   useEffect(() => {
     let stop: (() => void) | null = null;
     let alive = true;
-    startSession({ athleteId, userId, timezone, maxUpdates })
+    startSession({ athleteId, userId, timezone, maxUpdates, units })
       .then((started) => {
         if (!alive) return;
         setSession(started);
@@ -37,7 +37,7 @@ export function SyncProvider({ profile, children }: { profile: TrainingProfile; 
       alive = false;
       stop?.();
     };
-  }, [athleteId, userId, timezone, maxUpdates, attempt]);
+  }, [athleteId, userId, timezone, maxUpdates, units, attempt]);
 
   if (failed) {
     return (
