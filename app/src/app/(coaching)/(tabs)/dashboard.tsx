@@ -6,6 +6,7 @@ import { useMe } from '@/auth/me';
 import { AttentionFeed } from '@/coaching/feed';
 import { CoachScreen, Loading, WIDE } from '@/coaching/layout';
 import { useDashboard } from '@/coaching/queries';
+import { Roster } from '@/coaching/roster';
 import { RpePill } from '@/coaching/rpe';
 import { dayMonth } from '@/training/format';
 import { Avatar, Button, Card, Chip, colors, fonts, space, Text } from '@/ui';
@@ -163,7 +164,16 @@ export default function Today() {
           change={kpis.need_programming ? { text: 'runs out < 7 days', up: false } : null}
         />
       </View>
-      {side}
+      {wide ? (
+        <View style={styles.grid}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Roster />
+          </View>
+          <View style={{ width: 340 }}>{side}</View>
+        </View>
+      ) : (
+        side
+      )}
     </CoachScreen>
   );
 }
@@ -174,6 +184,7 @@ const styles = StyleSheet.create({
   kpi: { flexGrow: 1, flexBasis: '45%', gap: 2 },
   kpiValue: { fontFamily: fonts.extrabold, fontSize: 26 },
   column: { gap: space.m },
+  grid: { flexDirection: 'row', gap: space.m, alignItems: 'flex-start' },
   spread: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   line: { flexDirection: 'row', alignItems: 'center', gap: space.s, paddingVertical: 4 },
 });

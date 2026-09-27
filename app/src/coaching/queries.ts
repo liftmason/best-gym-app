@@ -28,3 +28,18 @@ export function useFeed() {
     refetchInterval: 30_000,
   });
 }
+
+export function useRoster(sort: string, q: string) {
+  return useQuery({
+    queryKey: keys.roster(sort, q),
+    queryFn: () => ok(api.client.GET('/api/v1/roster', { params: { query: { sort, q } } })),
+  });
+}
+
+export function useInvites() {
+  return useQuery({ queryKey: ['coach', 'invites'], queryFn: () => ok(api.client.GET('/api/v1/invites')) });
+}
+
+export function useInviteTemplates() {
+  return useQuery({ queryKey: ['coach', 'invite-templates'], queryFn: () => ok(api.client.GET('/api/v1/invites/templates')) });
+}

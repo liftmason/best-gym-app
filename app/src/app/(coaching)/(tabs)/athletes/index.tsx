@@ -1,11 +1,26 @@
-import { CoachScreen } from '@/coaching/layout';
-import { Text } from '@/ui';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 
-/** Built in the next steps of S6. */
-export default function Screen() {
+import { InviteSheet, PendingInvites } from '@/coaching/invite';
+import { CoachScreen } from '@/coaching/layout';
+import { Roster } from '@/coaching/roster';
+import { Button } from '@/ui';
+
+/** The roster (the mockup's #panel-clients), and inviting athletes. */
+export default function Athletes() {
+  const { invite } = useLocalSearchParams<{ invite?: string }>();
+  const [inviting, setInviting] = useState(invite === '1');
   return (
-    <CoachScreen title="Coming next">
-      <Text tone="muted">This screen is built in the next step.</Text>
+    <CoachScreen title="Athletes" actions={<Button title="+ Invite athlete" size="sm" onPress={() => setInviting(true)} />}>
+      <Roster title={false} />
+      <PendingInvites />
+      <InviteSheet
+        open={inviting}
+        onClose={() => {
+          setInviting(false);
+          if (invite) router.setParams({ invite: undefined });
+        }}
+      />
     </CoachScreen>
   );
 }
