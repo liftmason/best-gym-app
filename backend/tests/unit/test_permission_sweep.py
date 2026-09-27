@@ -30,6 +30,7 @@ pytestmark = pytest.mark.django_db
 # data (their coach may use it); "gym": shared by a gym's coaches; "user": one account's.
 PARAMS = {
     "device_id": ("user", lambda w: w["device"].pk),
+    "notification_id": ("user", lambda w: w["notification"].pk),
 }
 
 # Endpoints whose path parameter is itself the credential, so anyone holding it may use it.
@@ -112,11 +113,15 @@ def world(gym):
     """The owner's side: a coach and athlete in `gym`, with their data and a signed-in device."""
     owner = CoachFactory(gym=gym)
     athlete = AthleteFactory(coach=owner)
+    from apps.dashboard import alerts
+    from apps.dashboard.models import NotificationKind
+
     return {
         "gym": gym,
         "coach": owner,
         "athlete": athlete,
         "device": signin.open_session(athlete.user).session,
+        "notification": alerts.notify(athlete, NotificationKind.ISSUE, "issue:x", "Sore wrist", ""),
     }
 
 

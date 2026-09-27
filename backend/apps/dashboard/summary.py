@@ -10,8 +10,6 @@ import zoneinfo
 from django.utils import timezone
 
 from apps.accounts import coaching
-from apps.accounts.metrics import missing_metrics
-from apps.workouts import history
 from apps.workouts.models import SessionLog
 
 from . import alerts
@@ -24,6 +22,7 @@ SORTS = [
 ]
 GOOD_COMPLIANCE, OK_COMPLIANCE = 85, 70
 RECENT_DAYS, RECENT_LIMIT = 7, 8
+DAY = datetime.timedelta(days=1)
 
 
 def active_athletes(coach):
@@ -41,15 +40,13 @@ def compliance_band(value):
     return "ok" if value >= OK_COMPLIANCE else "low"
 
 
-def current_week(athlete, today):
-    program = athlete.programs.active().first()
-    if program is None:
-        return None
-    return (
-        program.weeks.filter(start_date__lte=today, start_date__gt=today - datetime.timedelta(days=7))
-        .select_related("week_type")
-        .first()
-    )
+def load(athletes, gym=None):
+    """Everything below reads from one batch.Loaded: a fixed number of queries for any
+    number of athletes (audit H4, M17)."""
+    from .batch import Loaded
+
+    athletes = list(athletes)
+    return Loaded(athletes, gym or (athletes[0].gym if athletes else None))
 
 
 def readiness(log):
@@ -60,28 +57,29 @@ def readiness(log):
     return scale.value if scale else None
 
 
-def roster_rows(athletes, feed_rows):
-    """One row per athlete: this week, compliance and its band, last session and readiness,
-    and the athlete's unread feed rows."""
+def roster_rows(athletes, feed_rows, loaded=None):
+    """One row per athlete: this week, compliance (the last 7 days) and its band, last
+    session and readiness, and the athlete's unread feed rows."""
+    loaded = loaded or load(athletes)
     by_athlete = {}
     for row in feed_rows:
         if row.read_at is None:
             by_athlete.setdefault(row.athlete_id, []).append(row)
     rows = []
-    for a in athletes:
-        today = a.today()
-        done, scheduled = history.compliance(a, today)
-        last = a.session_logs.finished().prefetch_related("answers").order_by("-date", "-finished_at").first()
-        value = pct(done, scheduled)
+    for a in loaded.athletes:
+        today = loaded.today[a.pk]
+        value = pct(*loaded.compliance(a, today - 6 * DAY, today))
+        last = loaded.last_log(a)
         rows.append(
             {
                 "athlete": a,
-                "week": current_week(a, today),
+                "week": loaded.current_week(a),
                 "compliance": value,
                 "band": compliance_band(value),
                 "last": last,
                 "readiness": readiness(last),
                 "alert_rows": by_athlete.get(a.pk, []),
+                "missing_metrics": len(loaded.missing_metrics(a)),
             }
         )
     return rows
@@ -98,16 +96,23 @@ def sort_rows(rows, sort):
     return sorted(rows, key=lambda r: (-len(r["alert_rows"]), (r["athlete"].user.name or "").lower()))
 
 
-def needs_programming(athlete):
-    """No program, no sessions in it, or it runs out within PROGRAM_WARNING_DAYS."""
-    program, last = alerts.program_end_date(athlete)
-    return program is None or last is None or (last - athlete.today()).days < alerts.PROGRAM_WARNING_DAYS
+def needs_programming(athlete, loaded=None):
+    """No program, nothing published in it, or it runs out within PROGRAM_WARNING_DAYS."""
+    if loaded is None:
+        program, last = alerts.program_end_date(athlete)
+        today = athlete.today()
+    else:
+        program, last = loaded.program_end(athlete)
+        today = loaded.today[athlete.pk]
+    return program is None or last is None or (last - today).days < alerts.PROGRAM_WARNING_DAYS
 
 
-def kpis(coach, athletes):
+def kpis(coach, athletes, loaded=None):
     """The four KPI cards: active athletes (and how many joined this month), compliance
     against last week, sessions so far this week against the same point last week, and how
     many athletes need programming."""
+    loaded = loaded or load(athletes, coach.gym)
+    athletes = loaded.athletes
     gym = coach.gym
     today = gym.today()
     month_start = today.replace(day=1)
@@ -115,8 +120,9 @@ def kpis(coach, athletes):
     joined = sum(1 for a in athletes if timezone.localdate(a.joined_at, zone) >= month_start)
     done = scheduled = prev_done = prev_scheduled = 0
     for a in athletes:
-        d, s = history.compliance(a, a.today())
-        pd, ps = history.compliance(a, a.today(), end=a.today() - datetime.timedelta(days=7))
+        own = loaded.today[a.pk]
+        d, s = loaded.compliance(a, own - 6 * DAY, own)
+        pd, ps = loaded.compliance(a, own - 13 * DAY, own - 7 * DAY)
         done, scheduled, prev_done, prev_scheduled = (
             done + d,
             scheduled + s,
@@ -128,7 +134,7 @@ def kpis(coach, athletes):
     logs = SessionLog.objects.finished().filter(athlete__in=athletes)
     this_week = logs.filter(date__gte=week_start, date__lte=today).count()
     last_week = logs.filter(
-        date__gte=week_start - datetime.timedelta(days=7),
+        date__gte=week_start - 7 * DAY,
         date__lte=week_start - datetime.timedelta(days=7 - days_in),
     ).count()
     now, prev = pct(done, scheduled), pct(prev_done, prev_scheduled)
@@ -143,34 +149,18 @@ def kpis(coach, athletes):
         "sessions": this_week,
         "sessions_change": abs(sessions_delta),
         "sessions_dir": "up" if sessions_delta > 0 else "down",
-        "need_programming": sum(1 for a in athletes if needs_programming(a)),
+        "need_programming": sum(1 for a in athletes if needs_programming(a, loaded)),
     }
 
 
-def today_list(athletes, today):
+def today_list(athletes, today, loaded=None):
     """Each athlete's planned session today (published weeks of the active program): how many
     exercises (warm-up drills aside) and whether it's done."""
-    from apps.programs.models import ProgramDay
-
-    done_ids = set(
-        SessionLog.objects.finished()
-        .filter(athlete__in=athletes, program_session__isnull=False)
-        .values_list("program_session_id", flat=True)
-    )
-    days = {
-        d.week.program.athlete_id: d
-        for d in ProgramDay.objects.filter(
-            week__program__athlete__in=athletes, week__program__active=True, week__published=True, date=today
-        )
-        .select_related("week__program")
-        .prefetch_related("sessions__prescriptions")
-    }
+    loaded = loaded or load(athletes)
     items = []
-    for a in athletes:
-        day = days.get(a.pk)
-        day_sessions = list(day.sessions.all()) if day else []
-        count = sum(1 for s in day_sessions for rx in s.prescriptions.all() if not rx.warmup)
-        items.append({"athlete": a, "count": count, "done": any(s.pk in done_ids for s in day_sessions)})
+    for a in loaded.athletes:
+        count, done = loaded.today_sessions(a)
+        items.append({"athlete": a, "count": count, "done": done})
     return items
 
 
@@ -182,7 +172,3 @@ def recent_sessions(athletes, today):
         .prefetch_related("issues")
         .order_by("-date", "-finished_at")[:RECENT_LIMIT]
     )
-
-
-def missing_metrics_count(athletes):
-    return sum(1 for a in athletes if missing_metrics(a))

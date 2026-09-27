@@ -49,6 +49,38 @@
         "title": "AthleteProfileOut",
         "type": "object"
       },
+      "AthleteRef": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "AthleteRef",
+        "type": "object"
+      },
+      "Cleared": {
+        "properties": {
+          "cleared": {
+            "title": "Cleared",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cleared"
+        ],
+        "title": "Cleared",
+        "type": "object"
+      },
       "CoachProfileOut": {
         "properties": {
           "gym": {
@@ -120,6 +152,39 @@
         "title": "CoachSignUpIn",
         "type": "object"
       },
+      "DashboardOut": {
+        "properties": {
+          "kpis": {
+            "$ref": "#/components/schemas/Kpis"
+          },
+          "recent": {
+            "items": {
+              "$ref": "#/components/schemas/RecentSession"
+            },
+            "title": "Recent",
+            "type": "array"
+          },
+          "today": {
+            "items": {
+              "$ref": "#/components/schemas/TodayItem"
+            },
+            "title": "Today",
+            "type": "array"
+          },
+          "unread": {
+            "title": "Unread",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kpis",
+          "today",
+          "recent",
+          "unread"
+        ],
+        "title": "DashboardOut",
+        "type": "object"
+      },
       "DeviceOut": {
         "properties": {
           "created_at": {
@@ -167,6 +232,85 @@
           "email"
         ],
         "title": "EmailIn",
+        "type": "object"
+      },
+      "FeedOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FeedRow"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          }
+        },
+        "required": [
+          "items",
+          "next"
+        ],
+        "title": "FeedOut",
+        "type": "object"
+      },
+      "FeedRow": {
+        "properties": {
+          "athlete": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AthleteRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "read": {
+            "title": "Read",
+            "type": "boolean"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "key",
+          "athlete",
+          "text",
+          "created_at",
+          "read"
+        ],
+        "title": "FeedRow",
         "type": "object"
       },
       "GymOut": {
@@ -278,6 +422,91 @@
         "title": "JoinedOut",
         "type": "object"
       },
+      "Kpis": {
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "integer"
+          },
+          "compliance": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Compliance"
+          },
+          "compliance_change": {
+            "title": "Compliance Change",
+            "type": "integer"
+          },
+          "compliance_dir": {
+            "title": "Compliance Dir",
+            "type": "string"
+          },
+          "joined": {
+            "title": "Joined",
+            "type": "integer"
+          },
+          "need_programming": {
+            "title": "Need Programming",
+            "type": "integer"
+          },
+          "sessions": {
+            "title": "Sessions",
+            "type": "integer"
+          },
+          "sessions_change": {
+            "title": "Sessions Change",
+            "type": "integer"
+          },
+          "sessions_dir": {
+            "title": "Sessions Dir",
+            "type": "string"
+          }
+        },
+        "required": [
+          "active",
+          "joined",
+          "compliance",
+          "compliance_change",
+          "compliance_dir",
+          "sessions",
+          "sessions_change",
+          "sessions_dir",
+          "need_programming"
+        ],
+        "title": "Kpis",
+        "type": "object"
+      },
+      "LastSession": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "name"
+        ],
+        "title": "LastSession",
+        "type": "object"
+      },
       "MeOut": {
         "properties": {
           "athlete": {
@@ -329,6 +558,52 @@
         "title": "MeOut",
         "type": "object"
       },
+      "RecentSession": {
+        "properties": {
+          "athlete": {
+            "$ref": "#/components/schemas/AthleteRef"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "issues": {
+            "title": "Issues",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "rpe": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rpe"
+          }
+        },
+        "required": [
+          "id",
+          "athlete",
+          "date",
+          "name",
+          "rpe",
+          "issues"
+        ],
+        "title": "RecentSession",
+        "type": "object"
+      },
       "RefreshIn": {
         "properties": {
           "refresh": {
@@ -338,6 +613,141 @@
           }
         },
         "title": "RefreshIn",
+        "type": "object"
+      },
+      "RosterRow": {
+        "properties": {
+          "alerts": {
+            "title": "Alerts",
+            "type": "integer"
+          },
+          "athlete": {
+            "$ref": "#/components/schemas/AthleteRef"
+          },
+          "band": {
+            "title": "Band",
+            "type": "string"
+          },
+          "competition_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Competition Date"
+          },
+          "competition_name": {
+            "title": "Competition Name",
+            "type": "string"
+          },
+          "compliance": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Compliance"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "last": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LastSession"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "missing_metrics": {
+            "title": "Missing Metrics",
+            "type": "integer"
+          },
+          "readiness": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Readiness"
+          },
+          "top_alert": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top Alert"
+          },
+          "week": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WeekOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "weight_class": {
+            "title": "Weight Class",
+            "type": "string"
+          }
+        },
+        "required": [
+          "athlete",
+          "email",
+          "weight_class",
+          "competition_name",
+          "competition_date",
+          "week",
+          "compliance",
+          "band",
+          "last",
+          "readiness",
+          "alerts",
+          "top_alert",
+          "missing_metrics"
+        ],
+        "title": "RosterRow",
+        "type": "object"
+      },
+      "TodayItem": {
+        "properties": {
+          "athlete": {
+            "$ref": "#/components/schemas/AthleteRef"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "done": {
+            "title": "Done",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "athlete",
+          "count",
+          "done"
+        ],
+        "title": "TodayItem",
         "type": "object"
       },
       "TokensOut": {
@@ -432,6 +842,60 @@
           "signed_in"
         ],
         "title": "VerifyOut",
+        "type": "object"
+      },
+      "WeekOut": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "week_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WeekTypeRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "week_type"
+        ],
+        "title": "WeekOut",
+        "type": "object"
+      },
+      "WeekTypeRef": {
+        "properties": {
+          "colour": {
+            "title": "Colour",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "colour"
+        ],
+        "title": "WeekTypeRef",
         "type": "object"
       }
     },
@@ -656,6 +1120,140 @@
         ]
       }
     },
+    "/api/v1/dashboard": {
+      "get": {
+        "operationId": "apps_dashboard_api_dashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Dashboard",
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/api/v1/feed": {
+      "get": {
+        "description": "The attention feed, newest first. `next` is the cursor for the page after.",
+        "operationId": "apps_dashboard_api_feed",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Before",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Feed",
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/api/v1/feed/clear-read": {
+      "post": {
+        "operationId": "apps_dashboard_api_feed_clear_read",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cleared"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Feed Clear Read",
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/api/v1/feed/{notification_id}/read": {
+      "post": {
+        "operationId": "apps_dashboard_api_feed_read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "notification_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Notification Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Feed Read",
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
     "/api/v1/invites/{token}": {
       "get": {
         "description": "What an invite link is for, before joining.",
@@ -788,6 +1386,59 @@
         "summary": "Me",
         "tags": [
           "Account"
+        ]
+      }
+    },
+    "/api/v1/roster": {
+      "get": {
+        "description": "The coach's athletes, sorted (attention, name, compliance, competition) and filtered\nby name or email.",
+        "operationId": "apps_dashboard_api_roster",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "attention",
+              "title": "Sort",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Q",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RosterRow"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Roster",
+        "tags": [
+          "Dashboard"
         ]
       }
     }

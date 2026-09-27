@@ -105,10 +105,28 @@ def limit(request, name, count, seconds, key=None):
 
 def _routers():
     from apps.accounts.api import router as accounts
+    from apps.dashboard.api import router as dashboard
     from apps.signin.api import router as signin
 
     api.add_router("/auth", signin)
     api.add_router("", accounts)
+    api.add_router("", dashboard)
 
 
-_routers()
+def coach_of(request):
+    """The signed-in coach; NotFound for anyone else (coach endpoints don't exist for them)."""
+    coach = request.user.coach_profile
+    if coach is None or coach.membership is None or coach.membership.ended_at is not None:
+        raise errors.NotFound()
+    return coach
+
+
+def athlete_of(request):
+    """The signed-in athlete profile (with or without a coach); NotFound for anyone else."""
+    athlete = getattr(request.user, "athlete", None)
+    if athlete is None:
+        raise errors.NotFound()
+    return athlete
+
+
+_routers()  # last: the routers import the helpers above

@@ -113,3 +113,49 @@ def test_bug_reports(coach, athlete):
     with pytest.raises(bugs.InvalidReport):
         bugs.report(coach.user, description="   ")
     assert BugReport.objects.count() == 2
+
+
+# ---------------------------------------------------------------- the batch (audit H4, M17)
+
+
+def test_the_batch_agrees_with_the_per_athlete_rules(program, athlete, coach, gym):
+    from apps.dashboard.batch import Loaded
+    from apps.workouts import history
+
+    for days_ago in (1, 2, 4, 9):
+        session = plan(program, athlete, gym, athlete.today() - days_ago * DAY)
+        if days_ago in (2, 9):
+            sessions.finish(sessions.start(athlete, session), 7)
+    plan(program, athlete, gym, athlete.today() + 3 * DAY)
+    loaded = Loaded([athlete], gym)
+    today = athlete.today()
+    for start, end in ((today - 6 * DAY, today), (today - 13 * DAY, today - 7 * DAY)):
+        assert loaded.compliance(athlete, start, end) == history.compliance(
+            athlete, today, start=start, end=end
+        )
+    assert loaded.program_end(athlete) == alerts.program_end_date(athlete)
+    from apps.accounts.metrics import missing_metrics
+
+    assert loaded.missing_metrics(athlete) == missing_metrics(athlete)
+
+
+def test_the_dashboard_reads_the_same_queries_for_any_number_of_athletes(program, athlete, coach, gym):
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    from apps.accounts import coaching
+
+    def queries():
+        athletes = list(coaching.athletes_for(coach))
+        with CaptureQueriesContext(connection) as ctx:
+            loaded = summary.load(athletes, gym)
+            summary.kpis(coach, athletes, loaded)
+            summary.roster_rows(athletes, [], loaded)
+            summary.today_list(athletes, gym.today(), loaded)
+        return len(ctx.captured_queries)
+
+    plan(program, athlete, gym, athlete.today())
+    few = queries()
+    for _ in range(4):
+        AthleteFactory(coach=coach)
+    assert queries() == few  # was several queries per athlete
