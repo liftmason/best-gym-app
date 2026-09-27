@@ -11,6 +11,9 @@ jest.mock('react-native-safe-area-context', () => {
   return { SafeAreaView: View, useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) };
 });
 
+// Whole screens on a real database: slower than a unit test, above all on CI's runners.
+jest.setTimeout(30_000);
+
 beforeEach(() => {
   mockPush.mockClear();
   jest.useFakeTimers({ now: new Date(now), doNotFake: ['setTimeout', 'setInterval', 'setImmediate', 'nextTick', 'queueMicrotask'] });

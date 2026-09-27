@@ -31,6 +31,9 @@ jest.mock('@/auth/me', () => ({
 
 const mockRouter = jest.requireMock('expo-router').router as Record<string, jest.Mock>;
 
+// Whole screens on a real database: slower than a unit test, above all on CI's runners.
+jest.setTimeout(30_000);
+
 beforeEach(() => {
   jest.useFakeTimers({ now: new Date(now), doNotFake: ['setTimeout', 'setInterval', 'setImmediate', 'nextTick', 'queueMicrotask'] });
 });

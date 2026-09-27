@@ -45,6 +45,9 @@ jest.mock('react-native-safe-area-context', () => {
 
 const mockRouter = jest.requireMock('expo-router').router as Record<string, jest.Mock>;
 
+// Whole screens on a real database: slower than a unit test, above all on CI's runners.
+jest.setTimeout(30_000);
+
 beforeEach(() => {
   mockIds = 0;
   Object.values(mockRouter).forEach((f) => f.mockClear());
