@@ -27,10 +27,6 @@ def program(athlete, coach):
     )
 
 
-def base(athlete):
-    return f"/coach/athletes/{athlete.pk}/program/"
-
-
 # ---------------------------------------------------------------- parsing and display
 
 

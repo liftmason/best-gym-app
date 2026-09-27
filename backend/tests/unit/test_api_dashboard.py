@@ -72,6 +72,7 @@ def test_the_feed_pages_and_its_actions(as_coach, athlete, coach):
     assert len(seen) == 5
     row = first["items"][0]
     assert row["kind"] == "issue" and row["athlete"]["name"] == "Maya Torres"
+    assert row["link"] == f"/athletes/{athlete.pk}?tab=sessions"  # the app's screen for it
     assert as_coach.post(f"/api/v1/feed/{row['id']}/read").status_code == 204
     assert as_coach.post("/api/v1/feed/clear-read").json() == {"cleared": 1}
     assert as_coach.get("/api/v1/feed?before=junk").status_code == 400

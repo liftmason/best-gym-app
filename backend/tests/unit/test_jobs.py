@@ -36,7 +36,7 @@ def test_digest_goes_at_seven_with_new_items_only(coach, athlete):
     assert len(mail.outbox) == 1
     email = mail.outbox[0]
     assert email.subject.startswith("2 new things need your attention") and "Maya Torres" in email.body
-    assert "/coach/athletes/" in email.body and "Turn it off in Settings" in email.body
+    assert "/athletes/" in email.body and "?tab=" in email.body and "Turn it off in Settings" in email.body
     assert digest.send(coach, _at_gym_hour(coach, 7)) == 0  # once a day
     coach.refresh_from_db()
     assert coach.last_digest_at is not None

@@ -15,6 +15,7 @@ dismissed row stays dismissed.
 """
 
 import datetime
+from urllib.parse import urlencode
 
 from django.db import transaction
 from django.utils import timezone
@@ -29,10 +30,12 @@ PROGRAM_WARNING_DAYS = 7
 MISSED_LOOKBACK_DAYS = 7
 
 
-def _tab(athlete, tab):
-    # The coach-app screen for the athlete's tab. The HTML pages are gone; where these paths
-    # land in the Expo app is decided with its routes (sub-projects 2 and 6), here in one place.
-    return f"/coach/athletes/{athlete.pk}/{tab}/"
+def _tab(athlete, tab, **params):
+    """The app's screen for one of the athlete's tabs (app/src/app/(coaching)/athletes/[id]):
+    `/athletes/<id>?tab=…`, plus `focus` (the item to scroll to), `week` or `range`. The same
+    path works in the web app, so digest emails link to it."""
+    query = urlencode({"tab": tab, **{k: v for k, v in params.items() if v}})
+    return f"/athletes/{athlete.pk}?{query}"
 
 
 def notify(athlete, kind, key, text, link, reopen=True):
@@ -310,7 +313,7 @@ def _sync_missed(athlete, today):
         names = [rx.exercise.name for s in sessions for rx in s.prescriptions.all()]
         what = " + ".join(names[:2]) + (f" + {len(names) - 2} more" if len(names) > 2 else "")
         text = f"Missed {day.date:%a %-d %b}" + (f" — {what}" if what else "")
-        notify(athlete, kind, key, text, _tab(athlete, "program") + f"?week={day.week_id}", reopen=False)
+        notify(athlete, kind, key, text, _tab(athlete, "program", week=day.week_id), reopen=False)
     # Days logged afterwards (or no longer in the program) leave the feed.
     for row in Notification.objects.filter(recipient=athlete.coach.user, athlete=athlete, kind=kind):
         day_id = ids.parse(row.dedupe_key.removeprefix("day:"))
@@ -373,39 +376,45 @@ def link_for(row):
         return row.link
     kind = row.kind
     if kind == NotificationKind.MESSAGE:
-        return _tab(athlete, "messages") + "#latest"
+        return _tab(athlete, "messages", focus="latest")
     if kind == NotificationKind.ISSUE and key.startswith("issue:"):
         issue = (
-            IssueReport.objects.filter(pk=key.removeprefix("issue:"), athlete=athlete)
+            IssueReport.objects.filter(pk=ids.parse(key.removeprefix("issue:")), athlete=athlete)
             .select_related("session_log")
             .first()
         )
         if issue is None:
             return _tab(athlete, "sessions")
         older = issue.session_log and (athlete.today() - issue.session_log.date).days > 56
-        return _tab(athlete, "sessions") + ("?range=all" if older else "") + f"#issue-{issue.pk}"
+        return _tab(athlete, "sessions", range="all" if older else None, focus=f"issue-{issue.pk}")
     if kind == NotificationKind.VIDEO and key.startswith("video:"):
         from apps.workouts.models import FormVideo
 
-        video = FormVideo.objects.filter(pk=key.removeprefix("video:"), session_log__athlete=athlete).first()
+        video = FormVideo.objects.filter(
+            pk=ids.parse(key.removeprefix("video:")), session_log__athlete=athlete
+        ).first()
         if video is None:
             return _tab(athlete, "sessions")
         older = (athlete.today() - video.session_log.date).days > 56
-        return _tab(athlete, "sessions") + ("?range=all" if older else "") + f"#video-{video.pk}"
+        return _tab(athlete, "sessions", range="all" if older else None, focus=f"video-{video.pk}")
     if kind == NotificationKind.PR:
-        return _tab(athlete, "metrics") + "#sessionPrs"
+        return _tab(athlete, "metrics", focus="prs")
     if kind == NotificationKind.METRICS_MISSING:
-        return _tab(athlete, "metrics") + "#metricsPanel"
+        return _tab(athlete, "metrics", focus="metrics")
     if kind == NotificationKind.PROGRAM_ENDING:
         program, last = program_end_date(athlete)
         if program is None or last is None:
             return _tab(athlete, "program")
         day = ProgramDay.objects.filter(week__program=program, date=last).first()
-        return _tab(athlete, "program") + (f"?week={day.week_id}#day-{day.pk}" if day else "")
+        return _tab(
+            athlete, "program", week=day.week_id if day else None, focus=f"day-{day.pk}" if day else None
+        )
     if kind == NotificationKind.MISSED and key.startswith("day:"):
-        day = ProgramDay.objects.filter(pk=key.removeprefix("day:"), week__program__athlete=athlete).first()
+        day = ProgramDay.objects.filter(
+            pk=ids.parse(key.removeprefix("day:")), week__program__athlete=athlete
+        ).first()
         if day:
-            return _tab(athlete, "program") + f"?week={day.week_id}#day-{day.pk}"
+            return _tab(athlete, "program", week=day.week_id, focus=f"day-{day.pk}")
     return row.link
 
 

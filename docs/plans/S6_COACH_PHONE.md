@@ -14,6 +14,8 @@ The same screens serve the web. S7 adds the desktop-first programming screens (t
 
 ## 1. Decisions
 
+**Accepted as recommended** (27 September 2026).
+
 | # | Question | Recommendation | Why |
 |---|---|---|---|
 | A | One PR or two? | **One.** | About two weeks of screens over endpoints that exist, with no offline rules to port. |

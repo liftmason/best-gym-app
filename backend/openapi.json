@@ -1501,6 +1501,10 @@
             "title": "Kind",
             "type": "string"
           },
+          "link": {
+            "title": "Link",
+            "type": "string"
+          },
           "read": {
             "title": "Read",
             "type": "boolean"
@@ -1517,7 +1521,8 @@
           "athlete",
           "text",
           "created_at",
-          "read"
+          "read",
+          "link"
         ],
         "title": "FeedRow",
         "type": "object"
