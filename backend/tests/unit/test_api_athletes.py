@@ -195,3 +195,53 @@ def test_videos_and_issues(api, athlete, gym, monkeypatch):
     assert [i["text"] for i in api.get(f"/api/v1/athletes/{athlete.pk}/issues").json()] == ["Wrist"]
     assert post(api, f"/athletes/{athlete.pk}/issues/{issue.pk}/resolve").status_code == 204
     assert api.get(f"/api/v1/athletes/{athlete.pk}/issues").json() == []
+
+
+# ---------------------------------------------------------------- messages, habits, questions
+
+
+def test_messages(api, athlete, coach):
+    from apps.messaging import services as messaging
+    from apps.messaging.models import Thread
+
+    assert api.get(f"/api/v1/athletes/{athlete.pk}/messages").json() == {"items": [], "next": None}
+    sent = post(api, f"/athletes/{athlete.pk}/messages", {"body": "  Nice pull today  "})
+    assert (
+        sent.status_code == 201
+        and sent.json()["sender"] == "coach"
+        and sent.json()["body"] == "Nice pull today"
+    )
+    messaging.send(Thread.for_athlete(athlete), athlete.user, "Thanks!")
+    items = api.get(f"/api/v1/athletes/{athlete.pk}/messages").json()["items"]
+    assert [(m["sender"], m["read"]) for m in items] == [("athlete", False), ("coach", False)]
+    assert post(api, f"/athletes/{athlete.pk}/messages/read").json() == {"marked": 1}
+    assert post(api, f"/athletes/{athlete.pk}/messages", {"body": "   "}).status_code == 400
+
+
+def test_messages_are_rate_limited(api, athlete):
+    for _ in range(30):
+        post(api, f"/athletes/{athlete.pk}/messages", {"body": "hi"})
+    assert post(api, f"/athletes/{athlete.pk}/messages", {"body": "hi"}).status_code == 429
+
+
+def test_habits(api, athlete):
+    created = post(api, f"/athletes/{athlete.pk}/habits", {"name": "Sleep 8h", "emoji": "😴"})
+    assert created.status_code == 201 and len(created.json()["last_seven"]) == 7
+    assert post(api, f"/athletes/{athlete.pk}/habits", {"name": "Sleep 8h"}).status_code == 409
+    habit_id = created.json()["id"]
+    assert post(api, f"/athletes/{athlete.pk}/habits/{habit_id}/archive").status_code == 204
+    assert all(h["id"] != habit_id for h in api.get(f"/api/v1/athletes/{athlete.pk}/habits").json())
+
+
+def test_check_in_questions(api, athlete):
+    q = post(api, f"/athletes/{athlete.pk}/questions", {"type": "choice"}).json()
+    base = f"/athletes/{athlete.pk}/questions/{q['id']}"
+    reworded = api.patch(f"/api/v1{base}", {"text": "Anything sore?"}, content_type="application/json")
+    assert reworded.json()["text"] == "Anything sore?"
+    with_option = post(api, f"{base}/options", {"option": "Knees"}).json()
+    assert "Knees" in with_option["options"]
+    index = with_option["options"].index("Knees")
+    assert "Knees" not in api.delete(f"/api/v1{base}/options/{index}").json()["options"]
+    assert post(api, f"{base}/move", {"direction": "sideways"}).status_code == 400
+    reset = post(api, f"/athletes/{athlete.pk}/reset-questions").json()
+    assert q["id"] not in [x["id"] for x in reset]

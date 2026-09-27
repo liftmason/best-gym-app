@@ -157,3 +157,36 @@ def test_the_web_app_may_call_the_api_from_its_own_origin(api, settings):
         "/api/v1/me", HTTP_ORIGIN="https://evil.example", HTTP_ACCESS_CONTROL_REQUEST_METHOD="GET"
     )
     assert "Access-Control-Allow-Origin" not in other
+
+
+def clashes(paths):
+    """Pairs of paths one request could match both of: the same length, and at every place
+    either the same word or a parameter on at least one side, with a word facing a
+    parameter somewhere."""
+    found = []
+    for i, a in enumerate(paths):
+        for b in paths[i + 1 :]:
+            sa, sb = a.strip("/").split("/"), b.strip("/").split("/")
+            if len(sa) != len(sb):
+                continue
+            pairs = list(zip(sa, sb, strict=True))
+            param = [(x.startswith("{"), y.startswith("{")) for x, y in pairs]
+            if all(x == y or px or py for (x, y), (px, py) in zip(pairs, param, strict=True)) and any(
+                px != py for px, py in param
+            ):
+                found.append(f"{a} <-> {b}")
+    return found
+
+
+def test_the_clash_check_finds_a_word_behind_a_parameter():
+    assert clashes(["/a/{id}/questions/{q}", "/a/{id}/questions/reset"])
+    assert not clashes(["/a/{id}/questions/{q}", "/a/{id}/reset-questions", "/join/{token}", "/invites/x"])
+
+
+def test_no_route_hides_behind_another():
+    # Path parameters match any text, so /athletes/{id}/questions/reset would be caught by
+    # /athletes/{id}/questions/{question_id} (a 405). Literal words go elsewhere in the path.
+    from apps.api.main import api as ninja_api
+
+    found = clashes(list(ninja_api.get_openapi_schema()["paths"]))
+    assert not found, "\n".join(found)

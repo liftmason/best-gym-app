@@ -450,6 +450,25 @@
         "title": "DashboardOut",
         "type": "object"
       },
+      "DayDone": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "done": {
+            "title": "Done",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "date",
+          "done"
+        ],
+        "title": "DayDone",
+        "type": "object"
+      },
       "Decision": {
         "properties": {
           "use": {
@@ -497,6 +516,19 @@
           "current"
         ],
         "title": "DeviceOut",
+        "type": "object"
+      },
+      "Direction": {
+        "properties": {
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          }
+        },
+        "required": [
+          "direction"
+        ],
+        "title": "Direction",
         "type": "object"
       },
       "EmailIn": {
@@ -695,6 +727,81 @@
           "week_start"
         ],
         "title": "GymOut",
+        "type": "object"
+      },
+      "HabitIn": {
+        "properties": {
+          "cadence": {
+            "default": "daily",
+            "title": "Cadence",
+            "type": "string"
+          },
+          "emoji": {
+            "default": "\ud83c\udf4e",
+            "title": "Emoji",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "HabitIn",
+        "type": "object"
+      },
+      "HabitOut": {
+        "properties": {
+          "cadence": {
+            "title": "Cadence",
+            "type": "string"
+          },
+          "emoji": {
+            "title": "Emoji",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_seven": {
+            "items": {
+              "$ref": "#/components/schemas/DayDone"
+            },
+            "title": "Last Seven",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "streak": {
+            "title": "Streak",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "emoji",
+          "cadence",
+          "note",
+          "streak",
+          "last_seven"
+        ],
+        "title": "HabitOut",
         "type": "object"
       },
       "HistoryRow": {
@@ -1064,6 +1171,19 @@
         "title": "Lift",
         "type": "object"
       },
+      "Marked": {
+        "properties": {
+          "marked": {
+            "title": "Marked",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "marked"
+        ],
+        "title": "Marked",
+        "type": "object"
+      },
       "MaxUpdatesIn": {
         "properties": {
           "value": {
@@ -1126,6 +1246,82 @@
           "athlete"
         ],
         "title": "MeOut",
+        "type": "object"
+      },
+      "MessageIn": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "MessageIn",
+        "type": "object"
+      },
+      "MessageOut": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "read": {
+            "title": "Read",
+            "type": "boolean"
+          },
+          "sender": {
+            "title": "Sender",
+            "type": "string"
+          },
+          "sent_at": {
+            "format": "date-time",
+            "title": "Sent At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sender",
+          "body",
+          "sent_at",
+          "read"
+        ],
+        "title": "MessageOut",
+        "type": "object"
+      },
+      "MessagesOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MessageOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          }
+        },
+        "required": [
+          "items",
+          "next"
+        ],
+        "title": "MessagesOut",
         "type": "object"
       },
       "MetricIn": {
@@ -1235,6 +1431,32 @@
           "history"
         ],
         "title": "MetricsOut",
+        "type": "object"
+      },
+      "NewQuestion": {
+        "properties": {
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "title": "NewQuestion",
+        "type": "object"
+      },
+      "OptionIn": {
+        "properties": {
+          "option": {
+            "title": "Option",
+            "type": "string"
+          }
+        },
+        "required": [
+          "option"
+        ],
+        "title": "OptionIn",
         "type": "object"
       },
       "OverviewOut": {
@@ -1356,6 +1578,53 @@
           "week_type"
         ],
         "title": "Point",
+        "type": "object"
+      },
+      "QuestionOut": {
+        "properties": {
+          "detail_label": {
+            "title": "Detail Label",
+            "type": "string"
+          },
+          "high_label": {
+            "title": "High Label",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "low_label": {
+            "title": "Low Label",
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Options",
+            "type": "array"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "text",
+          "low_label",
+          "high_label",
+          "detail_label",
+          "options"
+        ],
+        "title": "QuestionOut",
         "type": "object"
       },
       "RecentSession": {
@@ -2039,6 +2308,56 @@
         ],
         "title": "WeekTypeRef",
         "type": "object"
+      },
+      "Wording": {
+        "properties": {
+          "detail_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail Label"
+          },
+          "high_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "High Label"
+          },
+          "low_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Low Label"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "title": "Wording",
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -2122,6 +2441,135 @@
         "summary": "Archive",
         "tags": [
           "Athletes"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/habits": {
+      "get": {
+        "operationId": "apps_programs_habits_api_athlete_habits",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/HabitOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Athlete Habits",
+        "tags": [
+          "Habits"
+        ]
+      },
+      "post": {
+        "operationId": "apps_programs_habits_api_prescribe",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HabitIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HabitOut"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Prescribe",
+        "tags": [
+          "Habits"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/habits/{habit_id}/archive": {
+      "post": {
+        "operationId": "apps_programs_habits_api_archive",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "habit_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Habit Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Archive",
+        "tags": [
+          "Habits"
         ]
       }
     },
@@ -2246,6 +2694,149 @@
         "summary": "Max Updates",
         "tags": [
           "Athletes"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/messages": {
+      "get": {
+        "operationId": "apps_messaging_api_messages",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Before",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagesOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Messages",
+        "tags": [
+          "Messages"
+        ]
+      },
+      "post": {
+        "operationId": "apps_messaging_api_send",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageOut"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Send",
+        "tags": [
+          "Messages"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/messages/read": {
+      "post": {
+        "description": "The coach has seen the athlete's messages; clears the thread from their feed.",
+        "operationId": "apps_messaging_api_mark_read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Marked"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Mark Read",
+        "tags": [
+          "Messages"
         ]
       }
     },
@@ -2492,6 +3083,370 @@
         ]
       }
     },
+    "/api/v1/athletes/{athlete_id}/questions": {
+      "get": {
+        "operationId": "apps_workouts_questions_api_athlete_questions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/QuestionOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Athlete Questions",
+        "tags": [
+          "Check-in questions"
+        ]
+      },
+      "post": {
+        "operationId": "apps_workouts_questions_api_add",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewQuestion"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionOut"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Add",
+        "tags": [
+          "Check-in questions"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/questions/{question_id}": {
+      "patch": {
+        "operationId": "apps_workouts_questions_api_update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "question_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Question Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Wording"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Update",
+        "tags": [
+          "Check-in questions"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/questions/{question_id}/archive": {
+      "post": {
+        "operationId": "apps_workouts_questions_api_archive",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "question_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Question Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Archive",
+        "tags": [
+          "Check-in questions"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/questions/{question_id}/move": {
+      "post": {
+        "operationId": "apps_workouts_questions_api_move",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "question_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Question Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Direction"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/QuestionOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Move",
+        "tags": [
+          "Check-in questions"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/questions/{question_id}/options": {
+      "post": {
+        "operationId": "apps_workouts_questions_api_option_add",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "question_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Question Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OptionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Option Add",
+        "tags": [
+          "Check-in questions"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/questions/{question_id}/options/{index}": {
+      "delete": {
+        "operationId": "apps_workouts_questions_api_option_remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "question_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Question Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "index",
+            "required": true,
+            "schema": {
+              "title": "Index",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Option Remove",
+        "tags": [
+          "Check-in questions"
+        ]
+      }
+    },
     "/api/v1/athletes/{athlete_id}/remind-metrics": {
       "post": {
         "description": "Email the athlete about their missing numbers (once a day at most).",
@@ -2528,6 +3483,49 @@
         "summary": "Remind",
         "tags": [
           "Athletes"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/reset-questions": {
+      "post": {
+        "description": "Replace the athlete's questions with fresh copies of the gym's defaults.",
+        "operationId": "apps_workouts_questions_api_reset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/QuestionOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Reset",
+        "tags": [
+          "Check-in questions"
         ]
       }
     },

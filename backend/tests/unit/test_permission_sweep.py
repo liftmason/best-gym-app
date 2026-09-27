@@ -20,7 +20,9 @@ from django.test.utils import CaptureQueriesContext
 
 from apps.accounts import coaching, invites
 from apps.api.main import api as ninja_api
+from apps.programs import habits
 from apps.signin import services as signin
+from apps.workouts import questions
 
 from ..factories import AthleteFactory, CoachFactory, GymFactory
 
@@ -37,6 +39,9 @@ PARAMS = {
     "set_id": ("athlete", lambda w: w["pr_set"].pk),
     "video_id": ("athlete", lambda w: w["video"].pk),
     "issue_id": ("athlete", lambda w: w["issue"].pk),
+    "habit_id": ("athlete", lambda w: w["habit"].pk),
+    "question_id": ("athlete", lambda w: w["question"].pk),
+    "index": ("athlete", lambda w: 0),  # an option of a question
 }
 
 # Endpoints whose path parameter is itself the credential, so anyone holding it may use it.
@@ -151,6 +156,8 @@ def world(gym):
             uploaded_at=now,
         ),
         "issue": IssueReport.objects.create(athlete=athlete, session_log=log, kind="pain", text="Wrist"),
+        "habit": habits.prescribe(athlete, "Sleep", "😴", "daily"),
+        "question": questions.add(athlete, "choice"),
     }
 
 
