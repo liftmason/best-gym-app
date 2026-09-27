@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "GymTrainer",
-    "slug": "gymtrainer",
+    "slug": "best-gym-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -39,6 +39,7 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "owner": "spearws-team"
   }
 }
