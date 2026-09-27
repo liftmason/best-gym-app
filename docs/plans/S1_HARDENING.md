@@ -2,6 +2,8 @@
 
 *26 September 2026 · plan for sub-project 1 of `docs/EXPO_MIGRATION.md`*
 
+**Done 26 September 2026.** All nine steps are built; the audit marks each item fixed.
+
 S1 fixes the backend bugs the audit (`docs/AUDIT_2026-09.md`) assigned to it, before the API
 (S2) and sync (S3) are built on top. Every fix starts with a failing test.
 
