@@ -3,6 +3,8 @@ import warnings
 from .base import *  # noqa: F403
 
 DEBUG = True
+# The Expo web dev server.
+CORS_ALLOWED_ORIGINS = CORS_ALLOWED_ORIGINS or ["http://localhost:8081"]  # noqa: F405
 # Seeded demo users (make seed) sign in with this code; codes print to the console.
 DEMO_SIGNIN_CODE = "123456"
 SECRET_KEY = SECRET_KEY or "local-dev-only-not-secret"  # noqa: F405

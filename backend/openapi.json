@@ -1,0 +1,796 @@
+{
+  "components": {
+    "schemas": {
+      "AthleteProfileOut": {
+        "properties": {
+          "coach_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coach Name"
+          },
+          "gym_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gym Name"
+          },
+          "hide_history_before_link": {
+            "title": "Hide History Before Link",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "units": {
+            "title": "Units",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "units",
+          "coach_name",
+          "gym_name",
+          "hide_history_before_link"
+        ],
+        "title": "AthleteProfileOut",
+        "type": "object"
+      },
+      "CoachProfileOut": {
+        "properties": {
+          "gym": {
+            "$ref": "#/components/schemas/GymOut"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "role",
+          "gym"
+        ],
+        "title": "CoachProfileOut",
+        "type": "object"
+      },
+      "CoachSignUpIn": {
+        "properties": {
+          "device": {
+            "default": "",
+            "title": "Device",
+            "type": "string"
+          },
+          "gym_name": {
+            "title": "Gym Name",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "starter": {
+            "default": "weightlifting",
+            "title": "Starter",
+            "type": "string"
+          },
+          "ticket": {
+            "title": "Ticket",
+            "type": "string"
+          },
+          "timezone": {
+            "default": "",
+            "title": "Timezone",
+            "type": "string"
+          },
+          "units": {
+            "default": "kg",
+            "title": "Units",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket",
+          "name",
+          "gym_name"
+        ],
+        "title": "CoachSignUpIn",
+        "type": "object"
+      },
+      "DeviceOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current": {
+            "title": "Current",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "last_used_at": {
+            "format": "date-time",
+            "title": "Last Used At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "created_at",
+          "last_used_at",
+          "current"
+        ],
+        "title": "DeviceOut",
+        "type": "object"
+      },
+      "EmailIn": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "EmailIn",
+        "type": "object"
+      },
+      "GymOut": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          },
+          "units": {
+            "title": "Units",
+            "type": "string"
+          },
+          "week_start": {
+            "title": "Week Start",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "units",
+          "timezone",
+          "week_start"
+        ],
+        "title": "GymOut",
+        "type": "object"
+      },
+      "InviteOut": {
+        "properties": {
+          "coach_name": {
+            "title": "Coach Name",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "gym_name": {
+            "title": "Gym Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "coach_name",
+          "gym_name",
+          "email"
+        ],
+        "title": "InviteOut",
+        "type": "object"
+      },
+      "JoinNewIn": {
+        "properties": {
+          "device": {
+            "default": "",
+            "title": "Device",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "ticket": {
+            "title": "Ticket",
+            "type": "string"
+          },
+          "timezone": {
+            "default": "",
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket",
+          "name"
+        ],
+        "title": "JoinNewIn",
+        "type": "object"
+      },
+      "JoinedOut": {
+        "properties": {
+          "athlete_id": {
+            "format": "uuid",
+            "title": "Athlete Id",
+            "type": "string"
+          },
+          "coach_name": {
+            "title": "Coach Name",
+            "type": "string"
+          },
+          "gym_name": {
+            "title": "Gym Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "athlete_id",
+          "coach_name",
+          "gym_name"
+        ],
+        "title": "JoinedOut",
+        "type": "object"
+      },
+      "MeOut": {
+        "properties": {
+          "athlete": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AthleteProfileOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "coach": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CoachProfileOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "timezone",
+          "coach",
+          "athlete"
+        ],
+        "title": "MeOut",
+        "type": "object"
+      },
+      "RefreshIn": {
+        "properties": {
+          "refresh": {
+            "default": "",
+            "title": "Refresh",
+            "type": "string"
+          }
+        },
+        "title": "RefreshIn",
+        "type": "object"
+      },
+      "TokensOut": {
+        "properties": {
+          "access": {
+            "title": "Access",
+            "type": "string"
+          },
+          "access_expires_at": {
+            "format": "date-time",
+            "title": "Access Expires At",
+            "type": "string"
+          },
+          "refresh": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refresh"
+          },
+          "refresh_expires_at": {
+            "format": "date-time",
+            "title": "Refresh Expires At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "access",
+          "access_expires_at",
+          "refresh",
+          "refresh_expires_at"
+        ],
+        "title": "TokensOut",
+        "type": "object"
+      },
+      "VerifyIn": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "device": {
+            "default": "",
+            "title": "Device",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "code"
+        ],
+        "title": "VerifyIn",
+        "type": "object"
+      },
+      "VerifyOut": {
+        "properties": {
+          "signed_in": {
+            "title": "Signed In",
+            "type": "boolean"
+          },
+          "ticket": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket"
+          },
+          "tokens": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TokensOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "signed_in"
+        ],
+        "title": "VerifyOut",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "",
+    "title": "GymTrainer API",
+    "version": "1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/auth/devices": {
+      "get": {
+        "operationId": "apps_signin_api_devices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Devices",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
+    "/api/v1/auth/devices/{device_id}/signout": {
+      "post": {
+        "operationId": "apps_signin_api_sign_out_device",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Device Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Sign Out Device",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
+    "/api/v1/auth/email/start": {
+      "post": {
+        "description": "Email a sign-in code. The same answer whether or not the email has an account.",
+        "operationId": "apps_signin_api_email_start",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "summary": "Email Start",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
+    "/api/v1/auth/email/verify": {
+      "post": {
+        "description": "Check the code: sign in to the email's account, or, for a new email, return a sign-up\nticket (valid 30 minutes) for coach sign-up or joining through an invite.",
+        "operationId": "apps_signin_api_email_verify",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Email Verify",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "description": "New tokens for a refresh token (from the body, or the web app's cookie).",
+        "operationId": "apps_signin_api_refresh",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokensOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Refresh",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
+    "/api/v1/auth/signout": {
+      "post": {
+        "operationId": "apps_signin_api_sign_out",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Sign Out",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
+    "/api/v1/auth/signup/coach": {
+      "post": {
+        "description": "A new coach and their gym, for an email verified by `email/verify`.",
+        "operationId": "apps_signin_api_coach_sign_up",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoachSignUpIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokensOut"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "summary": "Coach Sign Up",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
+    "/api/v1/invites/{token}": {
+      "get": {
+        "description": "What an invite link is for, before joining.",
+        "operationId": "apps_accounts_api_invite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Invite",
+        "tags": [
+          "Invites"
+        ]
+      }
+    },
+    "/api/v1/invites/{token}/accept": {
+      "post": {
+        "description": "Join as the signed-in account (an athlete without a coach, or a new athlete profile).",
+        "operationId": "apps_accounts_api_accept_invite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinedOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Accept Invite",
+        "tags": [
+          "Invites"
+        ]
+      }
+    },
+    "/api/v1/invites/{token}/signup": {
+      "post": {
+        "description": "Join as a new account, for an email verified by `auth/email/verify` (its ticket).\nAnswers with the new account's tokens, like signing in.",
+        "operationId": "apps_accounts_api_join_new",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinNewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "summary": "Join New",
+        "tags": [
+          "Invites"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "description": "The signed-in person and their profiles: a coach (with their gym), an athlete (with\ntheir coach), or both. An athlete without a coach has `coach_name` null.",
+        "operationId": "apps_accounts_api_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Me",
+        "tags": [
+          "Account"
+        ]
+      }
+    }
+  },
+  "servers": []
+}
