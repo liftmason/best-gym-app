@@ -57,7 +57,16 @@ class Notification(core.Model):
         ordering = ["-created_at", "-id"]
         constraints = [
             models.UniqueConstraint(
-                fields=["recipient", "kind", "dedupe_key"], name="one_notification_per_key"
+                fields=["recipient", "athlete", "kind", "dedupe_key"],
+                name="one_notification_per_key",
+                nulls_distinct=False,
+            )
+        ]
+        indexes = [
+            models.Index(
+                fields=["recipient", "-created_at"],
+                condition=models.Q(cleared_at__isnull=True),
+                name="feed_by_recipient",
             )
         ]
 

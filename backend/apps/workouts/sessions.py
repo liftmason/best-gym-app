@@ -55,11 +55,17 @@ def _dec(value):
     return None if value is None else str(value)
 
 
+# Bump when the snapshot's shape changes, and teach `prescribed()` to read the old one:
+# phones keep logs offline, so old snapshots are never rewritten.
+SNAPSHOT_VERSION = 1
+
+
 def snapshot(rx, athlete):
     """What the coach asked for, frozen when the session starts."""
     source = rx.exercise.max_source
     working_max = athlete.current_max(source) if rx.load_basis == LoadBasis.PERCENT else None
     return {
+        "v": SNAPSHOT_VERSION,
         "exercise": rx.exercise.name,
         "sets": rx.sets,
         "rep_scheme": rx.rep_scheme,

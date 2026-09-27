@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "apps.workouts",
     "apps.messaging",
     "apps.dashboard",
+    "apps.ratelimit",
 ]
 
 MIDDLEWARE = [

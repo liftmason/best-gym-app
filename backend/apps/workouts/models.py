@@ -147,7 +147,7 @@ class SessionLog(core.Model):
     logged after the fact carries the planned day, and `started_at` shows when it was
     entered. A paused session has no `finished_at`."""
 
-    athlete = models.ForeignKey("accounts.Athlete", on_delete=models.CASCADE, related_name="session_logs")
+    athlete = models.ForeignKey("accounts.Athlete", on_delete=models.PROTECT, related_name="session_logs")
     program_session = models.ForeignKey(
         "programs.ProgramSession", null=True, blank=True, on_delete=models.SET_NULL, related_name="logs"
     )
@@ -175,6 +175,13 @@ class SessionLog(core.Model):
                 condition=models.Q(program_session__isnull=False),
                 name="one_log_per_program_session",
             ),
+            models.CheckConstraint(
+                condition=models.Q(session_rpe__isnull=True) | models.Q(session_rpe__range=(1, 10)),
+                name="session_rpe_1_to_10",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["athlete", "-date", "-started_at"], name="session_log_by_athlete_date")
         ]
 
     def __str__(self):
@@ -222,6 +229,7 @@ class SessionExercise(core.Model):
 
     class Meta:
         ordering = ["order", "id"]
+        indexes = [models.Index(fields=["exercise", "session_log"], name="session_exercise_by_exercise")]
 
     def __str__(self):
         return f"{self.exercise_name} in {self.session_log}"
@@ -247,6 +255,11 @@ class SetLog(core.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["session_exercise", "set_number"], name="unique_set_per_exercise"
+            ),
+            models.CheckConstraint(condition=models.Q(set_number__gte=1), name="set_log_number_from_1"),
+            models.CheckConstraint(
+                condition=models.Q(load_kg__isnull=True) | models.Q(load_kg__gte=0),
+                name="set_log_load_not_negative",
             ),
         ]
 

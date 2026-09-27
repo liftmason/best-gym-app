@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils import timezone
 
 from apps.core import models as core
@@ -67,6 +68,11 @@ class User(core.Model, AbstractUser):
     REQUIRED_FIELDS = []
 
     objects = UserManager()
+
+    class Meta:
+        # `unique=True` above is what Django's auth checks look for; this also refuses
+        # the same address in another case.
+        constraints = [models.UniqueConstraint(Lower("email"), name="unique_email_any_case")]
 
     def __str__(self):
         return self.name or self.email
@@ -218,7 +224,7 @@ class MeasurementSource(models.TextChoices):
 
 
 class BodyweightEntry(core.Model):
-    athlete = models.ForeignKey(Athlete, on_delete=models.CASCADE, related_name="bodyweights")
+    athlete = models.ForeignKey(Athlete, on_delete=models.PROTECT, related_name="bodyweights")
     date = models.DateField()
     kg = models.DecimalField(max_digits=5, decimal_places=2)
     source = models.CharField(max_length=12, choices=MeasurementSource.choices)
@@ -228,6 +234,7 @@ class BodyweightEntry(core.Model):
         ordering = ["-date", "-id"]
         verbose_name_plural = "bodyweight entries"
         constraints = [models.CheckConstraint(condition=models.Q(kg__gt=0), name="bodyweight_positive")]
+        indexes = [models.Index(fields=["athlete", "-date"], name="bodyweight_by_athlete_date")]
 
     def __str__(self):
         return f"{self.athlete} {self.kg} kg on {self.date}"
@@ -237,7 +244,7 @@ class MaxEntry(core.Model):
     """The latest row per exercise is the working max. A session PR adds a row rather
     than overwriting. "Not provided" means no row at all."""
 
-    athlete = models.ForeignKey(Athlete, on_delete=models.CASCADE, related_name="maxes")
+    athlete = models.ForeignKey(Athlete, on_delete=models.PROTECT, related_name="maxes")
     exercise = models.ForeignKey("exercises.Exercise", on_delete=models.PROTECT, related_name="max_entries")
     date = models.DateField()
     kg = models.DecimalField(max_digits=6, decimal_places=2)
@@ -245,7 +252,7 @@ class MaxEntry(core.Model):
     source = models.CharField(max_length=12, choices=MeasurementSource.choices)
     # The logged set this max came from, when a session set it (apps/workouts/prs.py).
     set_log = models.ForeignKey(
-        "workouts.SetLog", null=True, blank=True, on_delete=models.CASCADE, related_name="max_entries"
+        "workouts.SetLog", null=True, blank=True, on_delete=models.SET_NULL, related_name="max_entries"
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -253,6 +260,7 @@ class MaxEntry(core.Model):
         ordering = ["-date", "-id"]
         verbose_name_plural = "max entries"
         constraints = [models.CheckConstraint(condition=models.Q(kg__gt=0), name="max_positive")]
+        indexes = [models.Index(fields=["athlete", "exercise", "-date"], name="max_by_athlete_exercise_date")]
 
     def __str__(self):
         return f"{self.athlete} {self.exercise} {self.kg} kg × {self.reps} on {self.date}"

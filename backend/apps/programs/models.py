@@ -4,7 +4,7 @@ import re
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Deferrable, Q
+from django.db.models import Deferrable, F, Q
 from django.db.models.functions import Lower
 
 from apps.core import models as core
@@ -93,6 +93,29 @@ class PrescriptionBase(core.Model):
 
     class Meta:
         abstract = True
+        constraints = [
+            models.CheckConstraint(condition=Q(sets__gte=1), name="%(class)s_sets_at_least_1"),
+            models.CheckConstraint(
+                condition=Q(rir_max__isnull=True) | Q(rir__isnull=False, rir_max__gte=F("rir")),
+                name="%(class)s_rir_range_in_order",
+            ),
+            models.CheckConstraint(
+                condition=Q(load_value__isnull=True) | Q(load_value__gte=0),
+                name="%(class)s_load_not_negative",
+            ),
+            models.CheckConstraint(
+                condition=~Q(load_basis=LoadBasis.PERCENT)
+                | Q(load_value__isnull=True)
+                | Q(load_value__range=(1, 200)),
+                name="%(class)s_percent_1_to_200",
+            ),
+            models.CheckConstraint(
+                condition=~Q(load_basis=LoadBasis.RPE)
+                | Q(load_value__isnull=True)
+                | Q(load_value__range=(1, 10)),
+                name="%(class)s_rpe_1_to_10",
+            ),
+        ]
 
 
 class PrescribedSetBase(core.Model):
@@ -106,6 +129,13 @@ class PrescribedSetBase(core.Model):
     class Meta:
         abstract = True
         ordering = ["set_number"]
+        constraints = [
+            models.CheckConstraint(condition=Q(set_number__gte=1), name="%(class)s_set_number_from_1"),
+            models.CheckConstraint(
+                condition=Q(load_value__isnull=True) | Q(load_value__gte=0),
+                name="%(class)s_load_not_negative",
+            ),
+        ]
 
 
 # ---------------------------------------------------------------- an athlete's program
@@ -120,7 +150,7 @@ class Program(core.Model):
     """An athlete's training block: back-to-back weeks from `start_date`. One active
     program per athlete; starting a new one ends the current one, which is kept."""
 
-    athlete = models.ForeignKey("accounts.Athlete", on_delete=models.CASCADE, related_name="programs")
+    athlete = models.ForeignKey("accounts.Athlete", on_delete=models.PROTECT, related_name="programs")
     name = models.CharField(max_length=80)
     start_date = models.DateField()
     note = models.TextField(blank=True, help_text="Goal, rest, nutrition: shown to the athlete.")
@@ -218,7 +248,7 @@ class Prescription(PrescriptionBase):
     exercise = models.ForeignKey("exercises.Exercise", on_delete=models.PROTECT, related_name="prescriptions")
     tag_slot_tags = models.ManyToManyField("exercises.Tag", blank=True, related_name="+")
 
-    class Meta:
+    class Meta(PrescriptionBase.Meta):
         ordering = ["order", "id"]
 
     def __str__(self):
@@ -230,6 +260,7 @@ class PrescribedSet(PrescribedSetBase):
 
     class Meta(PrescribedSetBase.Meta):
         constraints = [
+            *PrescribedSetBase.Meta.constraints,
             models.UniqueConstraint(
                 fields=["prescription", "set_number"], name="unique_set_per_prescription"
             ),
@@ -252,7 +283,7 @@ class Habit(core.Model):
         THREE = "3x", "3× a week"
         FIVE = "5x", "5× a week"
 
-    athlete = models.ForeignKey("accounts.Athlete", on_delete=models.CASCADE, related_name="habits")
+    athlete = models.ForeignKey("accounts.Athlete", on_delete=models.PROTECT, related_name="habits")
     order = models.PositiveSmallIntegerField(default=0)
     name = models.CharField(max_length=80)
     emoji = models.CharField(max_length=8, default="🍎")

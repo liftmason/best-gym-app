@@ -1,7 +1,7 @@
 """Rate limits: counters in the database cache, shared by every web worker, in fixed windows.
 The page decorators went with the pages (sub-project 0); the API re-applies the limits listed
 in docs/plans/S0_TEST_TRIAGE.md, and sub-project 1 moves the counters to their own table
-(audit C1, C2).
+(`ratelimit.Counter`, already in the schema; audit C1, C2).
 """
 
 import time

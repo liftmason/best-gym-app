@@ -84,7 +84,7 @@ class Exercise(core.Model):
     class Meta:
         ordering = ["name"]
         constraints = [
-            models.UniqueConstraint(fields=["gym", "name"], name="unique_exercise_name_per_gym"),
+            models.UniqueConstraint(Lower("name"), "gym", name="unique_exercise_name_per_gym"),
             models.UniqueConstraint(
                 fields=["gym", "key"], condition=~models.Q(key=""), name="unique_exercise_key_per_gym"
             ),

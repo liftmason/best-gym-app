@@ -44,6 +44,11 @@ class Template(core.Model):
 
     class Meta:
         ordering = ["name", "id"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(sessions_per_week__range=(1, 6)), name="template_sessions_per_week_1_to_6"
+            ),
+        ]
 
     def __str__(self):
         return self.display_name
@@ -96,7 +101,7 @@ class TemplateSlot(PrescriptionBase):
     )
     tags = models.ManyToManyField("exercises.Tag", blank=True, related_name="template_slots")
 
-    class Meta:
+    class Meta(PrescriptionBase.Meta):
         ordering = ["order", "id"]
 
     def __str__(self):
@@ -111,7 +116,10 @@ class TemplateSlotSet(PrescribedSetBase):
     slot = models.ForeignKey(TemplateSlot, on_delete=models.CASCADE, related_name="set_overrides")
 
     class Meta(PrescribedSetBase.Meta):
-        constraints = [models.UniqueConstraint(fields=["slot", "set_number"], name="unique_set_per_slot")]
+        constraints = [
+            *PrescribedSetBase.Meta.constraints,
+            models.UniqueConstraint(fields=["slot", "set_number"], name="unique_set_per_slot"),
+        ]
 
 
 class Cadence(models.TextChoices):
