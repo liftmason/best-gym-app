@@ -4,7 +4,7 @@
  * half-up at the same place as Python's Decimal, so both give the same answer: the cases in
  * shared/rules-cases.json are checked by pytest and by this module's tests.
  */
-import Big from 'big.js';
+import { Big } from 'big.js';
 
 export type Unit = 'kg' | 'lb';
 export type LoadBasis = 'percent' | 'weight' | 'rpe' | 'bodyweight' | 'none';
