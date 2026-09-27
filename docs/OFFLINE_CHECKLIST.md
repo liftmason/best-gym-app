@@ -47,7 +47,17 @@ What they can't cover is a real phone, a real network, and the app being closed.
 2. Sign out. The app warns that 1 change hasn't been sent. Cancel, go online, let it sync,
    then sign out: no warning.
 
-## 7. Web
+## 7. Messages, numbers and videos
+1. Offline, send the coach a message, and change your bodyweight on Profile. Both show at
+   once, and the pill counts them.
+2. Record a form video for an exercise: it says it's waiting to upload. Close the app, open
+   it again: still waiting.
+3. Online: the message and the new bodyweight reach the coach, the video uploads, and the
+   coach's feed shows it.
+4. The coach replies. On the phone the Messages button shows a red count until you open the
+   Coach tab. A push (development build) opens the Coach tab when tapped.
+
+## 8. Web
 1. `npm run export:web && npm run serve:web`, then open http://localhost:8082 as the athlete.
 2. Repeat 2–3 using the browser's offline switch (dev tools → Network → Offline).
 3. Open a second tab: it says **GymTrainer is open in another tab**.

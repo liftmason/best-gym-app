@@ -30,7 +30,12 @@ export function SyncProvider({ profile, children }: { profile: TrainingProfile; 
       .then((started) => {
         if (!alive) return;
         setSession(started);
-        stop = startScheduler(started.engine, surroundings);
+        const stopScheduler = startScheduler(started.engine, surroundings);
+        const stopVideos = started.videos.start();
+        stop = () => {
+          stopScheduler();
+          stopVideos();
+        };
       })
       .catch((error) => alive && setFailed(error instanceof OtherTab ? 'other-tab' : 'error'));
     return () => {

@@ -35,7 +35,15 @@
       ],
       "expo-secure-store",
       "expo-sqlite",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "GymTrainer uses the camera to record form videos for your coach.",
+          "microphonePermission": "Form videos are recorded with sound.",
+          "photosPermission": "Choose a form video from your library for your coach."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

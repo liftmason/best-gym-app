@@ -66,6 +66,7 @@ export function makeSyncEngine({ database, transport, who, now = () => new Date(
   const statusListeners = new Set<() => void>();
   const noticeListeners = new Set<(notice: Notice) => void>();
   const queuedListeners = new Set<() => void>();
+  const aliasListeners = new Set<(aliases: Record<string, string>) => Promise<void> | void>();
   let running: Promise<void> | null = null;
   let again = false;
 
@@ -178,6 +179,7 @@ export function makeSyncEngine({ database, transport, who, now = () => new Date(
             }
           }
         });
+        if (Object.keys(aliases).length) for (const listener of aliasListeners) await listener(aliases);
       }
       await countPending();
       if (settled.length < rows.length) return; // a retry: the rest wait, in order
@@ -244,6 +246,12 @@ export function makeSyncEngine({ database, transport, who, now = () => new Date(
     onNotice(listener: (notice: Notice) => void) {
       noticeListeners.add(listener);
       return () => void noticeListeners.delete(listener);
+    },
+
+    /** When the server kept its own ids for ones the phone chose ({phone's: server's}); form video uploads follow them. */
+    onAliases(listener: (aliases: Record<string, string>) => Promise<void> | void) {
+      aliasListeners.add(listener);
+      return () => void aliasListeners.delete(listener);
     },
 
     /** After each action is queued (the scheduler syncs a few seconds later). */

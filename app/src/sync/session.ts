@@ -6,11 +6,13 @@ import { Platform } from 'react-native';
 
 import { api } from '@/api';
 import { openDatabase, type Database } from '@/db';
+import { videoFiles } from '@/videos/files';
+import { makeVideoQueue, type VideoQueue } from '@/videos/queue';
 
 import { makeSyncEngine, type SyncEngine, type Who } from './engine';
 import { apiTransport } from './transport';
 
-export type SyncSession = { database: Database; engine: SyncEngine };
+export type SyncSession = { database: Database; engine: SyncEngine; videos: VideoQueue };
 
 let session: (SyncSession & { who: Who }) | null = null;
 
@@ -19,11 +21,8 @@ export async function startSession(who: Who): Promise<SyncSession> {
   const { database } = await openDatabase();
   if (!session) {
     const current = { ...who };
-    session = {
-      database,
-      who: current,
-      engine: makeSyncEngine({ database, transport: apiTransport(api), who: () => current }),
-    };
+    const engine = makeSyncEngine({ database, transport: apiTransport(api), who: () => current });
+    session = { database, who: current, engine, videos: makeVideoQueue({ database, engine, api, files: videoFiles }) };
   }
   Object.assign(session.who, who);
   await session.engine.countPending();
@@ -60,8 +59,9 @@ export async function unsentActions(): Promise<number> {
   return engine.status.pending;
 }
 
-/** Signing out: this device's copy goes, including anything not yet sent. */
+/** Signing out: this device's copy goes, including anything not yet sent (and videos waiting to upload). */
 export async function forgetDevice(): Promise<void> {
+  await session?.videos.forget();
   const engine = await localEngine();
   await engine?.forget();
 }

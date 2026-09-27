@@ -11,6 +11,8 @@ import { prepare, setState, STATE } from '@/db/setup';
 import { makeSyncEngine } from '@/sync/engine';
 import { isSynced, upsert } from '@/sync/rows';
 import type { Transport } from '@/sync/transport';
+import type { VideoFiles } from '@/videos/files';
+import { makeVideoQueue } from '@/videos/queue';
 
 import type { TrainingProfile } from '../profile';
 
@@ -51,7 +53,20 @@ export async function paritySession(overrides: Partial<TrainingProfile> = {}) {
   // Action ids as the server expects them (UUIDs), and the same on every run.
   const newId = () => `00000000-0000-7000-9000-${String(++n).padStart(12, '0')}`;
   const engine = makeSyncEngine({ database, transport: offline, who: () => who, newId });
-  return { database, engine, profile: who };
+  const videos = makeVideoQueue({ database, engine, api: { client: offlineClient }, files: memoryFiles });
+  return { database, engine, profile: who, videos };
 }
 
 export const now = parity.now;
+
+/** Video files for tests: kept in memory, sizes from the uri ("…?size=1000"). */
+export const memoryFiles: VideoFiles & { put: jest.Mock } = {
+  lasting: true,
+  keep: async (uri: string, id: string) => ({ uri: `kept:${id}`, size: Number(/size=(\d+)/.exec(uri)?.[1] ?? 1000) }),
+  put: jest.fn(async () => 200),
+  drop: () => {},
+};
+
+const rejectOffline = () => Promise.reject(ApiError.offline());
+/** An API client with no connection. */
+export const offlineClient = { GET: rejectOffline, POST: rejectOffline, PUT: rejectOffline, PATCH: rejectOffline, DELETE: rejectOffline } as never;

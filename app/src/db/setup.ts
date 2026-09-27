@@ -1,8 +1,8 @@
 /**
  * The phone's tables. The synced ones are generated from the server (schema.generated.ts).
  * The local ones: the outbox (actions not yet sent), local_changes (what those actions did to
- * the synced tables, so a pull can undo it before laying the server's rows down) and
- * sync_state.
+ * the synced tables, so a pull can undo it before laying the server's rows down), sync_state,
+ * and uploads (form videos waiting to go, src/videos).
  *
  * When the synced tables' description changes, they're dropped and made again, and the next
  * sync downloads everything afresh (S4 decision E). The outbox is kept: what the athlete did
@@ -12,7 +12,7 @@
 import type { Database, Tx } from './database';
 import { CREATE, SCHEMA_HASH, SCHEMA_VERSION } from './schema.generated';
 
-export const LOCAL_TABLES = ['outbox', 'local_changes', 'sync_state'] as const;
+export const LOCAL_TABLES = ['outbox', 'local_changes', 'sync_state', 'uploads'] as const;
 
 const CREATE_LOCAL = `
 CREATE TABLE IF NOT EXISTS outbox (
@@ -28,6 +28,19 @@ CREATE TABLE IF NOT EXISTS local_changes (
   tbl TEXT NOT NULL,
   row_id TEXT NOT NULL,
   before TEXT
+);
+CREATE TABLE IF NOT EXISTS uploads (
+  id TEXT PRIMARY KEY,
+  session_log_id TEXT NOT NULL,
+  session_exercise_id TEXT NOT NULL,
+  uri TEXT NOT NULL,
+  size INTEGER NOT NULL,
+  content_type TEXT NOT NULL,
+  note TEXT NOT NULL DEFAULT '',
+  state TEXT NOT NULL DEFAULT 'waiting',
+  video_id TEXT,
+  error TEXT,
+  created_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS sync_state (
   key TEXT PRIMARY KEY,

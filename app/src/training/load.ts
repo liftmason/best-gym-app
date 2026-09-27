@@ -24,6 +24,7 @@ export const TRAINING_TABLES: SyncedTable[] = [
   'workouts_checkinquestion',
   'workouts_checkinanswer',
   'workouts_issuereport',
+  'workouts_formvideo',
   'accounts_maxentry',
   'accounts_coaching',
   'messaging_thread',
