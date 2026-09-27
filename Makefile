@@ -1,41 +1,43 @@
-# One command to a working local site:  make dev
+# The Django backend lives in backend/ (the Expo app arrives in app/, sub-project 4).
+# One command to a working local backend:  make dev
+B := cd backend &&
 PY := .venv/bin/python
--include .env
+-include backend/.env
 export
 
 .PHONY: dev install db migrate seed run test lint fmt check
 
 dev: install db migrate seed run
 
-# Python 3.14 and the exact versions in uv.lock (install uv: https://docs.astral.sh/uv/).
+# Python 3.14 and the exact versions in backend/uv.lock (install uv: https://docs.astral.sh/uv/).
 install:
-	uv sync --locked
+	$(B) uv sync --locked
 
 db:
 	docker compose up -d --wait db storage
-	$(PY) manage.py storage_setup
+	$(B) $(PY) manage.py storage_setup
 
 migrate:
-	$(PY) manage.py migrate
+	$(B) $(PY) manage.py migrate
 
 seed:
-	$(PY) manage.py seed_demo
+	$(B) $(PY) manage.py seed_demo
 
 run:
-	$(PY) manage.py runserver
+	$(B) $(PY) manage.py runserver
 
 test:
-	$(PY) -m pytest tests/unit
+	$(B) $(PY) -m pytest tests/unit
 
 lint:
-	.venv/bin/ruff check .
-	.venv/bin/ruff format --check .
+	$(B) .venv/bin/ruff check .
+	$(B) .venv/bin/ruff format --check .
 
 fmt:
-	.venv/bin/ruff check --fix .
-	.venv/bin/ruff format .
+	$(B) .venv/bin/ruff check --fix .
+	$(B) .venv/bin/ruff format .
 
 check:
-	$(PY) manage.py makemigrations --check --dry-run
-	DJANGO_SETTINGS_MODULE=config.settings.production ALLOWED_HOSTS=gymtrainer.onrender.com SECRET_KEY=check-only-$$(date +%s)-not-a-real-key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
+	$(B) $(PY) manage.py makemigrations --check --dry-run
+	$(B) DJANGO_SETTINGS_MODULE=config.settings.production ALLOWED_HOSTS=gymtrainer.onrender.com SECRET_KEY=check-only-$$(date +%s)-not-a-real-key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
 		$(PY) manage.py check --deploy --fail-level WARNING

@@ -20,6 +20,7 @@ services:
   - type: web
     name: gymtrainer
     runtime: python
+    rootDir: backend
     plan: starter
     branch: main
     buildCommand: pip install uv && uv export --locked --no-dev --no-hashes -o /tmp/requirements.txt && pip install -r /tmp/requirements.txt && python manage.py collectstatic --noinput
@@ -61,6 +62,7 @@ services:
   - type: cron
     name: gymtrainer-cron
     runtime: python
+    rootDir: backend
     plan: starter
     branch: main
     schedule: "0 * * * *"
