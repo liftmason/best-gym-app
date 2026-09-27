@@ -245,3 +245,17 @@ def test_rate_limit_windows_expire(frozen_clock):
     assert not ratelimit.hit("test", "k", 3, 60)
     frozen_clock.shift(datetime.timedelta(seconds=61))
     assert ratelimit.hit("test", "k", 3, 60)
+
+
+def test_a_failed_invite_email_keeps_the_invite_for_resending(coach, monkeypatch, mailoutbox):
+    # M21: the invite was saved, then the failed send answered 500, and a retry made a second.
+    from apps.accounts import emails
+
+    def down(*args):
+        raise ConnectionError("provider down")
+
+    monkeypatch.setattr(emails, "send_invite_email", down)
+    invite = invites.create(coach, "pat@example.com", base_url="https://site.test")
+    assert invite.pk and invite.email_sent is False
+    monkeypatch.undo()
+    assert invites.send(invite, "https://site.test") and len(mailoutbox) == 1

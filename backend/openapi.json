@@ -1,6 +1,83 @@
 {
   "components": {
     "schemas": {
+      "AthleteOut": {
+        "properties": {
+          "athlete": {
+            "$ref": "#/components/schemas/AthleteRef"
+          },
+          "competition_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Competition Date"
+          },
+          "competition_name": {
+            "title": "Competition Name",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "hide_history_before_link": {
+            "title": "Hide History Before Link",
+            "type": "boolean"
+          },
+          "joined_at": {
+            "format": "date-time",
+            "title": "Joined At",
+            "type": "string"
+          },
+          "max_updates": {
+            "title": "Max Updates",
+            "type": "string"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/MetricOut"
+            },
+            "title": "Metrics",
+            "type": "array"
+          },
+          "missing_metrics": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Metrics",
+            "type": "array"
+          },
+          "units": {
+            "title": "Units",
+            "type": "string"
+          },
+          "weight_class": {
+            "title": "Weight Class",
+            "type": "string"
+          }
+        },
+        "required": [
+          "athlete",
+          "email",
+          "units",
+          "weight_class",
+          "competition_name",
+          "competition_date",
+          "joined_at",
+          "max_updates",
+          "hide_history_before_link",
+          "metrics",
+          "missing_metrics"
+        ],
+        "title": "AthleteOut",
+        "type": "object"
+      },
       "AthleteProfileOut": {
         "properties": {
           "coach_name": {
@@ -347,6 +424,111 @@
         "title": "GymOut",
         "type": "object"
       },
+      "HistoryRow": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          },
+          "what": {
+            "title": "What",
+            "type": "string"
+          }
+        },
+        "required": [
+          "what",
+          "value",
+          "date",
+          "source"
+        ],
+        "title": "HistoryRow",
+        "type": "object"
+      },
+      "InviteCreated": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "email_sent": {
+            "title": "Email Sent",
+            "type": "boolean"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "link": {
+            "title": "Link",
+            "type": "string"
+          },
+          "starting_template": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starting Template"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "link",
+          "starting_template",
+          "created_at",
+          "expires_at",
+          "email_sent"
+        ],
+        "title": "InviteCreated",
+        "type": "object"
+      },
+      "InviteIn": {
+        "properties": {
+          "email": {
+            "default": "",
+            "title": "Email",
+            "type": "string"
+          },
+          "starting_template_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starting Template Id"
+          }
+        },
+        "title": "InviteIn",
+        "type": "object"
+      },
       "InviteOut": {
         "properties": {
           "coach_name": {
@@ -368,6 +550,54 @@
           "email"
         ],
         "title": "InviteOut",
+        "type": "object"
+      },
+      "InviteRow": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "link": {
+            "title": "Link",
+            "type": "string"
+          },
+          "starting_template": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starting Template"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "link",
+          "starting_template",
+          "created_at",
+          "expires_at"
+        ],
+        "title": "InviteRow",
         "type": "object"
       },
       "JoinNewIn": {
@@ -507,6 +737,19 @@
         "title": "LastSession",
         "type": "object"
       },
+      "MaxUpdatesIn": {
+        "properties": {
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "title": "MaxUpdatesIn",
+        "type": "object"
+      },
       "MeOut": {
         "properties": {
           "athlete": {
@@ -556,6 +799,115 @@
           "athlete"
         ],
         "title": "MeOut",
+        "type": "object"
+      },
+      "MetricIn": {
+        "properties": {
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "title": "MetricIn",
+        "type": "object"
+      },
+      "MetricOut": {
+        "properties": {
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "kind",
+          "value",
+          "date",
+          "source"
+        ],
+        "title": "MetricOut",
+        "type": "object"
+      },
+      "MetricsOut": {
+        "properties": {
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryRow"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/MetricOut"
+            },
+            "title": "Metrics",
+            "type": "array"
+          }
+        },
+        "required": [
+          "metrics",
+          "history"
+        ],
+        "title": "MetricsOut",
         "type": "object"
       },
       "RecentSession": {
@@ -613,6 +965,22 @@
           }
         },
         "title": "RefreshIn",
+        "type": "object"
+      },
+      "Reminded": {
+        "properties": {
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing",
+            "type": "array"
+          }
+        },
+        "required": [
+          "missing"
+        ],
+        "title": "Reminded",
         "type": "object"
       },
       "RosterRow": {
@@ -726,6 +1094,30 @@
           "missing_metrics"
         ],
         "title": "RosterRow",
+        "type": "object"
+      },
+      "TemplateChoice": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind"
+        ],
+        "title": "TemplateChoice",
         "type": "object"
       },
       "TodayItem": {
@@ -913,6 +1305,256 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/athletes/{athlete_id}": {
+      "get": {
+        "operationId": "apps_accounts_coach_api_athlete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AthleteOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Athlete",
+        "tags": [
+          "Athletes"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/archive": {
+      "post": {
+        "description": "End the coaching link. The athlete keeps their history and account; they can join a\ncoach again through an invite.",
+        "operationId": "apps_accounts_coach_api_archive",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Archive",
+        "tags": [
+          "Athletes"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/max-updates": {
+      "put": {
+        "operationId": "apps_accounts_coach_api_max_updates",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaxUpdatesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Max Updates",
+        "tags": [
+          "Athletes"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/metrics": {
+      "get": {
+        "operationId": "apps_accounts_coach_api_athlete_metrics",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Athlete Metrics",
+        "tags": [
+          "Athletes"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/metrics/{key}": {
+      "put": {
+        "description": "Set one metric (weights in the gym's unit, dated; height and years replace).",
+        "operationId": "apps_accounts_coach_api_set_metric",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetricIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MetricOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Set Metric",
+        "tags": [
+          "Athletes"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/remind-metrics": {
+      "post": {
+        "description": "Email the athlete about their missing numbers (once a day at most).",
+        "operationId": "apps_accounts_coach_api_remind",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reminded"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Remind",
+        "tags": [
+          "Athletes"
+        ]
+      }
+    },
     "/api/v1/auth/devices": {
       "get": {
         "operationId": "apps_signin_api_devices",
@@ -1254,7 +1896,168 @@
         ]
       }
     },
-    "/api/v1/invites/{token}": {
+    "/api/v1/invites": {
+      "get": {
+        "operationId": "apps_accounts_coach_api_pending_invites",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InviteRow"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Pending Invites",
+        "tags": [
+          "Invites"
+        ]
+      },
+      "post": {
+        "description": "A new invite. With an email the link is sent; `email_sent` false means it failed and\ncan be resent (the invite and its link still work).",
+        "operationId": "apps_accounts_coach_api_create_invite",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteCreated"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Create Invite",
+        "tags": [
+          "Invites"
+        ]
+      }
+    },
+    "/api/v1/invites/templates": {
+      "get": {
+        "description": "What a new athlete can start on: the gym's templates and saved weeks.",
+        "operationId": "apps_accounts_coach_api_invite_templates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TemplateChoice"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Invite Templates",
+        "tags": [
+          "Invites"
+        ]
+      }
+    },
+    "/api/v1/invites/{invite_id}/resend": {
+      "post": {
+        "operationId": "apps_accounts_coach_api_resend_invite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invite_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Invite Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Resend Invite",
+        "tags": [
+          "Invites"
+        ]
+      }
+    },
+    "/api/v1/invites/{invite_id}/revoke": {
+      "post": {
+        "operationId": "apps_accounts_coach_api_revoke_invite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invite_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Invite Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Revoke Invite",
+        "tags": [
+          "Invites"
+        ]
+      }
+    },
+    "/api/v1/join/{token}": {
       "get": {
         "description": "What an invite link is for, before joining.",
         "operationId": "apps_accounts_api_invite",
@@ -1283,11 +2086,11 @@
         },
         "summary": "Invite",
         "tags": [
-          "Invites"
+          "Joining"
         ]
       }
     },
-    "/api/v1/invites/{token}/accept": {
+    "/api/v1/join/{token}/accept": {
       "post": {
         "description": "Join as the signed-in account (an athlete without a coach, or a new athlete profile).",
         "operationId": "apps_accounts_api_accept_invite",
@@ -1321,11 +2124,11 @@
         ],
         "summary": "Accept Invite",
         "tags": [
-          "Invites"
+          "Joining"
         ]
       }
     },
-    "/api/v1/invites/{token}/signup": {
+    "/api/v1/join/{token}/signup": {
       "post": {
         "description": "Join as a new account, for an email verified by `auth/email/verify` (its ticket).\nAnswers with the new account's tokens, like signing in.",
         "operationId": "apps_accounts_api_join_new",
@@ -1357,7 +2160,7 @@
         },
         "summary": "Join New",
         "tags": [
-          "Invites"
+          "Joining"
         ]
       }
     },

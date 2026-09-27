@@ -119,21 +119,21 @@ def _joined(athlete):
     return {"athlete_id": athlete.pk, "coach_name": athlete.coach.user.name, "gym_name": athlete.gym.name}
 
 
-@router.get("/invites/{token}", auth=None, response=InviteOut, tags=["Invites"])
+@router.get("/join/{token}", auth=None, response=InviteOut, tags=["Joining"])
 def invite(request, token: str):
     """What an invite link is for, before joining."""
     invite = _invite(token)
     return {"coach_name": invite.coach.user.name, "gym_name": invite.gym.name, "email": invite.email}
 
 
-@router.post("/invites/{token}/accept", response=JoinedOut, tags=["Invites"])
+@router.post("/join/{token}/accept", response=JoinedOut, tags=["Joining"])
 def accept_invite(request, token: str):
     """Join as the signed-in account (an athlete without a coach, or a new athlete profile)."""
     limit(request, "join", 10, 3600)
     return _joined(invites.accept(_invite(token).pk, user=request.user))
 
 
-@router.post("/invites/{token}/signup", auth=None, response={201: None}, tags=["Invites"])
+@router.post("/join/{token}/signup", auth=None, response={201: None}, tags=["Joining"])
 def join_new(request, token: str, data: JoinNewIn):
     """Join as a new account, for an email verified by `auth/email/verify` (its ticket).
     Answers with the new account's tokens, like signing in."""

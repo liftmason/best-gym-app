@@ -58,11 +58,25 @@ def create(coach, email="", starting_template=None, base_url=None):
     invite = Invite.objects.create(
         coach=coach, gym=coach.gym, email=email, starting_template=starting_template
     )
-    if email and base_url:
-        from .emails import send_invite_email
-
-        send_invite_email(base_url, invite)
+    invite.email_sent = send(invite, base_url) if email and base_url else False
     return invite
+
+
+def send(invite, base_url):
+    """Email the join link; True if it went. A failure is logged, not raised: the invite is
+    kept, the coach can copy the link or send it again (audit M21)."""
+    import logging
+
+    from .emails import send_invite_email
+
+    if not invite.email or not invite.is_usable:
+        return False
+    try:
+        send_invite_email(base_url, invite)
+    except Exception:
+        logging.getLogger(__name__).exception("invite email to %s failed", invite.pk)
+        return False
+    return True
 
 
 def revoke(coach, invite_id):

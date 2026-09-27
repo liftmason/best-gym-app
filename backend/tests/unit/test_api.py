@@ -113,26 +113,26 @@ def test_the_web_app_keeps_its_refresh_token_in_a_cookie(api, athlete, mailoutbo
 
 def test_joining_through_an_invite_as_a_new_account(api, coach, mailoutbox):
     invite = invites.create(coach, "new@example.com")
-    preview = get(api, f"/invites/{invite.token}").json()
+    preview = get(api, f"/join/{invite.token}").json()
     assert preview == {"coach_name": "Dana Whitfield", "gym_name": coach.gym.name, "email": "new@example.com"}
     ticket = sign_in(api, mailoutbox, "new@example.com").json()["ticket"]
-    response = post(api, f"/invites/{invite.token}/signup", {"ticket": ticket, "name": "Nia Park"})
+    response = post(api, f"/join/{invite.token}/signup", {"ticket": ticket, "name": "Nia Park"})
     assert response.status_code == 201
     me = get(api, "/me", response.json()["access"]).json()
     assert me["name"] == "Nia Park" and me["athlete"]["coach_name"] == "Dana Whitfield"
-    assert get(api, f"/invites/{invite.token}").status_code == 410  # used
-    assert get(api, "/invites/not-a-token").status_code == 404
+    assert get(api, f"/join/{invite.token}").status_code == 410  # used
+    assert get(api, "/join/not-a-token").status_code == 404
 
 
 def test_an_athlete_without_a_coach_joins_a_new_one(api, athlete, coach, mailoutbox):
     coaching.end(athlete)
     invite = invites.create(coach)
     access = sign_in(api, mailoutbox, "maya@example.com").json()["tokens"]["access"]
-    response = post(api, f"/invites/{invite.token}/accept", HTTP_AUTHORIZATION=f"Bearer {access}")
+    response = post(api, f"/join/{invite.token}/accept", HTTP_AUTHORIZATION=f"Bearer {access}")
     assert response.status_code == 200 and response.json()["athlete_id"] == str(athlete.pk)
     busy = signin.open_session(AthleteFactory(coach=coach).user)  # already has a coach
     auth = f"Bearer {busy.access}"
-    again = post(api, f"/invites/{invites.create(coach).token}/accept", HTTP_AUTHORIZATION=auth)
+    again = post(api, f"/join/{invites.create(coach).token}/accept", HTTP_AUTHORIZATION=auth)
     assert again.status_code == 409 and again.json()["error"]["code"] == "already_athlete"
 
 

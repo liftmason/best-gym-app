@@ -105,12 +105,14 @@ def limit(request, name, count, seconds, key=None):
 
 def _routers():
     from apps.accounts.api import router as accounts
+    from apps.accounts.coach_api import router as athletes
     from apps.dashboard.api import router as dashboard
     from apps.signin.api import router as signin
 
     api.add_router("/auth", signin)
     api.add_router("", accounts)
     api.add_router("", dashboard)
+    api.add_router("", athletes)
 
 
 def coach_of(request):

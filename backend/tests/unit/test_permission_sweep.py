@@ -18,7 +18,7 @@ from django.db import connection
 from django.test import Client
 from django.test.utils import CaptureQueriesContext
 
-from apps.accounts import coaching
+from apps.accounts import coaching, invites
 from apps.api.main import api as ninja_api
 from apps.signin import services as signin
 
@@ -31,11 +31,14 @@ pytestmark = pytest.mark.django_db
 PARAMS = {
     "device_id": ("user", lambda w: w["device"].pk),
     "notification_id": ("user", lambda w: w["notification"].pk),
+    "athlete_id": ("athlete", lambda w: w["athlete"].pk),
+    "key": ("athlete", lambda w: "bodyweight"),  # a metric, always under an athlete
+    "invite_id": ("user", lambda w: w["invite"].pk),
 }
 
 # Endpoints whose path parameter is itself the credential, so anyone holding it may use it.
 EXEMPT = {
-    ("post", "/api/v1/invites/{token}/accept"): "the invite link is the credential",
+    ("post", "/api/v1/join/{token}/accept"): "the invite link is the credential",
 }
 
 # Writes a refused request may still make: counting it for rate limits, and noting when
@@ -122,6 +125,7 @@ def world(gym):
         "athlete": athlete,
         "device": signin.open_session(athlete.user).session,
         "notification": alerts.notify(athlete, NotificationKind.ISSUE, "issue:x", "Sore wrist", ""),
+        "invite": invites.create(owner, "new@example.com"),
     }
 
 
