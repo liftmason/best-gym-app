@@ -28,7 +28,7 @@ class NotificationKind(models.TextChoices):
     WEEK_PUBLISHED = "week_published", "Week published"
 
 
-class NotificationQuerySet(models.QuerySet):
+class NotificationQuerySet(core.QuerySet):
     def in_feed(self):
         return self.filter(cleared_at__isnull=True)
 

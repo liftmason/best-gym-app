@@ -60,11 +60,14 @@ class Template(core.Model):
 
 class TemplateWeek(core.Model):
     template = models.ForeignKey(Template, on_delete=models.CASCADE, related_name="weeks")
+    gym = core.gym_column()
     order = models.PositiveSmallIntegerField(default=0)
     week_type = models.ForeignKey(
         "programs.WeekType", on_delete=models.PROTECT, related_name="template_weeks"
     )
     focus_note = models.TextField(blank=True)
+
+    scope = ("gym", "template")
 
     class Meta:
         ordering = ["order", "id"]
@@ -72,11 +75,17 @@ class TemplateWeek(core.Model):
     def __str__(self):
         return f"{self.template} · week {self.order + 1}"
 
+    def clean(self):
+        core.check_same_gym(self.template.gym_id, week_type=self.week_type)
+
 
 class TemplateSession(core.Model):
     week = models.ForeignKey(TemplateWeek, on_delete=models.CASCADE, related_name="sessions")
+    gym = core.gym_column()
     order = models.PositiveSmallIntegerField(default=0)
     name = models.CharField(max_length=80, blank=True)
+
+    scope = ("gym", "week")
 
     class Meta:
         ordering = ["order", "id"]
@@ -94,12 +103,17 @@ class TemplateSlot(PrescriptionBase):
     """`exercise` is the fixed exercise, or a tag slot's default."""
 
     session = models.ForeignKey(TemplateSession, on_delete=models.CASCADE, related_name="slots")
+    gym = core.gym_column()
     order = models.PositiveSmallIntegerField(default=0)
     kind = models.CharField(max_length=10, choices=SlotKind.choices, default=SlotKind.EXERCISE)
     exercise = models.ForeignKey(
         "exercises.Exercise", on_delete=models.PROTECT, related_name="template_slots"
     )
-    tags = models.ManyToManyField("exercises.Tag", blank=True, related_name="template_slots")
+    tags = models.ManyToManyField(
+        "exercises.Tag", blank=True, related_name="template_slots", through="TemplateSlotTag"
+    )
+
+    scope = ("gym", "session")
 
     class Meta(PrescriptionBase.Meta):
         ordering = ["order", "id"]
@@ -111,15 +125,35 @@ class TemplateSlot(PrescriptionBase):
     def is_tag(self):
         return self.kind == SlotKind.TAG
 
+    def clean(self):
+        core.check_same_gym(self.session.week.template.gym_id, exercise=self.exercise)
+
 
 class TemplateSlotSet(PrescribedSetBase):
     slot = models.ForeignKey(TemplateSlot, on_delete=models.CASCADE, related_name="set_overrides")
+    gym = core.gym_column()
+
+    scope = ("gym", "slot")
 
     class Meta(PrescribedSetBase.Meta):
         constraints = [
             *PrescribedSetBase.Meta.constraints,
             models.UniqueConstraint(fields=["slot", "set_number"], name="unique_set_per_slot"),
         ]
+
+
+class TemplateSlotTag(core.Model):
+    slot = models.ForeignKey(TemplateSlot, on_delete=models.CASCADE)
+    tag = models.ForeignKey("exercises.Tag", on_delete=models.CASCADE, related_name="+")
+    gym = core.gym_column()
+
+    scope = ("gym", "slot")
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["slot", "tag"], name="unique_template_slot_tag")]
+
+    def clean(self):
+        core.check_same_gym(self.slot.session.week.template.gym_id, tag=self.tag)
 
 
 class Cadence(models.TextChoices):
@@ -136,11 +170,14 @@ class TemplateHabit(core.Model):
     """Prescribed to the athlete when the template is applied (athlete habits: phase 7)."""
 
     template = models.ForeignKey(Template, on_delete=models.CASCADE, related_name="habits")
+    gym = core.gym_column()
     order = models.PositiveSmallIntegerField(default=0)
     name = models.CharField(max_length=80)
     emoji = models.CharField(max_length=8, default="🍎")
     cadence = models.CharField(max_length=10, choices=Cadence.choices, default=Cadence.DAILY)
     note = models.CharField(max_length=120, blank=True)
+
+    scope = ("gym", "template")
 
     class Meta:
         ordering = ["order", "id"]

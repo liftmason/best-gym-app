@@ -12,6 +12,8 @@ class Thread(core.Model):
     athlete = models.ForeignKey("accounts.Athlete", on_delete=models.CASCADE, related_name="threads")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    scope = ("athlete", "coaching")
+
     def __str__(self):
         return f"{self.coach} ↔ {self.athlete}"
 
@@ -33,12 +35,15 @@ class Thread(core.Model):
 
 class Message(core.Model):
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name="messages")
+    athlete = core.athlete_column()
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
     )
     body = models.TextField(max_length=4000)
     sent_at = models.DateTimeField(auto_now_add=True)
     read_at = models.DateTimeField(null=True, blank=True)
+
+    scope = ("athlete", "thread")
 
     class Meta:
         ordering = ["sent_at", "id"]

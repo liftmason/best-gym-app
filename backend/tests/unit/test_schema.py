@@ -5,24 +5,26 @@ import uuid
 from decimal import Decimal
 
 import pytest
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models import ProtectedError
 from django.utils import timezone
 
 from apps.accounts import erase
 from apps.accounts.models import BodyweightEntry, MaxEntry, User
+from apps.core import sync
 from apps.dashboard.models import Notification, NotificationKind
-from apps.exercises.models import Exercise
+from apps.exercises.models import Exercise, ExerciseTag, Tag
 from apps.messaging import services as messaging
 from apps.messaging.models import Message, Thread
 from apps.programs import habits
 from apps.programs import services as program_services
-from apps.programs.models import LoadBasis, Prescription, Program, WeekType
+from apps.programs.models import LoadBasis, PrescribedSet, Prescription, PrescriptionTag, Program, WeekType
 from apps.workouts import sessions
 from apps.workouts.models import SessionLog, SetLog
 
 from ..conftest import cat, ex
-from ..factories import AthleteFactory, UserFactory
+from ..factories import AthleteFactory, GymFactory, UserFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -144,3 +146,77 @@ def test_posted_ids_are_parsed_safely():
     value = uuid.uuid7()
     assert ids.parse(str(value)) == value and ids.parse(value) == value
     assert ids.parse("12") is None and ids.parse(None) is None and ids.parse("") is None
+
+
+# ---------------------------------------------------------------- synced tables (S3 relies on these)
+
+
+def _project_models():
+    from django.apps import apps as django_apps
+
+    return {
+        m._meta.label: m
+        for m in django_apps.get_models()
+        if m.__module__.startswith("apps.") and not m._meta.auto_created
+    }
+
+
+def test_every_table_is_listed_as_synced_or_not():
+    listed = sync.BY_ATHLETE + sync.BY_GYM + sync.BY_GYM_OR_ATHLETE + sync.NOT_SYNCED
+    assert len(listed) == len(set(listed)), "a table is listed twice in apps/core/sync.py"
+    assert set(_project_models()) == set(listed), "list new tables in apps/core/sync.py"
+
+
+def test_synced_tables_carry_their_owner_column():
+    models = _project_models()
+    for label, owner in [(m, "athlete") for m in sync.BY_ATHLETE] + [(m, "gym") for m in sync.BY_GYM]:
+        field = models[label]._meta.get_field(owner)
+        assert field.many_to_one and not field.null, f"{label}.{owner}"
+        assert field.related_model._meta.label == f"accounts.{owner.title()}", f"{label}.{owner}"
+    for label in sync.BY_GYM_OR_ATHLETE:
+        assert {models[label]._meta.get_field(f).null for f in ("athlete", "gym")} == {True}
+
+
+def test_synced_many_to_many_links_have_their_own_table():
+    models = _project_models()
+    for label in sync.BY_ATHLETE + sync.BY_GYM:
+        for field in models[label]._meta.many_to_many:
+            through = field.remote_field.through._meta
+            assert not through.auto_created, f"{label}.{field.name}: give it a through model"
+
+
+def test_child_rows_take_their_owner_from_the_parent(log, athlete, gym):
+    se = log.exercises.get()
+    sessions.log_set(se, 1, load="80", reps="3", done=True)
+    rx = Prescription.objects.get()
+    rx.tag_slot_tags.set([Tag.objects.get(gym=gym, name="speed")])
+    assert {SetLog.objects.get().athlete_id, se.athlete_id, rx.athlete_id} == {athlete.pk}
+    assert PrescriptionTag.objects.get().athlete_id == athlete.pk
+    assert ExerciseTag.objects.filter(exercise__gym=gym).exclude(gym=gym).count() == 0
+    assert PrescribedSet.objects.exclude(athlete=athlete).count() == 0
+
+
+def test_a_row_whose_owner_disagrees_with_its_parent_is_refused(log, coach):
+    other = AthleteFactory(coach=coach)
+    se = log.exercises.get()
+    with pytest.raises(ValueError):
+        SetLog.objects.create(session_exercise=se, set_number=2, athlete=other)
+    with pytest.raises(ValueError):
+        SetLog.objects.bulk_create([SetLog(session_exercise=se, set_number=2, athlete=other)])
+
+
+def test_references_to_another_gyms_rows_are_invalid(log, athlete, gym):
+    elsewhere = GymFactory(pack="weightlifting")
+    rx = Prescription.objects.get()
+    rx.exercise = ex(elsewhere, "sn")
+    week = rx.session.day.week
+    week.week_type = WeekType.objects.filter(gym=elsewhere).first()
+    snatch = ex(gym, "sn")
+    snatch.percent_of = ex(elsewhere, "cj")
+    maxed = MaxEntry(
+        athlete=athlete, exercise=ex(elsewhere, "bsq"), date=athlete.today(), kg=100, source="coach"
+    )
+    tagged = ExerciseTag(exercise=ex(gym, "sn"), tag=Tag.objects.filter(gym=elsewhere).first())
+    for row in (rx, week, snatch, maxed, tagged):
+        with pytest.raises(ValidationError):
+            row.clean()

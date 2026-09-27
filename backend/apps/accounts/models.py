@@ -375,6 +375,9 @@ class MaxEntry(core.Model):
     def __str__(self):
         return f"{self.athlete} {self.exercise} {self.kg} kg × {self.reps} on {self.date}"
 
+    def clean(self):
+        core.check_same_gym(self.athlete.gym.pk, exercise=self.exercise)
+
 
 def default_invite_expiry():
     return timezone.now() + datetime.timedelta(days=14)

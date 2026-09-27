@@ -63,7 +63,7 @@ class Exercise(core.Model):
     )
     name = models.CharField(max_length=120)
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="exercises")
-    tags = models.ManyToManyField(Tag, blank=True, related_name="exercises")
+    tags = models.ManyToManyField(Tag, blank=True, related_name="exercises", through="ExerciseTag")
     measure = models.CharField(max_length=10, choices=Measure.choices, default=Measure.REPS)
     reps_per_rep = models.PositiveSmallIntegerField(default=1, help_text='2 for a "1+1" complex')
     percent_of = models.ForeignKey(
@@ -94,13 +94,28 @@ class Exercise(core.Model):
         return self.name
 
     def clean(self):
-        if self.category_id and self.gym_id and self.category.gym_id != self.gym_id:
-            raise ValidationError({"category": "Pick one of your gym's categories."})
+        core.check_same_gym(
+            self.gym_id, category=self.category if self.category_id else None, percent_of=self.percent_of
+        )
 
     @property
     def max_source(self):
         """The exercise whose max a percentage load is taken from."""
         return self.percent_of or self
+
+
+class ExerciseTag(core.Model):
+    exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, related_name="+")
+    gym = core.gym_column()
+
+    scope = ("gym", "exercise")
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["exercise", "tag"], name="unique_exercise_tag")]
+
+    def clean(self):
+        core.check_same_gym(self.exercise.gym_id, tag=self.tag)
 
 
 MAX_TRACKED_LIFTS = 6

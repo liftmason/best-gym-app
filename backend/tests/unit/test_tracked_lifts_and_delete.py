@@ -70,7 +70,7 @@ def test_deletion_handles_every_model_that_points_at_an_exercise():
         ("accounts", "maxentry", "exercise"),
         ("exercises", "exercise", "percent_of"),
         ("exercises", "trackedlift", "exercise"),
-        ("exercises", "exercise_tags", "exercise"),  # tag links go with the exercise automatically
+        ("exercises", "exercisetag", "exercise"),  # tag links go with the exercise automatically
         ("programs", "prescription", "exercise"),
         ("workouts", "sessionexercise", "exercise"),  # link cleared; the name and sets stay
         ("library", "templateslot", "exercise"),  # fixed slots removed; tag slots re-defaulted

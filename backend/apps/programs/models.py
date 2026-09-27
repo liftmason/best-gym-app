@@ -17,7 +17,7 @@ def validate_colour(value):
         raise ValidationError(f"{value!r} is not a colour like #2E9E5B")
 
 
-class WeekTypeQuerySet(models.QuerySet):
+class WeekTypeQuerySet(core.QuerySet):
     def active(self):
         return self.filter(archived=False)
 
@@ -141,7 +141,7 @@ class PrescribedSetBase(core.Model):
 # ---------------------------------------------------------------- an athlete's program
 
 
-class ProgramQuerySet(models.QuerySet):
+class ProgramQuerySet(core.QuerySet):
     def active(self):
         return self.filter(active=True)
 
@@ -180,12 +180,15 @@ class Program(core.Model):
 
 class ProgramWeek(core.Model):
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name="weeks")
+    athlete = core.athlete_column()
     order = models.PositiveSmallIntegerField()
     week_type = models.ForeignKey(WeekType, on_delete=models.PROTECT, related_name="program_weeks")
     start_date = models.DateField()
     focus_note = models.TextField(blank=True)
     published = models.BooleanField(default=False)
     published_at = models.DateTimeField(null=True, blank=True)
+
+    scope = ("athlete", "program")
 
     class Meta:
         ordering = ["order"]
@@ -201,6 +204,9 @@ class ProgramWeek(core.Model):
     def __str__(self):
         return f"{self.program} · {self.label}"
 
+    def clean(self):
+        core.check_same_gym(self.program.athlete.gym.pk, week_type=self.week_type)
+
     @property
     def label(self):
         return f"Wk {self.order + 1}"
@@ -214,7 +220,10 @@ class ProgramDay(core.Model):
     """Seven per week. Rest is not stored: a day with no sessions is a rest day."""
 
     week = models.ForeignKey(ProgramWeek, on_delete=models.CASCADE, related_name="days")
+    athlete = core.athlete_column()
     date = models.DateField()
+
+    scope = ("athlete", "week")
 
     class Meta:
         ordering = ["date"]
@@ -232,8 +241,11 @@ class ProgramSession(core.Model):
     """Usually one per day; a second covers morning and evening training."""
 
     day = models.ForeignKey(ProgramDay, on_delete=models.CASCADE, related_name="sessions")
+    athlete = core.athlete_column()
     order = models.PositiveSmallIntegerField(default=0)
     name = models.CharField(max_length=80, blank=True)
+
+    scope = ("athlete", "day")
 
     class Meta:
         ordering = ["order", "id"]
@@ -244,9 +256,14 @@ class ProgramSession(core.Model):
 
 class Prescription(PrescriptionBase):
     session = models.ForeignKey(ProgramSession, on_delete=models.CASCADE, related_name="prescriptions")
+    athlete = core.athlete_column()
     order = models.PositiveSmallIntegerField(default=0)
     exercise = models.ForeignKey("exercises.Exercise", on_delete=models.PROTECT, related_name="prescriptions")
-    tag_slot_tags = models.ManyToManyField("exercises.Tag", blank=True, related_name="+")
+    tag_slot_tags = models.ManyToManyField(
+        "exercises.Tag", blank=True, related_name="+", through="PrescriptionTag"
+    )
+
+    scope = ("athlete", "session")
 
     class Meta(PrescriptionBase.Meta):
         ordering = ["order", "id"]
@@ -254,9 +271,15 @@ class Prescription(PrescriptionBase):
     def __str__(self):
         return f"{self.exercise} {self.sets}×{self.rep_scheme}"
 
+    def clean(self):
+        core.check_same_gym(self.session.day.week.program.athlete.gym.pk, exercise=self.exercise)
+
 
 class PrescribedSet(PrescribedSetBase):
     prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE, related_name="set_overrides")
+    athlete = core.athlete_column()
+
+    scope = ("athlete", "prescription")
 
     class Meta(PrescribedSetBase.Meta):
         constraints = [
@@ -268,6 +291,24 @@ class PrescribedSet(PrescribedSetBase):
 
     def __str__(self):
         return f"Set {self.set_number} of {self.prescription}"
+
+
+class PrescriptionTag(core.Model):
+    """A tag a prescription applied from a tag slot keeps, so it stays swappable."""
+
+    prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE)
+    tag = models.ForeignKey("exercises.Tag", on_delete=models.CASCADE, related_name="+")
+    athlete = core.athlete_column()
+
+    scope = ("athlete", "prescription")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["prescription", "tag"], name="unique_prescription_tag")
+        ]
+
+    def clean(self):
+        core.check_same_gym(self.prescription.exercise.gym_id, tag=self.tag)
 
 
 # ---------------------------------------------------------------- habits (phase 7)
@@ -310,7 +351,10 @@ class HabitLog(core.Model):
     """A habit done on a day (a row means done)."""
 
     habit = models.ForeignKey(Habit, on_delete=models.CASCADE, related_name="logs")
+    athlete = core.athlete_column()
     date = models.DateField()
+
+    scope = ("athlete", "habit")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

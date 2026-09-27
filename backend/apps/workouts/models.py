@@ -14,7 +14,7 @@ class QuestionType(models.TextChoices):
     TEXT = "text", "Short answer"
 
 
-class CheckinQuestionQuerySet(models.QuerySet):
+class CheckinQuestionQuerySet(core.QuerySet):
     def active(self):
         return self.filter(archived=False).order_by("order", "id")
 
@@ -134,7 +134,7 @@ def copy_defaults_to(athlete):
 EDIT_WINDOW = datetime.timedelta(hours=24)
 
 
-class SessionLogQuerySet(models.QuerySet):
+class SessionLogQuerySet(core.QuerySet):
     def finished(self):
         return self.filter(finished_at__isnull=False)
 
@@ -210,6 +210,7 @@ class SessionExercise(core.Model):
     readable if the exercise is deleted from the library (the link is then cleared)."""
 
     session_log = models.ForeignKey(SessionLog, on_delete=models.CASCADE, related_name="exercises")
+    athlete = core.athlete_column()
     prescription = models.ForeignKey(
         "programs.Prescription", null=True, blank=True, on_delete=models.SET_NULL, related_name="logged"
     )
@@ -227,6 +228,8 @@ class SessionExercise(core.Model):
     warmup = models.BooleanField(default=False)
     checked_at = models.DateTimeField(null=True, blank=True)
 
+    scope = ("athlete", "session_log")
+
     class Meta:
         ordering = ["order", "id"]
         indexes = [models.Index(fields=["exercise", "session_log"], name="session_exercise_by_exercise")]
@@ -240,6 +243,7 @@ class SetLog(core.Model):
     timed work logs seconds and no reps. `rir` 5 means "5 or more"."""
 
     session_exercise = models.ForeignKey(SessionExercise, on_delete=models.CASCADE, related_name="sets")
+    athlete = core.athlete_column()
     set_number = models.PositiveSmallIntegerField()
     load_kg = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     reps = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -249,6 +253,8 @@ class SetLog(core.Model):
     logged_at = models.DateTimeField(auto_now=True)
     # The coach chose to keep the current max rather than use this set as the new one.
     max_dismissed = models.BooleanField(default=False)
+
+    scope = ("athlete", "session_exercise")
 
     class Meta:
         ordering = ["set_number"]
@@ -272,6 +278,7 @@ class CheckinAnswer(core.Model):
     history readable if the question is archived or removed."""
 
     session_log = models.ForeignKey(SessionLog, on_delete=models.CASCADE, related_name="answers")
+    athlete = core.athlete_column()
     question = models.ForeignKey(
         CheckinQuestion, null=True, blank=True, on_delete=models.SET_NULL, related_name="answers"
     )
@@ -282,6 +289,8 @@ class CheckinAnswer(core.Model):
     value = models.CharField(max_length=200, blank=True)
     # "Other" details for a choice; a scale question's detail ("thighs").
     other_text = models.TextField(blank=True)
+
+    scope = ("athlete", "session_log")
 
     class Meta:
         ordering = ["order", "id"]
@@ -326,7 +335,7 @@ class IssueReport(core.Model):
         return f"{self.athlete}: {self.get_kind_display()}"
 
 
-class FormVideoQuerySet(models.QuerySet):
+class FormVideoQuerySet(core.QuerySet):
     def uploaded(self):
         return self.filter(uploaded_at__isnull=False)
 
@@ -342,6 +351,7 @@ class FormVideo(core.Model):
     what the coach said."""
 
     session_log = models.ForeignKey(SessionLog, on_delete=models.CASCADE, related_name="videos")
+    athlete = core.athlete_column()
     session_exercise = models.ForeignKey(
         SessionExercise, null=True, blank=True, on_delete=models.SET_NULL, related_name="videos"
     )
@@ -360,6 +370,8 @@ class FormVideo(core.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     objects = FormVideoQuerySet.as_manager()
+
+    scope = ("athlete", "session_log")
 
     class Meta:
         ordering = ["created_at", "id"]
