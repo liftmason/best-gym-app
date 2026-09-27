@@ -2,6 +2,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.functions import Lower
 
+from apps.core import models as core
+
 
 class Measure(models.TextChoices):
     REPS = "reps", "Reps"
@@ -12,7 +14,7 @@ class Measure(models.TextChoices):
 TAG_MAX_LENGTH = 24
 
 
-class Category(models.Model):
+class Category(core.Model):
     """A gym's own exercise categories (e.g. Snatch, Squat, Hinge). Ordered by the coach.
     Deleting one that has exercises moves them to another category first."""
 
@@ -31,7 +33,7 @@ class Category(models.Model):
         return self.name
 
 
-class Tag(models.Model):
+class Tag(core.Model):
     """A gym's own exercise tags, used to filter the library and for tag-based
     template slots. Names are at most TAG_MAX_LENGTH characters."""
 
@@ -48,7 +50,7 @@ class Tag(models.Model):
         return self.name
 
 
-class Exercise(models.Model):
+class Exercise(core.Model):
     """Model lands in phase 1 because MaxEntry points at it; the library CRUD is phase 2."""
 
     gym = models.ForeignKey("accounts.Gym", on_delete=models.CASCADE, related_name="exercises")
@@ -104,7 +106,7 @@ class Exercise(models.Model):
 MAX_TRACKED_LIFTS = 6
 
 
-class TrackedLift(models.Model):
+class TrackedLift(core.Model):
     """The lifts a gym records maxes for: asked at onboarding, shown on the Metrics
     tab and in the athlete header. An ordered, gym-wide list the coach edits in
     Settings. Archiving the exercise removes it from the list; history is kept."""

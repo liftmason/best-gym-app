@@ -75,7 +75,9 @@ def resolve(slot, athlete_recent, mode, tag_pool):
     candidates = [e for e in tag_pool if tag_ids <= e.tag_ids and e.pk in athlete_recent]
     if not candidates:
         return slot.exercise
-    return max(candidates, key=lambda e: (athlete_recent[e.pk], -e.pk))
+    # The most recently done; the oldest exercise on a tie.
+    latest = max(athlete_recent[e.pk] for e in candidates)
+    return min((e for e in candidates if athlete_recent[e.pk] == latest), key=lambda e: e.pk)
 
 
 def plan(template, athlete, days, mode):
@@ -272,7 +274,7 @@ def new_draft(template, athlete):
     """A fresh preview: the template's default days, tag slots from recent lifts, the first
     placement, not published, showing the first ghost week."""
     return {
-        "template": template.pk,
+        "template": str(template.pk),
         "days": default_days(template),
         "mode": RECENT,
         "start": placements(athlete)[0].value,

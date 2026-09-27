@@ -9,6 +9,8 @@ from django.db import transaction
 from django.db.models import Max, Q
 from django.db.models.functions import Lower
 
+from apps.core import ids
+
 from .models import MAX_TRACKED_LIFTS, TAG_MAX_LENGTH, Category, Exercise, Measure, Tag, TrackedLift
 
 CATEGORY_NAME_LENGTH = Category._meta.get_field("name").max_length
@@ -67,9 +69,10 @@ def save_pending_names(model, gym, post, max_length):
     row's own save reports them."""
     rows = {obj.pk: obj for obj in model.objects.filter(gym=gym)}
     for key, raw in post.items():
-        if not key.startswith("name_") or not key[5:].isdigit() or int(key[5:]) not in rows:
+        pk = ids.parse(key[5:]) if key.startswith("name_") else None
+        if pk not in rows:
             continue
-        obj = rows[int(key[5:])]
+        obj = rows[pk]
         name = " ".join(raw.split())
         if not name or len(name) > max_length or name == obj.name:
             continue
@@ -101,7 +104,7 @@ def move_in_order(rows, pk, direction):
 def search(gym, q="", tag_ids=(), archived=False):
     """(exercises, tags): the library filtered by text (name, tag, cue, category) and by
     every tag given, archived ones only if asked; in category order, then by name."""
-    tags = list(Tag.objects.filter(gym=gym, pk__in=[int(t) for t in tag_ids if str(t).isdigit()]))
+    tags = list(Tag.objects.filter(gym=gym, pk__in=[pk for t in tag_ids if (pk := ids.parse(t))]))
     exercises = (
         Exercise.objects.filter(gym=gym, archived=archived)
         .select_related("percent_of", "category")
@@ -307,7 +310,8 @@ def track(gym, exercise_id):
     current = TrackedLift.objects.select_for_update().filter(gym=gym)
     if current.count() >= MAX_TRACKED_LIFTS:
         raise TrackingRefused(f"Track up to {MAX_TRACKED_LIFTS} lifts")
-    exercise = trackable(gym).filter(pk=exercise_id).first() if str(exercise_id).isdigit() else None
+    pk = ids.parse(exercise_id)
+    exercise = trackable(gym).filter(pk=pk).first() if pk else None
     if exercise is None:
         raise TrackingRefused("Pick a lift to track")
     next_order = (current.aggregate(m=Max("order"))["m"] or 0) + 1

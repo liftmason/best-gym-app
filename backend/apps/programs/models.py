@@ -7,6 +7,8 @@ from django.db import models
 from django.db.models import Deferrable, Q
 from django.db.models.functions import Lower
 
+from apps.core import models as core
+
 HEX_COLOUR = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
 
@@ -20,7 +22,7 @@ class WeekTypeQuerySet(models.QuerySet):
         return self.filter(archived=False)
 
 
-class WeekType(models.Model):
+class WeekType(core.Model):
     """A gym's own week types (e.g. Accumulation, Deload). They colour-code the program
     editor, the athlete's week strip and session cards. A week type that programs or
     templates use can only be archived: it leaves the pickers but past weeks keep it."""
@@ -60,7 +62,7 @@ class LoadBasis(models.TextChoices):
     NONE = "none", "No load"
 
 
-class PrescriptionBase(models.Model):
+class PrescriptionBase(core.Model):
     """One exercise's dose in one session. Shared by program prescriptions and (in
     phase 5) template slots, so applying a template copies every field.
 
@@ -93,7 +95,7 @@ class PrescriptionBase(models.Model):
         abstract = True
 
 
-class PrescribedSetBase(models.Model):
+class PrescribedSetBase(core.Model):
     """A per-set override (e.g. 70/75/80%). No rows means every set follows the parent."""
 
     set_number = models.PositiveSmallIntegerField()
@@ -114,7 +116,7 @@ class ProgramQuerySet(models.QuerySet):
         return self.filter(active=True)
 
 
-class Program(models.Model):
+class Program(core.Model):
     """An athlete's training block: back-to-back weeks from `start_date`. One active
     program per athlete; starting a new one ends the current one, which is kept."""
 
@@ -146,7 +148,7 @@ class Program(models.Model):
         return f"{self.athlete}: {self.name}"
 
 
-class ProgramWeek(models.Model):
+class ProgramWeek(core.Model):
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name="weeks")
     order = models.PositiveSmallIntegerField()
     week_type = models.ForeignKey(WeekType, on_delete=models.PROTECT, related_name="program_weeks")
@@ -178,7 +180,7 @@ class ProgramWeek(models.Model):
         return self.start_date + datetime.timedelta(days=6)
 
 
-class ProgramDay(models.Model):
+class ProgramDay(core.Model):
     """Seven per week. Rest is not stored: a day with no sessions is a rest day."""
 
     week = models.ForeignKey(ProgramWeek, on_delete=models.CASCADE, related_name="days")
@@ -196,7 +198,7 @@ class ProgramDay(models.Model):
         return str(self.date)
 
 
-class ProgramSession(models.Model):
+class ProgramSession(core.Model):
     """Usually one per day; a second covers morning and evening training."""
 
     day = models.ForeignKey(ProgramDay, on_delete=models.CASCADE, related_name="sessions")
@@ -240,7 +242,7 @@ class PrescribedSet(PrescribedSetBase):
 # ---------------------------------------------------------------- habits (phase 7)
 
 
-class Habit(models.Model):
+class Habit(core.Model):
     """A habit prescribed to an athlete (by hand, or copied from a template on apply).
     Removing one archives it, so its history stays."""
 
@@ -273,7 +275,7 @@ class Habit(models.Model):
         return {self.Cadence.THREE: 3, self.Cadence.FIVE: 5}.get(self.cadence)
 
 
-class HabitLog(models.Model):
+class HabitLog(core.Model):
     """A habit done on a day (a row means done)."""
 
     habit = models.ForeignKey(Habit, on_delete=models.CASCADE, related_name="logs")
@@ -291,7 +293,7 @@ class HabitLog(models.Model):
 # ---------------------------------------------------------------- undo (phase 7)
 
 
-class EditHistory(models.Model):
+class EditHistory(core.Model):
     """A snapshot of one program week taken before a board edit; undo restores the
     latest and deletes it. Kept to the last UNDO_DEPTH per week."""
 

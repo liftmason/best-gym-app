@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from django.db import transaction
 
 from apps.accounts.models import MaxEntry, MaxUpdates, MeasurementSource
+from apps.core import ids
 
 from .models import SetLog
 
@@ -114,7 +115,7 @@ def pending(athlete):
 
 
 def pending_set(athlete, set_id):
-    return next((c for c in pending(athlete) if c.set_log.pk == int(set_id)), None)
+    return next((c for c in pending(athlete) if c.set_log.pk == ids.parse(set_id)), None)
 
 
 def accept(athlete, candidate):

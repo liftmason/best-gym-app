@@ -8,6 +8,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
+from apps.core import models as core
+
 
 def validate_timezone(value):
     """Checked at validation time rather than baked into the migration as choices,
@@ -47,7 +49,7 @@ class UserManager(BaseUserManager):
         return self.get(**{f"{self.model.USERNAME_FIELD}__iexact": username})
 
 
-class User(AbstractUser):
+class User(core.Model, AbstractUser):
     """Login is by email. There is no role column: a Coach or Athlete profile row
     decides what a user is, and one user may have both.
 
@@ -105,7 +107,7 @@ class WeekStart(models.IntegerChoices):
     SUNDAY = 6, "Sunday"
 
 
-class Gym(models.Model):
+class Gym(core.Model):
     """Owns the exercise library, templates and default check-in questions.
     Coaches at one gym share them; a solo coach is a gym of one."""
 
@@ -131,7 +133,7 @@ class Gym(models.Model):
         return day - datetime.timedelta(days=(day.weekday() - self.week_start) % 7)
 
 
-class Coach(models.Model):
+class Coach(core.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="coach")
     gym = models.ForeignKey(Gym, on_delete=models.PROTECT, related_name="coaches")
     title = models.CharField(max_length=60, default="Head coach", blank=True)
@@ -158,7 +160,7 @@ class MaxUpdates(models.TextChoices):
     AUTO = "auto", "Automatically"
 
 
-class Athlete(models.Model):
+class Athlete(core.Model):
     """Archive, never delete, so session history survives.
     Bodyweight and maxes are history tables (BodyweightEntry, MaxEntry)."""
 
@@ -215,7 +217,7 @@ class MeasurementSource(models.TextChoices):
     SESSION = "session", "Session"
 
 
-class BodyweightEntry(models.Model):
+class BodyweightEntry(core.Model):
     athlete = models.ForeignKey(Athlete, on_delete=models.CASCADE, related_name="bodyweights")
     date = models.DateField()
     kg = models.DecimalField(max_digits=5, decimal_places=2)
@@ -231,7 +233,7 @@ class BodyweightEntry(models.Model):
         return f"{self.athlete} {self.kg} kg on {self.date}"
 
 
-class MaxEntry(models.Model):
+class MaxEntry(core.Model):
     """The latest row per exercise is the working max. A session PR adds a row rather
     than overwriting. "Not provided" means no row at all."""
 
@@ -270,7 +272,7 @@ class InviteStatus(models.TextChoices):
     REVOKED = "revoked", "Revoked"
 
 
-class Invite(models.Model):
+class Invite(core.Model):
     """One invite = one athlete. A starting template is applied as an unpublished draft
     program when the athlete joins, for the coach to review and publish."""
 

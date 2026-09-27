@@ -16,6 +16,8 @@ import datetime
 from django.db import transaction
 from django.utils import timezone
 
+from apps.core import ids
+
 from .models import Notification, NotificationKind
 
 PROGRAM_WARNING_DAYS = 7
@@ -240,8 +242,8 @@ def _sync_missed(athlete, today):
         notify(athlete, kind, key, text, _tab(athlete, "program") + f"?week={day.week_id}", reopen=False)
     # Days logged afterwards (or no longer in the program) leave the feed.
     for row in Notification.objects.filter(recipient=athlete.coach.user, athlete=athlete, kind=kind):
-        day_id = row.dedupe_key.removeprefix("day:")
-        if not day_id.isdigit():
+        day_id = ids.parse(row.dedupe_key.removeprefix("day:"))
+        if day_id is None:
             continue
         day = ProgramDay.objects.filter(pk=day_id).prefetch_related("sessions").first()
         if day is None or any(s.pk in done for s in day.sessions.all()):

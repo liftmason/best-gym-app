@@ -37,11 +37,11 @@ def snapshot(week):
             fields["load_value"] = _dec(fields["load_value"])
             rxs.append(
                 {
-                    "id": rx.pk,
+                    "id": str(rx.pk),
                     "order": rx.order,
-                    "exercise": rx.exercise_id,
+                    "exercise": str(rx.exercise_id),
                     "fields": fields,
-                    "tags": [t.pk for t in rx.tag_slot_tags.all()],
+                    "tags": [str(t.pk) for t in rx.tag_slot_tags.all()],
                     "overrides": [
                         {
                             "set_number": s.set_number,
@@ -55,14 +55,18 @@ def snapshot(week):
             )
         sessions.append(
             {
-                "id": session.pk,
+                "id": str(session.pk),
                 "date": session.day.date.isoformat(),
                 "order": session.order,
                 "name": session.name,
                 "prescriptions": rxs,
             }
         )
-    return {"week_type": week.week_type_id, "focus_note": week.focus_note, "sessions": sessions}
+    return {
+        "week_type": str(week.week_type_id) if week.week_type_id else None,
+        "focus_note": week.focus_note,
+        "sessions": sessions,
+    }
 
 
 def record(week, user, label):

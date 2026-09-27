@@ -5,6 +5,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
+from apps.core import models as core
+
 
 class QuestionType(models.TextChoices):
     SCALE = "scale", "1–10 scale"
@@ -23,7 +25,7 @@ class CheckinQuestionQuerySet(models.QuerySet):
         return self.filter(athlete=athlete)
 
 
-class CheckinQuestion(models.Model):
+class CheckinQuestion(core.Model):
     """A pre-session check-in question. Owned either by a gym (the defaults new
     athletes are given) or by one athlete (their own copy, which their coach can
     adjust). Removing a question archives it so old answers keep their question."""
@@ -140,7 +142,7 @@ class SessionLogQuerySet(models.QuerySet):
         return self.filter(finished_at__isnull=True)
 
 
-class SessionLog(models.Model):
+class SessionLog(core.Model):
     """One workout. `date` is the day it was trained in the athlete's zone; a session
     logged after the fact carries the planned day, and `started_at` shows when it was
     entered. A paused session has no `finished_at`."""
@@ -194,7 +196,7 @@ class SessionLog(models.Model):
         return timezone.localdate(self.started_at, self.athlete.user.zoneinfo) > self.date
 
 
-class SessionExercise(models.Model):
+class SessionExercise(core.Model):
     """One exercise in a logged session. `prescribed` is a snapshot of what the coach
     asked for when the session started (see apps/workouts/sessions.snapshot), so later
     edits to the program never change "asked for". `exercise_name` keeps the history
@@ -225,7 +227,7 @@ class SessionExercise(models.Model):
         return f"{self.exercise_name} in {self.session_log}"
 
 
-class SetLog(models.Model):
+class SetLog(core.Model):
     """One set as logged. Loads are exact kg; a complex logs one rep of the complex;
     timed work logs seconds and no reps. `rir` 5 means "5 or more"."""
 
@@ -252,7 +254,7 @@ class SetLog(models.Model):
         return f"Set {self.set_number} of {self.session_exercise}"
 
 
-class CheckinAnswer(models.Model):
+class CheckinAnswer(core.Model):
     """The question FK keeps trends working after a reword; `question_text` keeps the
     history readable if the question is archived or removed."""
 
@@ -294,7 +296,7 @@ class IssueKind(models.TextChoices):
     OTHER = "other", "Something else"
 
 
-class IssueReport(models.Model):
+class IssueReport(core.Model):
     athlete = models.ForeignKey("accounts.Athlete", on_delete=models.CASCADE, related_name="issues")
     session_log = models.ForeignKey(
         SessionLog, null=True, blank=True, on_delete=models.SET_NULL, related_name="issues"
@@ -319,7 +321,7 @@ class FormVideoQuerySet(models.QuerySet):
         return self.uploaded().filter(deleted_at__isnull=True)
 
 
-class FormVideo(models.Model):
+class FormVideo(core.Model):
     """An athlete's clip of one exercise in a session, for the coach to check. The file is
     in the form-video bucket under `key` (apps/workouts/videos.py). `uploaded_at` is set
     once the upload is confirmed; the file is deleted FORM_VIDEOS["keep_days"] later

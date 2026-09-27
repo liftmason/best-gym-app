@@ -3,6 +3,7 @@ program board, logged days, undo, the rail and library search, tracked lifts, de
 exercises, templates and the question builder."""
 
 import datetime
+import uuid
 from decimal import Decimal
 
 import pytest
@@ -303,7 +304,8 @@ def test_push_defaults_leaves_another_coachs_athletes_alone(coach, athlete, gym)
 def test_pending_edits_save_before_an_action(athlete):
     q = questions.add(athlete, QuestionType.SCALE)
     questions.save_pending_edits(
-        athlete, {f"text_{q.pk}": " Sore? ", f"low_label_{q.pk}": "no", f"text_{q.pk + 999}": "x"}
+        athlete,
+        {f"text_{q.pk}": " Sore? ", f"low_label_{q.pk}": "no", f"text_{uuid.uuid7()}": "x", "text_x": "x"},
     )
     q.refresh_from_db()
     assert (q.text, q.low_label) == ("Sore?", "no")

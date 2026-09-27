@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from apps.core import models as core
 from apps.programs.models import PrescribedSetBase, PrescriptionBase
 
 
@@ -21,7 +22,7 @@ class TemplateKind(models.TextChoices):
     SESSION = "session", "Saved session"
 
 
-class Template(models.Model):
+class Template(core.Model):
     gym = models.ForeignKey("accounts.Gym", on_delete=models.CASCADE, related_name="templates")
     kind = models.CharField(max_length=10, choices=TemplateKind.choices, default=TemplateKind.PROGRAM)
     name = models.CharField(max_length=80, blank=True)
@@ -52,7 +53,7 @@ class Template(models.Model):
         return self.name or f"Untitled {self.get_kind_display().lower().replace('saved ', '')}"
 
 
-class TemplateWeek(models.Model):
+class TemplateWeek(core.Model):
     template = models.ForeignKey(Template, on_delete=models.CASCADE, related_name="weeks")
     order = models.PositiveSmallIntegerField(default=0)
     week_type = models.ForeignKey(
@@ -67,7 +68,7 @@ class TemplateWeek(models.Model):
         return f"{self.template} · week {self.order + 1}"
 
 
-class TemplateSession(models.Model):
+class TemplateSession(core.Model):
     week = models.ForeignKey(TemplateWeek, on_delete=models.CASCADE, related_name="sessions")
     order = models.PositiveSmallIntegerField(default=0)
     name = models.CharField(max_length=80, blank=True)
@@ -123,7 +124,7 @@ class Cadence(models.TextChoices):
 HABIT_EMOJI = ["🍎", "😴", "💧", "🧘", "🚶", "🥩", "🥗", "⚖️", "💪", "📓"]
 
 
-class TemplateHabit(models.Model):
+class TemplateHabit(core.Model):
     """Prescribed to the athlete when the template is applied (athlete habits: phase 7)."""
 
     template = models.ForeignKey(Template, on_delete=models.CASCADE, related_name="habits")
@@ -140,7 +141,7 @@ class TemplateHabit(models.Model):
         return self.name
 
 
-class TemplateApplication(models.Model):
+class TemplateApplication(core.Model):
     """One apply of a template (or saved week) to an athlete: the "used N×" count."""
 
     template = models.ForeignKey(Template, on_delete=models.CASCADE, related_name="applications")

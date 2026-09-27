@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "anymail",
+    "apps.core",
     "apps.accounts",
     "apps.exercises",
     "apps.library",

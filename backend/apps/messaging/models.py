@@ -4,8 +4,10 @@ fresh thread and never sees the previous coach's conversation."""
 from django.conf import settings
 from django.db import models
 
+from apps.core import models as core
 
-class Thread(models.Model):
+
+class Thread(core.Model):
     coach = models.ForeignKey("accounts.Coach", on_delete=models.CASCADE, related_name="threads")
     athlete = models.ForeignKey("accounts.Athlete", on_delete=models.CASCADE, related_name="threads")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -25,7 +27,7 @@ class Thread(models.Model):
         return self.messages.filter(read_at__isnull=True).exclude(sender=user)
 
 
-class Message(models.Model):
+class Message(core.Model):
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name="messages")
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
     body = models.TextField(max_length=4000)

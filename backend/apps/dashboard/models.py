@@ -14,6 +14,8 @@ coach pressed "Clear read".
 from django.conf import settings
 from django.db import models
 
+from apps.core import models as core
+
 
 class NotificationKind(models.TextChoices):
     ISSUE = "issue", "Issue reported"
@@ -34,7 +36,7 @@ class NotificationQuerySet(models.QuerySet):
         return self.in_feed().filter(read_at__isnull=True)
 
 
-class Notification(models.Model):
+class Notification(core.Model):
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications"
     )
@@ -63,7 +65,7 @@ class Notification(models.Model):
         return f"{self.get_kind_display()}: {self.text}"
 
 
-class BugReport(models.Model):
+class BugReport(core.Model):
     """A bug report from the "Report a bug" button in the coach or athlete header. Read and
     triaged in the Django admin for now. The page, browser and screen size are captured
     automatically so the reporter only has to say what went wrong."""

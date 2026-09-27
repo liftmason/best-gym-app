@@ -155,7 +155,7 @@ def test_draft_lifecycle(template, athlete, coach, gym):
     assert draft["view"] is None and draft["real_week"] == "42"
     other = services.new_template(gym, TemplateKind.PROGRAM, coach.user)
     switched = apply.update_draft(draft, athlete, template=other)
-    assert switched["template"] == other.pk and switched["mode"] == apply.DEFAULTS  # mode kept
+    assert switched["template"] == str(other.pk) and switched["mode"] == apply.DEFAULTS  # mode kept
     assert apply.draft_template(gym, switched) == other
     assert apply.draft_template(GymFactory(), switched) is None
 
