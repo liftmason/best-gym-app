@@ -56,6 +56,8 @@ def test_errors_have_one_shape(api):
         "message": "Enter a valid email address.",
         "fields": {"email": "Enter a valid email address."},
     }
+    response = api.post("/api/v1/auth/email/start", "{not json", content_type="application/json")
+    assert response.status_code == 400 and response.json()["error"]["code"] == "invalid_request"
 
 
 def test_an_athlete_signs_in_with_a_code(api, athlete, mailoutbox):
@@ -84,6 +86,23 @@ def test_a_new_coach_signs_up_with_a_ticket(api, mailoutbox):
     assert me["coach"]["gym"]["name"] == "Barbell Club" and me["coach"]["role"] == "owner"
     again = post(api, "/auth/signup/coach", {"ticket": body["ticket"], "name": "Sam", "gym_name": "Two"})
     assert again.status_code == 409 and again.json()["error"]["code"] == "account_exists"
+
+
+def test_a_new_coach_picks_from_the_servers_starter_packs(api):
+    from apps.exercises.starter import PACKS
+
+    listed = get(api, "/auth/signup/starters").json()
+    assert [p["key"] for p in listed] == list(PACKS) and all(p["label"] and p["description"] for p in listed)
+
+
+def test_both_sign_ups_declare_their_tokens_in_the_schema():
+    """They answer through signed_in(), which Ninja doesn't check: the schema must say so."""
+    import json
+
+    paths = json.loads(schema_text())["paths"]
+    for path in ("/api/v1/auth/signup/coach", "/api/v1/join/{token}/signup"):
+        answer = paths[path]["post"]["responses"]["201"]["content"]["application/json"]["schema"]
+        assert answer["$ref"].endswith("/TokensOut"), path
 
 
 def test_refresh_signout_and_devices(api, athlete, mailoutbox):

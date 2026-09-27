@@ -4192,6 +4192,29 @@
         "title": "Source",
         "type": "object"
       },
+      "StarterOut": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "description"
+        ],
+        "title": "StarterOut",
+        "type": "object"
+      },
       "Stats": {
         "properties": {
           "calendar_weeks": {
@@ -7946,6 +7969,33 @@
         ]
       }
     },
+    "/api/v1/auth/signup/starters": {
+      "get": {
+        "description": "The starter packs a new coach picks from (`starter` in signup/coach).",
+        "operationId": "apps_signin_api_starters",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StarterOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Starters",
+        "tags": [
+          "Sign-in"
+        ]
+      }
+    },
     "/api/v1/auth/social/{provider}": {
       "post": {
         "description": "Sign in with an identity token from Apple or Google. A new person gets a sign-up\nticket, as with an email code; the sign-in method is linked when they finish.",
@@ -9444,6 +9494,13 @@
         },
         "responses": {
           "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokensOut"
+                }
+              }
+            },
             "description": "Created"
           }
         },

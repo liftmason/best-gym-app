@@ -118,6 +118,20 @@ def email_verify(request, data: VerifyIn):
     return signed_in(request, services.open_session(user, data.device), wrap=True)
 
 
+class StarterOut(Schema):
+    key: str
+    label: str
+    description: str
+
+
+@router.get("/signup/starters", auth=None, response=list[StarterOut])
+def starters(request):
+    """The starter packs a new coach picks from (`starter` in signup/coach)."""
+    from apps.exercises.starter import PACKS
+
+    return [{"key": p.key, "label": p.label, "description": p.description} for p in PACKS.values()]
+
+
 @router.post("/signup/coach", auth=None, response={201: TokensOut})
 def coach_sign_up(request, data: CoachSignUpIn):
     """A new coach and their gym, for an email verified by `email/verify`."""
