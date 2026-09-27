@@ -40,7 +40,7 @@ async function localEngine(): Promise<SyncEngine | null> {
   if (Platform.OS === 'web') return null;
   try {
     const { database } = await openDatabase();
-    const nobody = { athleteId: '', userId: '' };
+    const nobody = { athleteId: '', userId: '', timezone: 'UTC', maxUpdates: 'approve' };
     return makeSyncEngine({ database, transport: apiTransport(api), who: () => nobody });
   } catch {
     return null;

@@ -244,9 +244,17 @@
             "title": "Id",
             "type": "string"
           },
+          "max_updates": {
+            "title": "Max Updates",
+            "type": "string"
+          },
           "units": {
             "title": "Units",
             "type": "string"
+          },
+          "week_start": {
+            "title": "Week Start",
+            "type": "integer"
           }
         },
         "required": [
@@ -254,7 +262,9 @@
           "units",
           "coach_name",
           "gym_name",
-          "hide_history_before_link"
+          "hide_history_before_link",
+          "week_start",
+          "max_updates"
         ],
         "title": "AthleteProfileOut",
         "type": "object"
@@ -396,6 +406,14 @@
       },
       "BootstrapOut": {
         "properties": {
+          "baselines": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Baselines",
+            "type": "object"
+          },
           "cursor": {
             "title": "Cursor",
             "type": "string"
@@ -420,7 +438,8 @@
         "required": [
           "tables",
           "cursor",
-          "history_from"
+          "history_from",
+          "baselines"
         ],
         "title": "BootstrapOut",
         "type": "object"

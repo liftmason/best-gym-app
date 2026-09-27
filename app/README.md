@@ -30,6 +30,10 @@ The backend must be running for the app to do anything (from the repo root).
 - **Signing in:** the seeded demo accounts (`make seed`, e.g. `dana@ironridge.example`) take the
   code `123456`. Any other email gets its code printed in the backend's console.
 - **The kit screen** (development only): `/kit` shows every component.
+- **Development build** (push notifications, a real offline check; needs the Expo account):
+  `npx eas-cli@latest build --profile development --platform android`, then install the APK
+  from the link EAS prints. Start the dev server with `npx expo start --dev-client`.
+  The offline checklist is `docs/OFFLINE_CHECKLIST.md`.
 - **The web database** needs cross-origin isolation headers. The dev server sends them
   (`metro.config.js`), and so does `npm run serve:web`. Training mode opens in one tab at a time.
 

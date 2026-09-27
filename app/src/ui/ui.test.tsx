@@ -16,16 +16,30 @@ test('a field shows its error as an alert', async () => {
   expect(screen.getByRole('alert')).toHaveTextContent("That code isn't right.");
 });
 
-test('a set row reports edits and the tick', async () => {
+test('a set row saves when a box is left or the set is ticked', async () => {
   const change = jest.fn();
-  const toggle = jest.fn();
+  const commit = jest.fn();
+  const values = { load: '80', reps: '2', time: '', rir: '' };
   await render(
-    <SetRow number={2} asked="2 @ 80 kg" unit="kg" values={{ load: '80', reps: '2', rir: '' }} done={false} onChange={change} onToggle={toggle} />,
+    <SetRow number={2} unit="kg" measure="reps" timeUnit="s" values={values} placeholder="2" done={false} editable onChange={change} onCommit={commit} />,
   );
   await fireEvent.changeText(screen.getByLabelText('Set 2 reps'), '3');
-  expect(change).toHaveBeenCalledWith({ load: '80', reps: '3', rir: '' });
-  await fireEvent.press(screen.getByRole('checkbox', { name: 'Set 2 done' }));
-  expect(toggle).toHaveBeenCalled();
+  expect(change).toHaveBeenCalledWith({ ...values, reps: '3' });
+  expect(commit).not.toHaveBeenCalled();
+  await fireEvent(screen.getByLabelText('Set 2 reps'), 'endEditing');
+  expect(commit).toHaveBeenCalledWith(values, false);
+  await fireEvent.press(screen.getByRole('checkbox', { name: 'Mark set 2 done' }));
+  expect(commit).toHaveBeenLastCalledWith(values, true);
+});
+
+test('a closed session is read only', async () => {
+  const commit = jest.fn();
+  await render(
+    <SetRow number={1} unit="lb" measure="time" timeUnit="min" values={{ load: '', reps: '', time: '10', rir: '' }} placeholder="10 min" done editable={false} onChange={jest.fn()} onCommit={commit} />,
+  );
+  expect(screen.getByLabelText('Set 1 time in minutes').props.editable).toBe(false);
+  await fireEvent.press(screen.getByRole('checkbox', { name: 'Mark set 1 done' }));
+  expect(commit).not.toHaveBeenCalled();
 });
 
 test('the week strip says what each day is', async () => {

@@ -10,7 +10,7 @@ import { Button, Card, Chip, Field, SetRow, Sheet, Text, WeekPill, WeekStrip, co
  */
 export default function Kit() {
   const [sheet, setSheet] = useState(false);
-  const [set, setSet] = useState<SetValues>({ load: '80', reps: '2', rir: '2' });
+  const [set, setSet] = useState<SetValues>({ load: '80', reps: '2', time: '', rir: '2' });
   const [done, setDone] = useState(false);
   if (!__DEV__) return <Redirect href="/" />;
   return (
@@ -71,7 +71,21 @@ export default function Kit() {
       />
 
       <Text variant="h2">Set row</Text>
-      <SetRow number={1} asked="2 @ 80 kg · RIR 2" unit="kg" values={set} done={done} onChange={setSet} onToggle={() => setDone(!done)} />
+      <SetRow
+        number={1}
+        unit="kg"
+        measure="reps"
+        timeUnit="s"
+        values={set}
+        placeholder="2"
+        done={done}
+        editable
+        onChange={setSet}
+        onCommit={(values, next) => {
+          setSet(values);
+          setDone(next);
+        }}
+      />
 
       <Text variant="h2">Sheet</Text>
       <Button title="Open a sheet" variant="ghost" onPress={() => setSheet(true)} />

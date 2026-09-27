@@ -1,8 +1,11 @@
+export { Avatar, initials } from './avatar';
 export { Button } from './button';
 export { Card } from './card';
 export { Field } from './field';
 export { Chip, WeekPill } from './pill';
-export { SetRow, type SetValues } from './set-row';
+export { FlowHead } from './flow-head';
+export { Scale } from './scale';
+export { RIR_CHOICES, SetRow, type Measure, type SetValues } from './set-row';
 export { Sheet } from './sheet';
 export { Text } from './text';
 export { colors, fonts, radius, shadows, space, type, weekTypeColours } from './theme';

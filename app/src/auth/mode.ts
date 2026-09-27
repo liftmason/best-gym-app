@@ -3,7 +3,6 @@
  * with both, the app opens in the mode last used (coaching the first time).
  */
 import type { components } from '@/api';
-import type { Who } from '@/sync/engine';
 
 import { getPref, setPref } from './prefs';
 
@@ -29,20 +28,4 @@ export async function lastMode(): Promise<Mode | null> {
 
 export function rememberMode(mode: Mode): Promise<void> {
   return setPref(KEY, mode);
-}
-
-const ATHLETE = 'gt.athlete';
-
-/** Whose training this device holds, so training mode opens offline without /me. */
-export async function lastAthlete(): Promise<Who | null> {
-  try {
-    const saved = JSON.parse((await getPref(ATHLETE)) ?? 'null');
-    return typeof saved?.athleteId === 'string' && typeof saved?.userId === 'string' ? saved : null;
-  } catch {
-    return null;
-  }
-}
-
-export function rememberAthlete(who: Who | null): Promise<void> {
-  return setPref(ATHLETE, who && JSON.stringify(who));
 }

@@ -215,3 +215,49 @@ def test_the_push_endpoint(athlete, planned):
     )
     response = api.post("/api/v1/sync/push", json.dumps(body, default=str), content_type="application/json")
     assert response.status_code == 200 and [r["status"] for r in response.json()["results"]] == ["done"] * 6
+
+
+def test_sets_logged_offline_follow_a_session_started_on_another_device(athlete, planned):
+    """The phone queued its own ids; the server kept the first device's, and the sets in the
+    same batch, and in a later one, land on them."""
+    from apps.workouts import sessions
+
+    started = sessions.start_planned(athlete, planned.pk)  # on another device
+    kept = started.exercises.get()
+    log_id, se_id, batch = offline_session(athlete, planned)
+    results = push.push(athlete, batch[:4])  # start, check-in, and the first set
+    assert [r["status"] for r in results] == ["done"] * 4
+    assert SessionLog.objects.count() == 1 and kept.sets.count() == 1
+    rewritten = [
+        a
+        | {
+            "payload": {
+                k: str(kept.pk) if str(v) == str(se_id) else str(started.pk) if str(v) == str(log_id) else v
+                for k, v in a["payload"].items()
+            }
+        }
+        for a in batch[4:]
+    ]
+    assert [r["status"] for r in push.push(athlete, rewritten)] == [
+        "done"
+    ] * 2  # as the phone sends them next
+    assert kept.sets.count() == 2 and SessionLog.objects.get().finished
+
+
+def test_a_long_timed_set_is_saved(athlete, planned):
+    log_id, se_id, batch = offline_session(athlete, planned)
+    push.push(athlete, batch[:1])
+    long = act(
+        "set.save",
+        set_id=uuid.uuid7(),
+        session_exercise_id=se_id,
+        set_number=1,
+        duration_seconds=1800,
+        done=True,
+    )
+    (result,) = push.push(athlete, [long])
+    assert result["status"] == "done" and SetLog.objects.get().duration_seconds == 1800
+    too_long = act(
+        "set.save", set_id=uuid.uuid7(), session_exercise_id=se_id, set_number=2, duration_seconds=86401
+    )
+    assert push.push(athlete, [too_long])[0]["status"] == "rejected"

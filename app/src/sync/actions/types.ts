@@ -8,6 +8,10 @@ export type ActionContext = {
   at: string;
   athleteId: string;
   userId: string;
+  /** The athlete's date when they did it (their time zone), for rules about "today". */
+  day: string;
+  /** auto: a session's PR becomes the working max at once; approve: the coach decides. */
+  maxUpdates: string;
 };
 
 /**
@@ -18,6 +22,11 @@ export type ActionContext = {
 export type Action<P> = {
   name: string;
   apply(local: Local, payload: P, context: ActionContext): Promise<void>;
+  /**
+   * {phone's id: server's id} from the server's answer, when the server kept ids of its own
+   * (a session already started on another device). Waiting actions are rewritten to them.
+   */
+  adopt?(payload: P, result: Record<string, unknown>): Record<string, string>;
 };
 
 /** A local effect refusing: its message is for the athlete. */

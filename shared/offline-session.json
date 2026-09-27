@@ -1,0 +1,209 @@
+{
+ "about": "Written by app/src/training/session/flow.test.tsx (UPDATE_OFFLINE=1); pushed by backend/tests/unit/test_offline_parity.py.",
+ "log": "00000000-0000-7000-a000-000000000001",
+ "shown": {
+  "counts": [
+   2,
+   7,
+   7
+  ],
+  "rpe": 8,
+  "answers": 2,
+  "issues": 1
+ },
+ "actions": [
+  {
+   "id": "00000000-0000-7000-9000-000000000001",
+   "name": "session.start",
+   "at": "2026-09-24T16:00:00.000Z",
+   "payload": {
+    "session_log_id": "00000000-0000-7000-a000-000000000001",
+    "program_session_id": "00000000-0000-7000-8000-000000000186",
+    "exercises": [
+     {
+      "id": "00000000-0000-7000-a000-000000000002",
+      "prescription_id": "00000000-0000-7000-8000-000000000187"
+     },
+     {
+      "id": "00000000-0000-7000-a000-000000000003",
+      "prescription_id": "00000000-0000-7000-8000-000000000188"
+     }
+    ]
+   }
+  },
+  {
+   "id": "00000000-0000-7000-9000-000000000002",
+   "name": "checkin.answer",
+   "at": "2026-09-24T16:00:00.000Z",
+   "payload": {
+    "answer_id": "00000000-0000-7000-a000-000000000004",
+    "session_log_id": "00000000-0000-7000-a000-000000000001",
+    "question_id": "00000000-0000-7000-8000-000000000195",
+    "value": "8",
+    "other": ""
+   }
+  },
+  {
+   "id": "00000000-0000-7000-9000-000000000003",
+   "name": "checkin.answer",
+   "at": "2026-09-24T16:00:00.000Z",
+   "payload": {
+    "answer_id": "00000000-0000-7000-a000-000000000005",
+    "session_log_id": "00000000-0000-7000-a000-000000000001",
+    "question_id": "00000000-0000-7000-8000-000000000196",
+    "value": "Legs are sore",
+    "other": ""
+   }
+  },
+  {
+   "id": "00000000-0000-7000-9000-000000000004",
+   "name": "checkin.finish",
+   "at": "2026-09-24T16:00:00.000Z",
+   "payload": {
+    "session_log_id": "00000000-0000-7000-a000-000000000001",
+    "skip": false
+   }
+  },
+  {
+   "id": "00000000-0000-7000-9000-000000000005",
+   "name": "set.save",
+   "at": "2026-09-24T16:00:00.000Z",
+   "payload": {
+    "set_id": "00000000-0000-7000-a000-000000000006",
+    "session_exercise_id": "00000000-0000-7000-a000-000000000002",
+    "set_number": 1,
+    "load_kg": "50.00",
+    "reps": 5,
+    "duration_seconds": null,
+    "rir": null,
+    "done": true
+   }
+  },
+  {
+   "id": "00000000-0000-7000-9000-000000000006",
+   "name": "set.save",
+   "at": "2026-09-24T16:00:00.000Z",
+   "payload": {
+    "set_id": "00000000-0000-7000-a000-000000000007",
+    "session_exercise_id": "00000000-0000-7000-a000-000000000002",
+    "set_number": 2,
+    "load_kg": "50.00",
+    "reps": 5,
+    "duration_seconds": null,
+    "rir": null,
+    "done": true
+   }
+  },
+  {
+   "id": "00000000-0000-7000-9000-000000000007",
+   "name": "set.save",
+   "at": "2026-09-24T16:00:00.000Z",
+   "payload": {
+    "set_id": "00000000-0000-7000-a000-000000000008",
+    "session_exercise_id": "00000000-0000-7000-a000-000000000002",
+    "set_number": 3,
+    "load_kg": "50.00",
+    "reps": 5,
+    "duration_seconds": null,
+    "rir": null,
+    "done": true
+   }
+  },
+  {
+   "id": "00000000-0000-7000-9000-000000000008",
+   "name": "set.save",
+   "at": "2026-09-24T16:00:00.000Z",
+   "payload": {
+    "set_id": "00000000-0000-7000-a000-000000000009",
+    "session_exercise_id": "00000000-0000-7000-a000-000000000002",
+    "set_number": 4,
+    "load_kg": "50.00",
+    "reps": 5,
+    "duration_seconds": null,
+    "rir": null,
+    "done": true
+   }
+  },
+  {
+   "id": "00000000-0000-7000-9000-000000000009",
+   "name": "set.save",
+   "at": "2026-09-24T16:00:00.000Z",
+   "payload": {
+    "set_id": "00000000-0000-7000-a000-000000000009",
+    "session_exercise_id": "00000000-0000-7000-a000-000000000002",
+    "set_number": 4,
+    "load_kg": "50.00",
+    "reps": 4,
+    "duration_seconds": null,
+    "rir": null,
+    "done": true
+   }
+  },
+  {
+   "id": "00000000-0000-7000-9000-000000000011",
+   "name": "set.save",
+   "at": "2026-09-24T16:00:00.000Z",
+   "payload": {
+    "set_id": "00000000-0000-7000-a000-000000000010",
+    "session_exercise_id": "00000000-0000-7000-a000-000000000003",
+    "set_number": 1,
+    "load_kg": null,
+    "reps": 10,
+    "duration_seconds": null,
+    "rir": null,
+    "done": true
+   }
+  },
+  {
+   "id": "00000000-0000-7000-9000-000000000012",
+   "name": "set.save",
+   "at": "2026-09-24T16:00:00.000Z",
+   "payload": {
+    "set_id": "00000000-0000-7000-a000-000000000011",
+    "session_exercise_id": "00000000-0000-7000-a000-000000000003",
+    "set_number": 2,
+    "load_kg": null,
+    "reps": 10,
+    "duration_seconds": null,
+    "rir": null,
+    "done": true
+   }
+  },
+  {
+   "id": "00000000-0000-7000-9000-000000000013",
+   "name": "set.save",
+   "at": "2026-09-24T16:00:00.000Z",
+   "payload": {
+    "set_id": "00000000-0000-7000-a000-000000000012",
+    "session_exercise_id": "00000000-0000-7000-a000-000000000003",
+    "set_number": 3,
+    "load_kg": null,
+    "reps": 10,
+    "duration_seconds": null,
+    "rir": null,
+    "done": true
+   }
+  },
+  {
+   "id": "00000000-0000-7000-9000-000000000014",
+   "name": "issue.report",
+   "at": "2026-09-24T16:00:00.000Z",
+   "payload": {
+    "issue_id": "00000000-0000-7000-a000-000000000013",
+    "session_log_id": "00000000-0000-7000-a000-000000000001",
+    "kind": "pain",
+    "text": "Left wrist"
+   }
+  },
+  {
+   "id": "00000000-0000-7000-9000-000000000015",
+   "name": "session.finish",
+   "at": "2026-09-24T16:00:00.000Z",
+   "payload": {
+    "session_log_id": "00000000-0000-7000-a000-000000000001",
+    "rpe": 8,
+    "comment": ""
+   }
+  }
+ ]
+}

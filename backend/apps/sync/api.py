@@ -52,6 +52,7 @@ class BootstrapOut(Schema):
     tables: dict[str, list[dict[str, Any]]]  # table -> rows
     cursor: str  # pull from here next
     history_from: datetime.date  # older sessions: GET /me/history
+    baselines: dict[str, dict[str, Any]]  # exercise id -> its best before history_from (PRs)
 
 
 @router.get("/sync/bootstrap", response=BootstrapOut)

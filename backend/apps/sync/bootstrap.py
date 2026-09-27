@@ -1,5 +1,7 @@
 """Bootstrap: a new device's first copy of its scope, and the cursor to pull from after."""
 
+from apps.programs.habits import LOOKBACK as HABIT_LOOKBACK
+
 from . import scope
 
 
@@ -35,11 +37,33 @@ HISTORY = {
     "programs.HabitLog": "date",
     "messaging.Message": "sent_at__date",
 }
+# Tables whose rules look back further than HISTORY_DAYS: a habit streak counts 400 days.
+LONGER = {"programs.HabitLog": HABIT_LOOKBACK.days}
+
+
+def baselines(athlete, before):
+    """Each exercise's best before the phone's history starts, so the PRs it works out from
+    its 12 months still count everything: {exercise id: {name, heaviest_kg, heaviest_reps,
+    heaviest_date, e1rm, e1rm_date}} (history.lifetime_prs, before `before`)."""
+    from apps.workouts import history
+
+    out = {}
+    for pr in history.lifetime_prs(athlete, before=before, with_ids=True):
+        top = pr["heaviest"]
+        out[str(pr["exercise_id"])] = {
+            "name": pr["name"],
+            "heaviest_kg": format(top.load_kg, "f"),
+            "heaviest_reps": top.reps,
+            "heaviest_date": pr["heaviest_date"].isoformat(),
+            "e1rm": format(pr["e1rm"], "f") if pr["e1rm"] else None,
+            "e1rm_date": pr["e1rm_date"].isoformat() if pr["e1rm_date"] else None,
+        }
+    return out
 
 
 def snapshot(athlete):
-    """{tables: {table: [row, …]}, cursor, history_from}: the athlete's whole scope as of one
-    moment, and the cursor to pull from after it.
+    """{tables: {table: [row, …]}, cursor, history_from, baselines}: the athlete's whole scope
+    as of one moment, and the cursor to pull from after it.
 
     Read in one REPEATABLE READ transaction, so every table is from the same snapshot. The
     cursor starts at that snapshot's oldest running transaction: anything not in the copy is
@@ -62,10 +86,17 @@ def snapshot(athlete):
         for label in [*scope.ATHLETE, *scope.LIBRARY]:
             rows = scope.visible(label, athlete, gym)
             if label in HISTORY:
-                rows = rows.filter(**{f"{HISTORY[label]}__gte": history_from})
+                since = athlete.today() - datetime.timedelta(days=LONGER.get(label, HISTORY_DAYS))
+                rows = rows.filter(**{f"{HISTORY[label]}__gte": since})
             tables[scope.table_of(label)] = [scope.serialize(label, obj) for obj in rows]
+        best_before = baselines(athlete, history_from)
     cursor = {"lo": lo, "hi": None, "after": 0, "gym": str(gym.pk) if gym else None}
-    return {"tables": tables, "cursor": encode(cursor), "history_from": history_from}
+    return {
+        "tables": tables,
+        "cursor": encode(cursor),
+        "history_from": history_from,
+        "baselines": best_before,
+    }
 
 
 def older_sessions(athlete, before="", limit=20):

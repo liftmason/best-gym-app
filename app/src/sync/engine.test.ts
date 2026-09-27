@@ -37,7 +37,7 @@ async function setUp({ pageSize = 3, athleteId = ATHLETE } = {}) {
     ended_at: null,
   });
   server.put('exercises_category', { id: 'cat-1', gym_id: 'gym-1', name: 'Olympic', order: 1 });
-  const who = { athleteId, userId: USER };
+  const who = { athleteId, userId: USER, timezone: 'America/New_York', maxUpdates: 'approve' };
   let n = 0;
   const engine = makeSyncEngine({
     database,

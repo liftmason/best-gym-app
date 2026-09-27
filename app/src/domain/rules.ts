@@ -6,22 +6,16 @@
  */
 import { Big } from 'big.js';
 
-export type Unit = 'kg' | 'lb';
+import { fromKg, HALF_UP, KG_PER_LB, type Unit } from './units';
+
+export { fromKg, type Unit } from './units';
 export type LoadBasis = 'percent' | 'weight' | 'rpe' | 'bodyweight' | 'none';
 
-const KG_PER_LB = new Big('0.45359237');
 const PLATE_STEP: Record<Unit, Big> = { kg: new Big('0.5'), lb: new Big('2.5') };
-const HALF_UP = 1; // Big.roundHalfUp
 
-/** "80", "63.5", "101.25": whole numbers without decimals, others without trailing zeros. */
-function tidy(value: Big): string {
-  return value.eq(value.round(0, HALF_UP)) ? value.toFixed(0) : value.toString();
-}
-
-/** A kg value in `unit`: kg to 0.01, lb to 0.1 (units.from_kg). */
-export function fromKg(kg: string, unit: Unit): string {
-  const value = new Big(kg);
-  return unit === 'lb' ? value.div(KG_PER_LB).round(1, HALF_UP).toFixed(1) : value.round(2, HALF_UP).toFixed(2);
+/** "80", "63.5", "101.25": whole numbers without decimals, others without trailing zeros (sessions._tidy). */
+export function tidy(value: Big): string {
+  return value.eq(value.round(0, HALF_UP)) ? value.toFixed(0) : value.toFixed();
 }
 
 /** Estimated one-rep max (Epley), kg to 0.01; null without a load or reps. */

@@ -2564,8 +2564,12 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /** Max Updates */
+            max_updates: string;
             /** Units */
             units: string;
+            /** Week Start */
+            week_start: number;
         };
         /** AthleteRef */
         AthleteRef: {
@@ -2617,6 +2621,12 @@ export interface components {
         };
         /** BootstrapOut */
         BootstrapOut: {
+            /** Baselines */
+            baselines: {
+                [key: string]: {
+                    [key: string]: unknown;
+                };
+            };
             /** Cursor */
             cursor: string;
             /**
