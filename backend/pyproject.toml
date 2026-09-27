@@ -43,3 +43,7 @@ DJANGO_SETTINGS_MODULE = "config.settings.test"
 testpaths = ["tests"]
 addopts = "--strict-markers"
 filterwarnings = ["ignore:No directory at:UserWarning"]
+
+[tool.ruff.lint.flake8-bugbear]
+# Django Ninja declares query parameters with defaults like `tags: list[str] = Query([])`.
+extend-immutable-calls = ["ninja.Query"]

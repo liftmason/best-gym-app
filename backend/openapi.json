@@ -195,6 +195,100 @@
         "title": "Band",
         "type": "object"
       },
+      "BoardItem": {
+        "properties": {
+          "exercise": {
+            "$ref": "#/components/schemas/ExerciseRef"
+          },
+          "heading": {
+            "title": "Heading",
+            "type": "string"
+          },
+          "heading_note": {
+            "title": "Heading Note",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "tag_slot": {
+            "title": "Tag Slot",
+            "type": "boolean"
+          },
+          "warmup": {
+            "title": "Warmup",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "exercise",
+          "summary",
+          "heading",
+          "heading_note",
+          "label",
+          "warmup",
+          "tag_slot"
+        ],
+        "title": "BoardItem",
+        "type": "object"
+      },
+      "BoardOut": {
+        "properties": {
+          "program": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProgramOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "week": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Week"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "week_types": {
+            "items": {
+              "$ref": "#/components/schemas/WeekTypeRef"
+            },
+            "title": "Week Types",
+            "type": "array"
+          },
+          "weeks": {
+            "items": {
+              "$ref": "#/components/schemas/WeekSummary"
+            },
+            "title": "Weeks",
+            "type": "array"
+          }
+        },
+        "required": [
+          "program",
+          "weeks",
+          "week",
+          "week_types"
+        ],
+        "title": "BoardOut",
+        "type": "object"
+      },
       "Change": {
         "properties": {
           "change": {
@@ -417,6 +511,24 @@
         "title": "CoachSignUpIn",
         "type": "object"
       },
+      "CustomField": {
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "value": {
+            "default": "",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "title": "CustomField",
+        "type": "object"
+      },
       "DashboardOut": {
         "properties": {
           "kpis": {
@@ -448,6 +560,39 @@
           "unread"
         ],
         "title": "DashboardOut",
+        "type": "object"
+      },
+      "Day": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "done": {
+            "title": "Done",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "sessions": {
+            "items": {
+              "$ref": "#/components/schemas/PlannedSession"
+            },
+            "title": "Sessions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "done",
+          "sessions"
+        ],
+        "title": "Day",
         "type": "object"
       },
       "DayDone": {
@@ -531,6 +676,86 @@
         "title": "Direction",
         "type": "object"
       },
+      "Dose": {
+        "description": "A dose as the coach edits it (dose.validate): loads in the gym's unit.",
+        "properties": {
+          "custom_fields": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/CustomField"
+            },
+            "title": "Custom Fields",
+            "type": "array"
+          },
+          "load_basis": {
+            "default": "none",
+            "title": "Load Basis",
+            "type": "string"
+          },
+          "load_value": {
+            "default": "",
+            "title": "Load Value",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "rep_scheme": {
+            "default": "",
+            "title": "Rep Scheme",
+            "type": "string"
+          },
+          "rir": {
+            "default": "",
+            "title": "Rir",
+            "type": "string"
+          },
+          "section": {
+            "default": "",
+            "title": "Section",
+            "type": "string"
+          },
+          "section_note": {
+            "default": "",
+            "title": "Section Note",
+            "type": "string"
+          },
+          "set_rows": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/SetRow"
+            },
+            "title": "Set Rows",
+            "type": "array"
+          },
+          "sets": {
+            "title": "Sets",
+            "type": "integer"
+          },
+          "superset": {
+            "default": false,
+            "title": "Superset",
+            "type": "boolean"
+          },
+          "vary": {
+            "default": false,
+            "title": "Vary",
+            "type": "boolean"
+          },
+          "warmup": {
+            "default": false,
+            "title": "Warmup",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sets"
+        ],
+        "title": "Dose",
+        "type": "object"
+      },
       "EmailIn": {
         "properties": {
           "email": {
@@ -590,6 +815,25 @@
           "done_count"
         ],
         "title": "ExerciseLine",
+        "type": "object"
+      },
+      "ExerciseRef": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "ExerciseRef",
         "type": "object"
       },
       "FeedOut": {
@@ -1433,6 +1677,92 @@
         "title": "MetricsOut",
         "type": "object"
       },
+      "Move": {
+        "properties": {
+          "index": {
+            "title": "Index",
+            "type": "integer"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "index"
+        ],
+        "title": "Move",
+        "type": "object"
+      },
+      "NewPrescription": {
+        "properties": {
+          "exercise_id": {
+            "format": "uuid",
+            "title": "Exercise Id",
+            "type": "string"
+          },
+          "index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Index"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          }
+        },
+        "required": [
+          "exercise_id"
+        ],
+        "title": "NewPrescription",
+        "type": "object"
+      },
+      "NewProgram": {
+        "properties": {
+          "first_day": {
+            "format": "date",
+            "title": "First Day",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "week_type_id": {
+            "format": "uuid",
+            "title": "Week Type Id",
+            "type": "string"
+          },
+          "weeks": {
+            "title": "Weeks",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "first_day",
+          "weeks",
+          "week_type_id"
+        ],
+        "title": "NewProgram",
+        "type": "object"
+      },
       "NewQuestion": {
         "properties": {
           "type": {
@@ -1444,6 +1774,19 @@
           "type"
         ],
         "title": "NewQuestion",
+        "type": "object"
+      },
+      "Note": {
+        "properties": {
+          "note": {
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "note"
+        ],
+        "title": "Note",
         "type": "object"
       },
       "OptionIn": {
@@ -1538,6 +1881,33 @@
         "title": "PendingPr",
         "type": "object"
       },
+      "PlannedSession": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BoardItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "items"
+        ],
+        "title": "PlannedSession",
+        "type": "object"
+      },
       "Point": {
         "properties": {
           "bodyweight": {
@@ -1578,6 +1948,83 @@
           "week_type"
         ],
         "title": "Point",
+        "type": "object"
+      },
+      "PrescriptionOut": {
+        "properties": {
+          "dose": {
+            "$ref": "#/components/schemas/Dose"
+          },
+          "exercise": {
+            "$ref": "#/components/schemas/ExerciseRef"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "suggested": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "swaps": {
+            "items": {
+              "$ref": "#/components/schemas/ExerciseRef"
+            },
+            "title": "Swaps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "exercise",
+          "dose",
+          "summary",
+          "suggested",
+          "swaps"
+        ],
+        "title": "PrescriptionOut",
+        "type": "object"
+      },
+      "ProgramOut": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "note",
+          "start_date"
+        ],
+        "title": "ProgramOut",
         "type": "object"
       },
       "QuestionOut": {
@@ -1625,6 +2072,87 @@
           "options"
         ],
         "title": "QuestionOut",
+        "type": "object"
+      },
+      "RailExercise": {
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "history": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RailHistory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "warmup": {
+            "title": "Warmup",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "category",
+          "tags",
+          "warmup",
+          "history"
+        ],
+        "title": "RailExercise",
+        "type": "object"
+      },
+      "RailHistory": {
+        "properties": {
+          "line": {
+            "title": "Line",
+            "type": "string"
+          },
+          "series": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Series",
+            "type": "array"
+          },
+          "trend": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trend"
+          }
+        },
+        "required": [
+          "line",
+          "trend",
+          "series"
+        ],
+        "title": "RailHistory",
         "type": "object"
       },
       "RecentSession": {
@@ -1824,6 +2352,19 @@
         "title": "RosterRow",
         "type": "object"
       },
+      "SessionName": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "SessionName",
+        "type": "object"
+      },
       "SessionOut": {
         "properties": {
           "answers": {
@@ -1980,6 +2521,36 @@
         "title": "SessionsOut",
         "type": "object"
       },
+      "SetRow": {
+        "properties": {
+          "load": {
+            "default": "",
+            "title": "Load",
+            "type": "string"
+          },
+          "reps": {
+            "default": "",
+            "title": "Reps",
+            "type": "string"
+          }
+        },
+        "title": "SetRow",
+        "type": "object"
+      },
+      "Swap": {
+        "properties": {
+          "exercise_id": {
+            "format": "uuid",
+            "title": "Exercise Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "exercise_id"
+        ],
+        "title": "Swap",
+        "type": "object"
+      },
       "TemplateChoice": {
         "properties": {
           "id": {
@@ -2084,6 +2655,26 @@
           "ago"
         ],
         "title": "TopPr",
+        "type": "object"
+      },
+      "Undone": {
+        "properties": {
+          "undone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Undone"
+          }
+        },
+        "required": [
+          "undone"
+        ],
+        "title": "Undone",
         "type": "object"
       },
       "VerifyIn": {
@@ -2224,6 +2815,72 @@
         "title": "Warmup",
         "type": "object"
       },
+      "Week": {
+        "properties": {
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/Day"
+            },
+            "title": "Days",
+            "type": "array"
+          },
+          "focus_note": {
+            "title": "Focus Note",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "published": {
+            "title": "Published",
+            "type": "boolean"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "undo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Undo"
+          },
+          "week_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WeekTypeRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "start_date",
+          "week_type",
+          "published",
+          "focus_note",
+          "days",
+          "undo"
+        ],
+        "title": "Week",
+        "type": "object"
+      },
       "WeekOut": {
         "properties": {
           "id": {
@@ -2283,6 +2940,87 @@
           "compliance"
         ],
         "title": "WeekRow",
+        "type": "object"
+      },
+      "WeekSettings": {
+        "properties": {
+          "focus_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Focus Note"
+          },
+          "published": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published"
+          },
+          "week_type_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Week Type Id"
+          }
+        },
+        "title": "WeekSettings",
+        "type": "object"
+      },
+      "WeekSummary": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "published": {
+            "title": "Published",
+            "type": "boolean"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "week_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WeekTypeRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "start_date",
+          "week_type",
+          "published"
+        ],
+        "title": "WeekSummary",
         "type": "object"
       },
       "WeekTypeRef": {
@@ -2441,6 +3179,114 @@
         "summary": "Archive",
         "tags": [
           "Athletes"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/days/{day_id}/prescriptions": {
+      "post": {
+        "description": "Add an exercise to the day, with the dose the athlete last had for it.",
+        "operationId": "apps_programs_board_api_add_prescription",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "day_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Day Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewPrescription"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrescriptionOut"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Add Prescription",
+        "tags": [
+          "Program board"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/days/{day_id}/sessions": {
+      "post": {
+        "description": "Another session on the day (up to three).",
+        "operationId": "apps_programs_board_api_add_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "day_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Day Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlannedSession"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Add Session",
+        "tags": [
+          "Program board"
         ]
       }
     },
@@ -2989,6 +3835,533 @@
         ]
       }
     },
+    "/api/v1/athletes/{athlete_id}/planned-sessions/{session_id}": {
+      "delete": {
+        "operationId": "apps_programs_board_api_delete_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Delete Session",
+        "tags": [
+          "Program board"
+        ]
+      },
+      "patch": {
+        "operationId": "apps_programs_board_api_rename_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionName"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Rename Session",
+        "tags": [
+          "Program board"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/prescriptions/{rx_id}": {
+      "delete": {
+        "operationId": "apps_programs_board_api_remove_prescription",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "rx_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rx Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Remove Prescription",
+        "tags": [
+          "Program board"
+        ]
+      },
+      "get": {
+        "operationId": "apps_programs_board_api_prescription",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "rx_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rx Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrescriptionOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Prescription",
+        "tags": [
+          "Program board"
+        ]
+      },
+      "put": {
+        "operationId": "apps_programs_board_api_edit_prescription",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "rx_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rx Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Dose"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrescriptionOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Edit Prescription",
+        "tags": [
+          "Program board"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/prescriptions/{rx_id}/move": {
+      "post": {
+        "description": "Put the exercise at `index` in a session (any day of the same program).",
+        "operationId": "apps_programs_board_api_move_prescription",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "rx_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rx Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Move"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Move Prescription",
+        "tags": [
+          "Program board"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/prescriptions/{rx_id}/swap": {
+      "post": {
+        "description": "Change the exercise, keeping the dose: one of the prescription's `swaps`.",
+        "operationId": "apps_programs_board_api_swap",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "rx_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rx Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Swap"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrescriptionOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Swap",
+        "tags": [
+          "Program board"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/program": {
+      "get": {
+        "description": "The athlete's active program and one week of it: `week_id`, else this week.",
+        "operationId": "apps_programs_board_api_board",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "week_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Week Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoardOut"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Board",
+        "tags": [
+          "Program board"
+        ]
+      },
+      "post": {
+        "description": "Start a new block (the current one ends and is kept).",
+        "operationId": "apps_programs_board_api_start_program",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewProgram"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoardOut"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Start Program",
+        "tags": [
+          "Program board"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/program/note": {
+      "put": {
+        "operationId": "apps_programs_board_api_program_note",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Note"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Program Note",
+        "tags": [
+          "Program board"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/program/weeks": {
+      "post": {
+        "description": "Another week at the end, of the same type as the last.",
+        "operationId": "apps_programs_board_api_add_week",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeekSummary"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Add Week",
+        "tags": [
+          "Program board"
+        ]
+      }
+    },
     "/api/v1/athletes/{athlete_id}/prs": {
       "get": {
         "description": "Session bests above a working max, waiting for the coach: use it, or keep the max.",
@@ -3447,6 +4820,83 @@
         ]
       }
     },
+    "/api/v1/athletes/{athlete_id}/rail": {
+      "get": {
+        "description": "The gym's exercises to add, with this athlete's history: search by name, tag or\ncategory, filter by every tag in `tags`; \"recent\" puts the last done first.",
+        "operationId": "apps_programs_board_api_exercise_rail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Q",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tags",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Tags",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "recent",
+              "title": "Sort",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RailExercise"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Exercise Rail",
+        "tags": [
+          "Program board"
+        ]
+      }
+    },
     "/api/v1/athletes/{athlete_id}/remind-metrics": {
       "post": {
         "description": "Email the athlete about their missing numbers (once a day at most).",
@@ -3706,6 +5156,250 @@
         "summary": "Review Video",
         "tags": [
           "Athletes"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/weeks/{week_id}": {
+      "delete": {
+        "operationId": "apps_programs_board_api_delete_week",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "week_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Week Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Delete Week",
+        "tags": [
+          "Program board"
+        ]
+      },
+      "patch": {
+        "description": "Change the week's type, focus note or whether the athlete sees it (published).",
+        "operationId": "apps_programs_board_api_week_settings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "week_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Week Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeekSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Week"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Week Settings",
+        "tags": [
+          "Program board"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/weeks/{week_id}/clear": {
+      "post": {
+        "description": "Remove every session except logged days.",
+        "operationId": "apps_programs_board_api_clear_week",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "week_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Week Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Week"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Clear Week",
+        "tags": [
+          "Program board"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/weeks/{week_id}/duplicate": {
+      "post": {
+        "description": "A copy right after the week (unpublished); later weeks move a week later.",
+        "operationId": "apps_programs_board_api_duplicate_week",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "week_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Week Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeekSummary"
+                }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Duplicate Week",
+        "tags": [
+          "Program board"
+        ]
+      }
+    },
+    "/api/v1/athletes/{athlete_id}/weeks/{week_id}/undo": {
+      "post": {
+        "operationId": "apps_programs_board_api_undo_week",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "athlete_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Athlete Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "week_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Week Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Undone"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Undo Week",
+        "tags": [
+          "Program board"
         ]
       }
     },

@@ -21,6 +21,7 @@ from django.test.utils import CaptureQueriesContext
 from apps.accounts import coaching, invites
 from apps.api.main import api as ninja_api
 from apps.programs import habits
+from apps.programs import services as program_services
 from apps.signin import services as signin
 from apps.workouts import questions
 
@@ -42,6 +43,10 @@ PARAMS = {
     "habit_id": ("athlete", lambda w: w["habit"].pk),
     "question_id": ("athlete", lambda w: w["question"].pk),
     "index": ("athlete", lambda w: 0),  # an option of a question
+    "week_id": ("athlete", lambda w: w["week"].pk),
+    "day_id": ("athlete", lambda w: w["week"].days.first().pk),
+    "session_id": ("athlete", lambda w: w["rx"].session_id),
+    "rx_id": ("athlete", lambda w: w["rx"].pk),
 }
 
 # Endpoints whose path parameter is itself the credential, so anyone holding it may use it.
@@ -89,6 +94,10 @@ def example(schema, node):
         return False
     if node.get("format") == "uuid":
         return str(uuid.uuid7())
+    if node.get("format") == "date":
+        return "2026-09-24"
+    if node.get("format") == "date-time":
+        return "2026-09-24T12:00:00Z"
     return "x"
 
 
@@ -138,6 +147,8 @@ def world(gym):
     MaxEntry.objects.create(athlete=athlete, exercise=snatch, date=today, kg=100, source="coach")
     log = SessionLog.objects.create(athlete=athlete, date=today, finished_at=now)
     se = SessionExercise.objects.create(session_log=log, exercise=snatch, exercise_name="Snatch")
+    week_type = gym.week_types.get(name="Accumulation")
+    program = program_services.start_program(athlete, "Block", today, 2, week_type, by=owner.user)
     return {
         "gym": gym,
         "coach": owner,
@@ -158,6 +169,8 @@ def world(gym):
         "issue": IssueReport.objects.create(athlete=athlete, session_log=log, kind="pain", text="Wrist"),
         "habit": habits.prescribe(athlete, "Sleep", "😴", "daily"),
         "question": questions.add(athlete, "choice"),
+        "week": program.weeks.first(),
+        "rx": program_services.add_prescription(program.weeks.first().days.first(), snatch, athlete),
     }
 
 
