@@ -47,6 +47,9 @@ PARAMS = {
     "day_id": ("athlete", lambda w: w["week"].days.first().pk),
     "session_id": ("athlete", lambda w: w["rx"].session_id),
     "rx_id": ("athlete", lambda w: w["rx"].pk),
+    "exercise_id": ("gym", lambda w: w["archived_exercise"].pk),
+    "category_id": ("gym", lambda w: w["gym"].categories.first().pk),
+    "tag_id": ("gym", lambda w: w["gym"].tags.first().pk),
 }
 
 # Endpoints whose path parameter is itself the credential, so anyone holding it may use it.
@@ -128,6 +131,13 @@ def test_every_path_parameter_is_known():
     assert not unknown, f"add these to PARAMS in {__name__}: {sorted(unknown)}"
 
 
+def _archived(exercise):
+    """Archived, so even deleting it is a real attempt for an outsider."""
+    exercise.archived = True
+    exercise.save(update_fields=["archived"])
+    return exercise
+
+
 @pytest.fixture
 def world(gym):
     """The owner's side: a coach and athlete in `gym`, with their data and a signed-in device."""
@@ -170,6 +180,7 @@ def world(gym):
         "habit": habits.prescribe(athlete, "Sleep", "😴", "daily"),
         "question": questions.add(athlete, "choice"),
         "week": program.weeks.first(),
+        "archived_exercise": _archived(ex(gym, "hsn")),
         "rx": program_services.add_prescription(program.weeks.first().days.first(), snatch, athlete),
     }
 

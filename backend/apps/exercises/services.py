@@ -83,19 +83,21 @@ def save_pending_names(model, gym, post, max_length):
 
 
 def move_in_order(rows, pk, direction):
-    """Swap one row of an ordered list with its neighbour and renumber. ValueError if the row
-    isn't in the list or the direction isn't up/down."""
+    """Swap one row of an ordered list with its neighbour and renumber, in one update.
+    NotFound if the row isn't in the list (someone else's); Invalid for a direction other
+    than up or down."""
     if direction not in ("up", "down"):
         raise errors.Invalid(f"Move up or down, not {direction!r}.")
-    ids = [r.pk for r in rows]
-    i = ids.index(pk)
+    keys = [r.pk for r in rows]
+    if pk not in keys:
+        raise errors.NotFound()
+    i = keys.index(pk)
     j = i - 1 if direction == "up" else i + 1
     if 0 <= j < len(rows):
         rows[i], rows[j] = rows[j], rows[i]
         for order, row in enumerate(rows):
-            if row.order != order:
-                row.order = order
-                row.save(update_fields=["order"])
+            row.order = order
+        type(rows[0]).objects.bulk_update(rows, ["order"])
 
 
 # ---------------------------------------------------------------- exercises

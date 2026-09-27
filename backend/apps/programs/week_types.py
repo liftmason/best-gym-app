@@ -90,7 +90,7 @@ def save_pending_edits(gym, post):
 
 @transaction.atomic
 def move(gym, pk, direction):
-    """Swap an active week type with its neighbour. ValueError if it isn't one."""
+    """Swap an active week type with its neighbour. NotFound if it isn't one of the gym's."""
     library.move_in_order(
         list(WeekType.objects.select_for_update().filter(gym=gym, archived=False)), pk, direction
     )

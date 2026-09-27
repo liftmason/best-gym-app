@@ -107,6 +107,7 @@ def _routers():
     from apps.accounts.api import router as accounts
     from apps.accounts.coach_api import router as athletes
     from apps.dashboard.api import router as dashboard
+    from apps.exercises.api import router as library
     from apps.messaging.api import router as messages
     from apps.programs.board_api import router as board
     from apps.programs.habits_api import router as habits
@@ -123,6 +124,7 @@ def _routers():
     api.add_router("", habits)
     api.add_router("", questions)
     api.add_router("", board)
+    api.add_router("", library)
 
 
 def coach_of(request):
