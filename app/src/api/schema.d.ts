@@ -955,6 +955,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/push-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Register Push Token
+         * @description This device's Expo push token, for notifications (the app sends it after sign-in).
+         */
+        put: operations["apps_signin_api_register_push_token"];
+        post?: never;
+        /**
+         * Forget Push Token
+         * @description No more notifications on this device (signing out does this too).
+         */
+        delete: operations["apps_signin_api_forget_push_token"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/refresh": {
         parameters: {
             query?: never;
@@ -3828,6 +3852,11 @@ export interface components {
             /** Results */
             results: components["schemas"]["Outcome"][];
         };
+        /** PushTokenIn */
+        PushTokenIn: {
+            /** Token */
+            token: string;
+        };
         /** Pushed */
         Pushed: {
             /** Athletes */
@@ -5916,6 +5945,46 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["NonceOut"];
                 };
+            };
+        };
+    };
+    apps_signin_api_register_push_token: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushTokenIn"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_signin_api_forget_push_token: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

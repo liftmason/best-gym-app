@@ -47,6 +47,11 @@ async function localEngine(): Promise<SyncEngine | null> {
   }
 }
 
+/** Sync now, if training mode has started one (a push asked for it). */
+export function syncNow(): void {
+  void session?.engine.sync();
+}
+
 /** Actions on this device not yet sent (for the sign-out warning). */
 export async function unsentActions(): Promise<number> {
   const engine = await localEngine();
