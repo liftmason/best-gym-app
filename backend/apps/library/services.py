@@ -526,8 +526,9 @@ def default_for_tags(gym, tags):
     return candidates.order_by("name").first()
 
 
-def add_tag_slot(session, tags):
-    """A tag slot from the rail's ticked tags; its default is the first exercise with them all."""
+def add_tag_slot(session, tags, index=None):
+    """A tag slot from the rail's ticked tags (at the end, or at `index`); its default is the
+    first exercise with them all."""
     tags = list(tags)
     gym = session.week.template.gym
     if not tags:
@@ -537,7 +538,7 @@ def add_tag_slot(session, tags):
     default = default_for_tags(gym, tags)
     if default is None:
         raise InvalidTemplate("No exercise carries all of those tags — loosen the filter")
-    return add_slot(session, default, tags=tags)
+    return add_slot(session, default, index=index, tags=tags)
 
 
 def check_slot_kind(gym, kind, exercise=None, default=None, tags=()):

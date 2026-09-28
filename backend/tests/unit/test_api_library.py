@@ -95,3 +95,13 @@ def test_categories_and_tags(api, gym):
     tag = call(api, "post", "/tags", {"name": "Explosive"}).json()
     assert call(api, "patch", f"/tags/{tag['id']}", {"name": "Speed work"}).json()["name"] == "Speed work"
     assert call(api, "delete", f"/tags/{tag['id']}").status_code == 204
+
+
+def test_adding_a_starter_pack_later_adds_only_whats_missing(api, gym):
+    before = Exercise.objects.filter(gym=gym).count()
+    added = call(api, "post", "/starter-exercises", {"pack": "general"}).json()["added"]
+    assert added > 0 and Exercise.objects.filter(gym=gym).count() == before + added
+    assert call(api, "post", "/starter-exercises", {"pack": "general"}).json() == {"added": 0}
+    refused = call(api, "post", "/starter-exercises", {"pack": "yoga"})
+    assert refused.status_code == 400
+    assert refused.json()["error"]["fields"] == {"pack": "Pick one of the starter packs."}

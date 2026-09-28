@@ -58,6 +58,11 @@ def test_slots_fixed_and_tag_based(api, editor, gym):
     after = call(api, "post", f"{base}/template-sessions/{session}/slots", {"tag_ids": [str(tag.pk)]}).json()
     tagged = first_session(after)["slots"][1]
     assert tagged["kind"] == "tag" and tagged["tags"] == [{"id": str(tag.pk), "name": tag.name}]
+    placed = call(
+        api, "post", f"{base}/template-sessions/{session}/slots", {"tag_ids": [str(tag.pk)], "index": 0}
+    ).json()
+    assert [s["kind"] for s in first_session(placed)["slots"]] == ["tag", "exercise", "tag"]
+    call(api, "delete", f"{base}/slots/{first_session(placed)['slots'][0]['id']}")
 
     detail = api.get(f"/api/v1{base}/slots/{slot['id']}").json()
     dose = detail["dose"] | {"sets": 4, "load_basis": "percent", "load_value": "75"}
