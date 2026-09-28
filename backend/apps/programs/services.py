@@ -441,6 +441,16 @@ def move_prescription(rx, target_session, index, by=None):
             _renumber(old_session)
 
 
+@transaction.atomic
+def move_to_day(rx, day, index=0, by=None):
+    """Move `rx` onto a day (dropped on the day itself, not a session): into its first
+    session, or a new unnamed one on a rest day."""
+    if day.week.program_id != rx.session.day.week.program_id:
+        raise NotAllowed("Exercises move within one program.")
+    _record(rx.session.day.week, by, f"Move {rx.exercise.name}")
+    move_prescription(rx, session_for(day), index)
+
+
 def _renumber(session):
     items = list(session.prescriptions.only("pk", "order"))
     changed = [item for order, item in enumerate(items) if item.order != order]

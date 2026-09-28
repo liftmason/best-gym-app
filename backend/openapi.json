@@ -1248,7 +1248,7 @@
             "type": "boolean"
           },
           "plan": {
-            "$ref": "#/components/schemas/PlanOut"
+            "$ref": "#/components/schemas/PlanRef"
           },
           "programming": {
             "title": "Programming",
@@ -2588,20 +2588,36 @@
       },
       "Move": {
         "properties": {
+          "day_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Id"
+          },
           "index": {
+            "default": 0,
             "title": "Index",
             "type": "integer"
           },
           "session_id": {
-            "format": "uuid",
-            "title": "Session Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
           }
         },
-        "required": [
-          "session_id",
-          "index"
-        ],
         "title": "Move",
         "type": "object"
       },
@@ -3075,6 +3091,24 @@
           "form_videos"
         ],
         "title": "PlanOut",
+        "type": "object"
+      },
+      "PlanRef": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ],
+        "title": "PlanRef",
         "type": "object"
       },
       "PlannedDay": {
@@ -4274,6 +4308,25 @@
         "title": "SlotIn",
         "type": "object"
       },
+      "SlotMove": {
+        "properties": {
+          "index": {
+            "title": "Index",
+            "type": "integer"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "index"
+        ],
+        "title": "SlotMove",
+        "type": "object"
+      },
       "SlotOut": {
         "properties": {
           "dose": {
@@ -4583,6 +4636,35 @@
           "sessions"
         ],
         "title": "TemplateWeek",
+        "type": "object"
+      },
+      "TemplateWeekSettings": {
+        "properties": {
+          "focus_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Focus Note"
+          },
+          "week_type_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Week Type Id"
+          }
+        },
+        "title": "TemplateWeekSettings",
         "type": "object"
       },
       "ThreadRow": {
@@ -5205,6 +5287,17 @@
               }
             ],
             "title": "Focus Note"
+          },
+          "published": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published"
           },
           "week_type_id": {
             "anyOf": [
@@ -6571,7 +6664,7 @@
     },
     "/api/v1/athletes/{athlete_id}/prescriptions/{rx_id}/move": {
       "post": {
-        "description": "Put the exercise at `index` in a session (any day of the same program).",
+        "description": "Put the exercise at `index` in a session, or onto a day (any day of the same program).",
         "operationId": "apps_programs_board_api_move_prescription",
         "parameters": [
           {
@@ -11129,7 +11222,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Move"
+                "$ref": "#/components/schemas/SlotMove"
               }
             }
           },
@@ -11551,7 +11644,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/WeekSettings"
+                "$ref": "#/components/schemas/TemplateWeekSettings"
               }
             }
           },

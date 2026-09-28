@@ -248,13 +248,13 @@ def remove_week(request, template_id: uuid.UUID, template_week_id: uuid.UUID):
     return _editor(template, coach.gym.units)
 
 
-class WeekSettings(Schema):
+class TemplateWeekSettings(Schema):
     week_type_id: uuid.UUID | None = None
     focus_note: str | None = None
 
 
 @router.patch("/templates/{template_id}/weeks/{template_week_id}", response=Editor)
-def week_settings(request, template_id: uuid.UUID, template_week_id: uuid.UUID, data: WeekSettings):
+def week_settings(request, template_id: uuid.UUID, template_week_id: uuid.UUID, data: TemplateWeekSettings):
     coach, template = _template(request, template_id)
     week = services.template_week(template, template_week_id)
     if data.week_type_id is not None:
@@ -390,13 +390,13 @@ def remove_slot(request, template_id: uuid.UUID, slot_id: uuid.UUID):
     return _editor(template, coach.gym.units)
 
 
-class Move(Schema):
+class SlotMove(Schema):
     session_id: uuid.UUID
     index: int
 
 
 @router.post("/templates/{template_id}/slots/{slot_id}/move", response=Editor)
-def move_slot(request, template_id: uuid.UUID, slot_id: uuid.UUID, data: Move):
+def move_slot(request, template_id: uuid.UUID, slot_id: uuid.UUID, data: SlotMove):
     coach, template = _template(request, template_id)
     slot = services.template_slot(template, slot_id)
     services.move_slot(slot, services.template_session(template, data.session_id), data.index)

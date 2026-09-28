@@ -120,6 +120,22 @@ def test_moving_and_swapping(api, board, athlete, gym):
     assert not_a_swap.status_code == 400
 
 
+def test_moving_onto_a_rest_day_gives_it_one_unnamed_session(api, board, athlete, gym):
+    days = board["week"]["days"]
+    base = f"/athletes/{athlete.pk}"
+    rx = call(
+        api, "post", f"{base}/days/{days[0]['id']}/prescriptions", {"exercise_id": str(ex(gym, "sn").pk)}
+    ).json()
+    moved = call(api, "post", f"{base}/prescriptions/{rx['id']}/move", {"day_id": days[3]["id"]})
+    assert moved.status_code == 204
+    week = api.get(f"/api/v1{base}/program").json()["week"]
+    (session,) = week["days"][3]["sessions"]
+    assert session["name"] == "" and [i["exercise"]["name"] for i in session["items"]] == ["Snatch"]
+    assert week["days"][0]["sessions"] == [] and week["undo"] == "Move Snatch"
+    nowhere = call(api, "post", f"{base}/prescriptions/{rx['id']}/move", {"index": 0})
+    assert nowhere.status_code == 400
+
+
 def test_week_settings_publish_duplicate_and_delete(api, board, athlete):
     base = f"/athletes/{athlete.pk}"
     week_id = board["week"]["id"]

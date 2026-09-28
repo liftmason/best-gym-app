@@ -385,17 +385,23 @@ def remove_prescription(request, athlete_id: uuid.UUID, rx_id: uuid.UUID):
 
 
 class Move(Schema):
-    session_id: uuid.UUID
-    index: int
+    session_id: uuid.UUID | None = None  # a session, or
+    day_id: uuid.UUID | None = None  # a day: its first session, or a new one on a rest day
+    index: int = 0
 
 
 @router.post("/athletes/{athlete_id}/prescriptions/{rx_id}/move", response={204: None})
 def move_prescription(request, athlete_id: uuid.UUID, rx_id: uuid.UUID, data: Move):
-    """Put the exercise at `index` in a session (any day of the same program)."""
+    """Put the exercise at `index` in a session, or onto a day (any day of the same program)."""
     _coach, athlete = _athlete(request, athlete_id)
     rx = services.athlete_prescription(athlete, rx_id)
-    target = services.athlete_session(athlete, data.session_id)
-    services.move_prescription(rx, target, data.index, by=request.user)
+    if data.session_id:
+        target = services.athlete_session(athlete, data.session_id)
+        services.move_prescription(rx, target, data.index, by=request.user)
+    elif data.day_id:
+        services.move_to_day(rx, services.athlete_day(athlete, data.day_id), data.index, by=request.user)
+    else:
+        raise errors.Invalid("Say which session or day to move it to.")
     return Status(204, None)
 
 
