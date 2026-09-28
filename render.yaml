@@ -1,9 +1,18 @@
-# Render blueprint (docs/LAUNCH.md, "The backend (Render)"): the API, the hourly cron job and Postgres,
-# in Virginia (docs/EXPO_MIGRATION.md, decision log). Nothing deploys until the owner
+# Render blueprint (docs/LAUNCH.md, "The backend (Render)"): the API and Postgres, in
+# Virginia (docs/EXPO_MIGRATION.md, decision log). Nothing deploys until the owner
 # connects this repository as a Blueprint in their Render account.
-# The web service and the cron job share one env var group plus DATABASE_URL, so the cron
-# job has the same settings and database as the API. Every variable the backend reads is
-# listed here (backend/tests/unit/test_render_blueprint.py).
+#
+# The free test run (docs/plans/S8B_TEST_RUN.md). Going public reverses these, in one commit:
+# - the web service is `plan: free`: migrations run in the start command (free services have
+#   no pre-deploy step), with 2 workers for 512 MB. Paid: `plan: starter`, `preDeployCommand:
+#   python manage.py migrate --noinput && python manage.py ensure_admin`, 3 workers;
+# - the database is `plan: free`, deleted 30 days after it's created unless upgraded.
+#   Paid: `plan: basic-256mb` (upgrading keeps the data);
+# - there's no cron service (Render has none free): .github/workflows/cron.yml calls
+#   /api/v1/ops/cron hourly with CRON_TOKEN. Paid: the `gymtrainer-cron` service (git history,
+#   docs/plans/S8B_TEST_RUN.md section 5) and CRON_TOKEN removed.
+# The settings shared with that cron service stay in one env var group, ready for it.
+# Every variable the backend reads is listed here (backend/tests/unit/test_render_blueprint.py).
 
 envVarGroups:
   - name: gymtrainer-shared
@@ -54,11 +63,10 @@ services:
     runtime: python
     region: virginia
     rootDir: backend
-    plan: starter
+    plan: free
     branch: main
     buildCommand: pip install uv && uv export --locked --no-dev --no-hashes -o /tmp/requirements.txt && pip install -r /tmp/requirements.txt && python manage.py collectstatic --noinput
-    preDeployCommand: python manage.py migrate --noinput && python manage.py ensure_admin
-    startCommand: gunicorn config.wsgi:application --workers 3 --access-logfile -
+    startCommand: python manage.py migrate --noinput && python manage.py ensure_admin && gunicorn config.wsgi:application --workers 2 --access-logfile -
     healthCheckPath: /healthz
     envVars:
       - fromGroup: gymtrainer-shared
@@ -114,49 +122,10 @@ services:
       - key: STORAGE_REGION
         value: auto
 
-  # Hourly: alerts, form-video clean-up, and each gym's 7am digest (manage.py cron).
-  - type: cron
-    name: gymtrainer-cron
-    runtime: python
-    region: virginia
-    rootDir: backend
-    plan: starter
-    branch: main
-    schedule: "0 * * * *"
-    buildCommand: pip install uv && uv export --locked --no-dev --no-hashes -o /tmp/requirements.txt && pip install -r /tmp/requirements.txt
-    startCommand: python manage.py cron
-    envVars:
-      - fromGroup: gymtrainer-shared
-      - key: DATABASE_URL
-        fromDatabase:
-          name: gymtrainer-db
-          property: connectionString
-      # The digest's sending, and video clean-up, need these too.
-      - key: EMAIL_PROVIDER
-        sync: false
-      - key: EMAIL_API_KEY
-        sync: false
-      - key: DEFAULT_FROM_EMAIL
-        sync: false
-      - key: PUSH_PROVIDER
-        value: expo
-      - key: EXPO_ACCESS_TOKEN
-        sync: false
-      - key: STORAGE_ENDPOINT
-        sync: false
-      - key: STORAGE_BUCKET
-        sync: false
-      - key: STORAGE_ACCESS_KEY
-        sync: false
-      - key: STORAGE_SECRET
-        sync: false
-      - key: STORAGE_REGION
-        value: auto
-
 databases:
   - name: gymtrainer-db
     region: virginia
-    plan: basic-256mb
+    plan: free
     databaseName: gymtrainer
     user: gymtrainer
     postgresMajorVersion: "16"
