@@ -42,6 +42,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "apps.dashboard.middleware.HealthCheckMiddleware",  # first: see its docstring
+    # Outside the rest, so it sees the final response: empty answers must reach the app empty.
+    "apps.api.middleware.KeepEmptyAnswersEmptyMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
