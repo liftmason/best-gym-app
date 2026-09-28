@@ -29,19 +29,22 @@ Changing `ADMIN_PASSWORD` later changes the password at the next start.
 
 ## Services (`render.yaml`)
 
-| Service | What it runs |
-| --- | --- |
-| `gymtrainer` (web) | gunicorn, 3 workers; migrations run in the pre-deploy step |
-| `gymtrainer-cron` (cron, hourly) | `manage.py cron`: attention alerts, form-video clean-up, each gym's 7am digest |
-| `gymtrainer-db` (Postgres 16) | the database; see "Backups" for the plan it needs |
+`render.yaml` describes the **free test run** (`docs/plans/S8B_TEST_RUN.md`). Going public
+upgrades it in place (`docs/LAUNCH.md`, "Upgrading to paid"); the list of changes to reverse
+is at the top of the file.
 
-**After syncing the blueprint that introduced `gymtrainer-cron`**, delete the old
-`gymtrainer-nightly` cron service in the Render dashboard. Render doesn't remove services
-a blueprint no longer lists.
+| Service | Test run (free) | Paid |
+| --- | --- | --- |
+| `gymtrainer` (web) | gunicorn, 2 workers; migrations and `ensure_admin` run in the start command; sleeps after 15 minutes without traffic | gunicorn, 3 workers; migrations run in the pre-deploy step |
+| `gymtrainer-db` (Postgres 16) | free: no backups, deleted 30 days after it's created unless upgraded | `basic-256mb`; see "Backups" |
+| Hourly jobs | `.github/workflows/cron.yml` calls `POST /api/v1/ops/cron` | `gymtrainer-cron` (cron, hourly) runs `manage.py cron` |
+
+Free services have no shell: run one-off commands from a computer, with the database's
+external URL as `DATABASE_URL` where the command needs the database.
 
 ## Settings to set in the Render dashboard
 
-Set these on **both** the web service and the cron job, unless marked otherwise.
+Set these on the web service, and on the cron job once there is one (paid), unless marked otherwise.
 
 | Variable | Example | Notes |
 | --- | --- | --- |
@@ -78,8 +81,10 @@ Exercise demo videos are unaffected: they stay YouTube links.
 2. **R2 → Manage API tokens → Create API token**: permission *Object Read & Write*,
    limited to that bucket. Copy the access key id, the secret and the S3 endpoint
    (`https://<account id>.r2.cloudflarestorage.com`).
-3. Set the four `STORAGE_*` variables on the web service and the cron job.
-4. Allow uploads from the site (CORS). Either run, from the web service's Render shell:
+3. Set the four `STORAGE_*` variables on the web service, and on the cron job once there is one.
+4. Allow uploads from the site (CORS). Either run, from the web service's Render shell (paid)
+   or from `backend/` on a computer with the four `STORAGE_*` variables set (free; it only
+   touches the bucket):
 
        python manage.py storage_setup --origin https://app.liftmason.com
 
@@ -100,22 +105,38 @@ bucket).
 
 ## The cron job
 
-`manage.py cron` runs at minute 0 of every hour:
+The hourly jobs are in `apps/dashboard/jobs.py`. At minute 0 of every hour they:
 
-- brings every coach's "Needs your attention" feed up to date (the same checks the
+- bring every coach's "Needs your attention" feed up to date (the same checks the
   dashboard runs when it's opened);
-- deletes form videos older than 90 days, and uploads that were started a day ago but
+- delete form videos older than 90 days, and uploads that were started a day ago but
   never finished;
-- sends the morning digest to coaches whose gym has just reached 7am, if something new
+- delete expired rate-limit counters, and sync changes older than 90 days;
+- send the morning digest to coaches whose gym has just reached 7am, if something new
   needs their attention (coaches can turn it off in Settings).
 
-Its log line reads `cron: N video(s) expired, N unfinished upload(s) removed, N digest(s) sent`.
+Two ways to run them:
+
+- **Paid (Render's cron job):** `manage.py cron`. Its log line reads
+  `cron: N video(s) expired, N unfinished upload(s) removed, N digest(s) sent`, and a failed
+  step makes the run fail in Render.
+- **Free test run (GitHub Actions):** `.github/workflows/cron.yml` calls
+  `POST /api/v1/ops/cron` with `Authorization: Bearer <CRON_TOKEN>`. `CRON_TOKEN` is set on
+  the Render web service and as a GitHub repository secret, with the same value. The answer
+  has the counts, and a failed step answers 500, which turns the workflow run red. Without
+  `CRON_TOKEN` the endpoint answers 404 and the workflow does nothing, which is how the paid
+  setup switches it off.
+
+Either way each step runs on its own: one failing step, or one coach's digest, doesn't stop
+the rest, and the error goes to Sentry.
 
 ## Backups
 
-The database is on a paid Render plan (`basic-256mb` in `render.yaml`), which includes
-recovery backups; check how far back they go in the dashboard. Render's free Postgres has
-none and expires, so never use it for real data.
+Once going public, the database is on a paid Render plan (`basic-256mb`), which includes
+recovery backups; check how far back they go in the dashboard. During the free test run it
+is on Render's free Postgres, which has **no backups** and is deleted 30 days after it's
+created unless upgraded: testers' data is only as safe as that, which is why the runbook
+upgrades by day 25 (`docs/LAUNCH.md`, "Upgrading to paid").
 
 **Restore drill** (do it once before launch, then every few months):
 

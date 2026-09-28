@@ -1,12 +1,13 @@
 # Launching Liftmason: the runbook
 
-*For the owner (S8b). Written 28 September 2026 at the end of S8a (`docs/plans/S8_LAUNCH.md`). Split the same day into a web launch and a later store launch, when the owner chose to launch on the web first (`docs/EXPO_MIGRATION.md`, "Decided at launch").*
+*For the owner (S8b). Written 28 September 2026 at the end of S8a (`docs/plans/S8_LAUNCH.md`). The same day, the owner chose to launch on the web first, as a free test run in their own name (`docs/plans/S8B_TEST_RUN.md`).*
 
 **Where things stand.** The app is built and tested: the backend, the web app, and the iOS and Android apps. Nothing is deployed and nothing is in a store.
 
-**The plan.** Launch in two parts:
-- **Part 1, the web app (now).** Deploy the backend and the web app at `app.liftmason.com`, and test with real coaches and athletes. Coaches and athletes both use it in a browser, on a computer or a phone.
-- **Part 2, the stores (after testing).** Apple and Google accounts, a designed icon, phone builds, and submission. Nothing in Part 1 needs to be redone for it.
+**The plan:**
+- **Part 1, the test run (now).** The web app at `app.liftmason.com`, tested with coaches and athletes you know. It runs on free tiers, in your name. The domain is the only cost.
+- **Upgrading to paid (going public).** An upgrade in place, about $14 a month. Nothing in Part 1 is redone.
+- **Part 2, the stores (after testing).** Apple and Google accounts, a designed icon, phone builds, and submission.
 
 **How to use it.** Each step says:
 - what to do;
@@ -16,7 +17,7 @@
 
 Settings you enter are marked like `THIS`. Keep them in a password manager as you go.
 
-**Get help:** anything in `code` is either a setting name or a command to run. Steven (or Claude Code) can run the commands, but the accounts must be the business's own.
+**Get help:** anything in `code` is either a setting name or a command to run. Steven (or Claude Code) can run the commands.
 
 ---
 
@@ -25,66 +26,108 @@ Settings you enter are marked like `THIS`. Keep them in a password manager as yo
 | What | Cost | Time to set up | When |
 |---|---|---|---|
 | Domain `liftmason.com` | about $10 a year | minutes | Part 1 |
-| Render: API ($7) + cron job (about $1) + database ($6), in Virginia | about $14 a month | an hour | Part 1 |
-| Cloudflare: website, DNS and video storage | free at launch | an hour | Part 1 |
+| Cloudflare: DNS, email forwarding, website, video storage | free | an hour | Part 1 |
+| Render: API and database, in Virginia | **free during testing**; about $14 a month when going public (API $7, database $6, hourly job about $1) | an hour | Part 1 |
 | Resend: email | free up to 3,000 emails a month | 30 minutes | Part 1 |
-| Sentry: crash reports | free tier | 20 minutes | Part 1 |
-| Apple Developer Program (organisation) | $99 a year | **days to weeks** (needs a D-U-N-S number) | Part 2 |
-| Google Play Console (organisation) | $25 once | a few days (identity and D-U-N-S checks) | Part 2 |
+| Sentry: crash reports | free (one user) | 20 minutes | Part 1 |
+| GitHub organization | free | minutes | Part 1 |
+| Render Pro | $25 a month | minutes | Only if Steven needs his own Render login |
+| Sentry Team | $26 a month | minutes | Only if Steven needs his own Sentry login |
+| Apple Developer Program | $99 a year | **days to weeks** (an organisation needs a D-U-N-S number) | Part 2 |
+| Google Play Console | $25 once | a few days | Part 2 |
 | Expo (EAS builds) | free tier (limited builds a month), or $19 a month for faster builds | exists | Part 2 |
 | Stripe: gym subscriptions | a fee per payment, when billing is turned on | later | When you charge |
 
-**Part 1 costs about $14 a month plus the domain.**
+**Part 1 costs the domain, about $10 a year.**
 
-If you already know you'll go to the stores, **request the D-U-N-S number now** (Part 2, step 1). It's free, it's the slowest step, and it can run while you test.
+**Who has access.** The accounts are yours. Steven is an admin wherever that's free:
+
+| Service | Steven |
+|---|---|
+| Cloudflare | Administrator |
+| GitHub (`liftmason` organization) | Owner |
+| Resend | Admin, if the free plan allows a second member (the invite will say) |
+| Expo (`spearws-team`) | Admin |
+| Render | No login during testing. Merging to `main` deploys. |
+| Sentry | No login. Alert emails go to both of you. |
+
+**On every account:**
+- two-factor sign-in, preferably a passkey or an authenticator app, never SMS;
+- recovery codes in the password manager.
 
 ---
 
-# Part 1: the web app
+# Part 1: the test run
 
-## 1. Accounts
+## 1. GitHub
 
-1. **Render** (render.com): a team account for the business, with a card.
-2. **Cloudflare** (cloudflare.com): free.
-3. **Resend** (resend.com): free.
-4. **Sentry** (sentry.io): free. Create two projects: "liftmason-api" (Python, Django) and "liftmason-app" (React Native; it covers the web app too).
+1. github.com → **Your organizations → New organization** → Free → name `liftmason`.
+2. Invite Steven (`Tazz-Darkwood`) as an **Owner**.
+3. The repository → **Settings → General → Danger Zone → Transfer ownership** → `liftmason`. GitHub redirects the old `spearw/best-gym-app` address, and Steven keeps his access.
+4. On each computer with a checkout, point it at the new address:
+
+       git remote set-url origin git@github.com:liftmason/best-gym-app.git
+
+**Check:** `https://github.com/liftmason/best-gym-app` shows the repository, and CI still runs on the next push.
 
 ---
 
-## 2. The domain and DNS
+## 2. Cloudflare, the domain and the ops address
 
-1. **Buy `liftmason.com`.** Cloudflare Registrar sells domains at cost, which keeps the DNS in one place. Also buy `liftmason.app` if you want to keep it from others; it isn't used.
-2. **Addresses** (Cloudflare → DNS). Keep the app and the API on this one domain: the web app's sign-in depends on it.
+1. **Open a Cloudflare account** with your Gmail address. This is the one account that doesn't use `ops@`, because it has to exist before the domain does. Turn on two-factor sign-in.
+2. **Buy `liftmason.com`** (Cloudflare → Domain Registration). Cloudflare sells domains at cost. **Turn auto-renew on:** every other account's password reset depends on this domain receiving mail.
+3. **The ops address:** Cloudflare → `liftmason.com` → **Email → Email Routing**. Send `ops@liftmason.com` to your Gmail, and add Steven's address as a second destination if he should see account notices. Cloudflare adds the records it needs.
+4. **Invite Steven:** Manage Account → **Members** → invite, as **Administrator**.
+5. **Addresses** (Cloudflare → DNS). Keep the app and the API on this one domain: the web app's sign-in depends on it.
 
 | Name | Points to | Set up in |
 |---|---|---|
-| `app.liftmason.com` | the web app | step 5 (Cloudflare Pages adds it) |
-| `api.liftmason.com` | the backend | step 4 (Render gives a `CNAME` target) |
+| `app.liftmason.com` | the web app | step 7 (Cloudflare Pages adds it) |
+| `api.liftmason.com` | the backend | step 6 (Render gives a `CNAME` target) |
 | `liftmason.com` | redirects to `https://app.liftmason.com` | Cloudflare → Rules → Redirect Rules |
 
-3. **Email records** come from Resend in step 3.
+**Check:** send an email to `ops@liftmason.com` from another address. It arrives in your Gmail.
 
 ---
 
 ## 3. Email (Resend)
 
-1. Resend → **Domains → Add domain** → `liftmason.com`. Add the DNS records it shows (SPF, DKIM) in Cloudflare, then click **Verify**.
-2. **Add a DMARC record** in Cloudflare. It's a `TXT` record named `_dmarc`, with the value `v=DMARC1; p=none; rua=mailto:[your email]`. It stops sign-in codes from landing in spam.
-3. Resend → **API Keys → Create** (sending access). This is `EMAIL_API_KEY`.
+1. **Open a Resend account** with `ops@liftmason.com`. Turn on two-factor sign-in.
+2. Resend → **Domains → Add domain** → `liftmason.com`. Add the DNS records it shows (SPF, DKIM) in Cloudflare, then click **Verify**.
+3. **Add a DMARC record** in Cloudflare. It's a `TXT` record named `_dmarc`, with the value `v=DMARC1; p=none; rua=mailto:ops@liftmason.com`. It stops sign-in codes from landing in spam.
+4. Resend → **API Keys → Create** (sending access). This is `EMAIL_API_KEY`.
+5. Resend → **Settings → Team** → invite Steven as Admin. If the free plan refuses, skip it.
 
-**Check:** once the backend runs (step 4), sign up as a new coach with a real address. The code should arrive within a minute, and not in spam. mail-tester.com scores a message if you send it one.
+**Check:** once the backend runs (step 6), sign up as a new coach with a real address. The code should arrive within a minute, and not in spam. mail-tester.com scores a message if you send it one.
 
 ---
 
-## 4. The backend (Render)
+## 4. Sentry and Expo
 
-1. **Create a bucket for form videos:** Cloudflare → **R2 → Create bucket** `gymtrainer-videos`, with public access **off**. Then **Manage API tokens → Create**, with "Object Read & Write" on that bucket. Note:
-   - the access key id (`STORAGE_ACCESS_KEY`);
-   - the secret (`STORAGE_SECRET`);
-   - the S3 endpoint (`STORAGE_ENDPOINT`).
-2. **Create the services:** Render → **New → Blueprint** → connect GitHub and pick the repository `spearw/best-gym-app`.
-   - Render reads `render.yaml`. It creates the API (`gymtrainer`), the hourly job (`gymtrainer-cron`) and the database (`gymtrainer-db`), all in Virginia.
-3. **Fill in the settings** it asks for. The shared group and both services show the same names:
+1. **Sentry** (sentry.io): open an account with `ops@liftmason.com` (free Developer plan). Turn on two-factor sign-in.
+   - Create two projects: "liftmason-api" (Python, Django) and "liftmason-app" (React Native; it covers the web app too).
+   - In each project's **Alerts**, send issue alerts to `ops@liftmason.com`. That reaches Steven too, if he's on the ops address.
+2. **Expo:** the project already exists under `spearws-team` (expo.dev). Invite Steven as an Admin of that team. Nothing else in Expo is needed until Part 2.
+
+---
+
+## 5. Video storage (Cloudflare R2)
+
+Cloudflare → **R2 → Create bucket** `gymtrainer-videos`, with public access **off**. Then **Manage API tokens → Create**, with "Object Read & Write" on that bucket. Note:
+- the access key id (`STORAGE_ACCESS_KEY`);
+- the secret (`STORAGE_SECRET`);
+- the S3 endpoint (`STORAGE_ENDPOINT`).
+
+---
+
+## 6. The backend (Render), on the day testing starts
+
+**Do this on the day testers start.** Render's free database is deleted 30 days after it's created, unless it's upgraded (see "Upgrading to paid").
+
+1. **Open a Render account** with `ops@liftmason.com` (the free Hobby plan; no card needed). Turn on two-factor sign-in.
+2. **Create the services:** Render → **New → Blueprint** → connect GitHub and pick the repository `liftmason/best-gym-app`.
+   - Render reads `render.yaml`. It creates the API (`gymtrainer`) and the database (`gymtrainer-db`), both free and in Virginia.
+3. **Fill in the settings** it asks for:
 
 | Setting | Value |
 |---|---|
@@ -95,11 +138,12 @@ If you already know you'll go to the stores, **request the D-U-N-S number now** 
 | `EMAIL_PROVIDER` | `resend` |
 | `EMAIL_API_KEY` | from step 3 |
 | `DEFAULT_FROM_EMAIL` | `Liftmason <no-reply@liftmason.com>` |
-| `STORAGE_ENDPOINT`, `STORAGE_BUCKET`, `STORAGE_ACCESS_KEY`, `STORAGE_SECRET` | from step 4.1 (`STORAGE_BUCKET` = `gymtrainer-videos`) |
+| `STORAGE_ENDPOINT`, `STORAGE_BUCKET`, `STORAGE_ACCESS_KEY`, `STORAGE_SECRET` | from step 5 (`STORAGE_BUCKET` = `gymtrainer-videos`) |
 | `SENTRY_DSN` | the "liftmason-api" project's DSN |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` (API) | the admin sign-in: your email, and a long password |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` (API) | the admin sign-in: your email, and a long password (12 characters or more) |
 | `ADMIN_PATH` (API) | something unguessable, e.g. `manage-7f3k2/` |
-| `LOG_CLIENT_IP` (API) | `1` for now; see step 8 |
+| `CRON_TOKEN` (API) | a long random value, for the hourly job (step 8). Make one with `python3 -c "import secrets; print(secrets.token_urlsafe(32))"` |
+| `LOG_CLIENT_IP` (API) | `1` for now; see step 10 |
 
 Leave these blank:
 - `REVIEW_ACCOUNT_EMAIL`, `REVIEW_ACCOUNT_CODE`: only the store reviewers need them (Part 2). Left blank, no fixed sign-in code exists.
@@ -108,21 +152,24 @@ Leave these blank:
 - `BILLING_ENABLED` and the Stripe keys: see "Billing" at the end.
 - `APP_NAME`.
 
-4. **Deploy.** The first deploy migrates the database and creates the admin account.
+4. **Deploy.** Each start migrates the database and creates or updates the admin account. Free services have no separate pre-deploy step.
 5. **Add the API's own address:** Render → `gymtrainer` → **Settings → Custom Domains** → `api.liftmason.com`. Add the `CNAME` it gives you in Cloudflare, with the proxy switched **off** (grey cloud).
-6. **Allow uploads from the web app.** Open Render → `gymtrainer` → **Shell** and run:
+6. **Allow uploads from the web app.** Free services have no shell, so do this from a computer with a checkout. In `backend/`, with the four `STORAGE_*` values from step 5 set in the environment:
 
-       python manage.py storage_setup --origin https://app.liftmason.com
+       STORAGE_ENDPOINT=… STORAGE_BUCKET=gymtrainer-videos STORAGE_ACCESS_KEY=… STORAGE_SECRET=… \
+         .venv/bin/python manage.py storage_setup --origin https://app.liftmason.com
+
+   It only touches the R2 bucket, not the database. Or set the same rule by hand: R2 → `gymtrainer-videos` → **Settings → CORS policy**, allowing `PUT`, `GET` and `HEAD` from `https://app.liftmason.com`, with any header.
 
 **Check:**
-- `https://api.liftmason.com/healthz` answers `{"status": "ok"}`.
+- `https://api.liftmason.com/healthz` answers `{"status": "ok"}`. The first request after a quiet spell takes about a minute while the free service wakes up.
 - `https://api.liftmason.com/<ADMIN_PATH>` shows the admin sign-in, and your `ADMIN_EMAIL`/`ADMIN_PASSWORD` work.
 
 ---
 
-## 5. The web app (Cloudflare Pages)
+## 7. The web app (Cloudflare Pages)
 
-1. Cloudflare → **Workers & Pages → Create → Pages → Connect to Git** → the same repository. Use these settings:
+1. Cloudflare → **Workers & Pages → Create → Pages → Connect to Git** → `liftmason/best-gym-app`. Use these settings:
    - Production branch: `main`
    - Root directory: `app`
    - Build command: `npm ci && npx expo export --platform web`
@@ -151,51 +198,113 @@ If anything here fails, stop and send Steven what you saw before going further.
 
 ---
 
-## 6. Legal pages (before anyone outside the test group signs up)
+## 8. The hourly job
+
+Render has no free cron jobs, so GitHub calls the API every hour instead (`.github/workflows/cron.yml`). The job sends coaches' alerts and 7am digest, and cleans up old form videos.
+
+1. GitHub → `liftmason/best-gym-app` → **Settings → Secrets and variables → Actions → New repository secret**: name `CRON_TOKEN`, with the same value as on Render (step 6).
+2. **Actions → Hourly jobs → Run workflow**, to try it now.
+
+**Check:**
+- The run is green, and its log ends with a line like `{"expired":0,"abandoned":0,"digests":0,"failed":[]}`.
+- Render → `gymtrainer` → **Logs** shows a `POST /api/v1/ops/cron` answered with 200.
+
+A red run means a step failed. The log names it, and Sentry has the error. GitHub may start hourly runs 10–30 minutes late, which is fine. GitHub also switches the schedule off after 60 days with no activity on the repository; the Actions tab then shows a button to switch it back on.
+
+---
+
+## 9. Legal pages (before anyone outside the test group signs up)
 
 The privacy policy and terms are drafts in `app/src/legal/texts.ts`, shown at `/privacy` and `/terms` with a "Draft" notice. Testing with people you know can start while they're drafts.
 
-1. Have them read by someone qualified for where the business operates.
-2. Fill in everything in [brackets]. That covers the business's legal name and address, the contact email, the **minimum age** (weightlifting coaches often train teenagers), the plans and refunds, and the governing law.
+1. Have them read by someone qualified for where you operate.
+2. Fill in everything in [brackets]. That covers the legal name and address, the contact email, the **minimum age** (weightlifting coaches often train teenagers), the plans and refunds, and the governing law.
 3. Set `DRAFT = false` and `UPDATED` to the date, then push. Cloudflare redeploys the web app by itself.
 
 ---
 
-## 7. What the web app can't do yet
+## 10. Inviting testers, and after the first deploy
 
-Tell your testers these. They go away with the store apps (Part 2).
+**Tell testers** what the web app can't do yet (below). Also tell them that **the first visit after a quiet spell takes about a minute**: the free server sleeps after 15 minutes with no visitors. The sync pill waits, and nothing is lost.
 
+**What the web app can't do yet.** These go away with the store apps (Part 2).
 - **No notifications.** Nobody gets a push when a coach publishes a week or sends a message; they see it next time they open the app.
 - **Offline works only while the page is open.** Training data is kept on the phone, and a whole session logs and saves with no signal. But the page itself isn't stored for offline use, so opening the app for the first time that day with no signal doesn't work. **Open it before going somewhere with no signal.**
 - **Form videos need a connection** while they're sent. The phone apps queue them for later; the web app can't keep the file.
 - **One tab at a time.** A second tab says the app is open in another tab.
 - **iPhones: add it to the home screen** (Share → Add to Home Screen). Safari clears a website's stored data after seven days of use without a visit, which would lose anything not yet synced; a home-screen app keeps it.
 
----
-
-## 8. After the first deploy
-
+**After the first deploy:**
 - **The rate-limit check:** with `LOG_CLIENT_IP=1` set:
   1. Sign in once from a phone on mobile data.
   2. In Render → `gymtrainer` → **Logs**, find the `client-ip check:` line and send it to Steven. It shows whether sign-in limits count each visitor separately behind Render's proxy.
   3. Then remove `LOG_CLIENT_IP`.
-- **A backup restore drill:** once before real users arrive, then every few months (`docs/OPERATIONS.md`, "Backups").
 - **Watch Sentry** for the first week.
+- **Put a reminder in the diary for day 25 after step 6.** Decide then whether to upgrade: the free database is deleted on day 30.
+- The free database has **no backups**. The restore drill waits for the upgrade.
 - **Ongoing running:** `docs/OPERATIONS.md`.
+
+---
+
+## 11. Steven's old Render account
+
+The first trial ran on Steven's free Render account. It was switched off on 26 September, and its database was empty, so nothing moves. To finish:
+1. **Steven** deletes the `gymtrainer` service and `gymtrainer-db` in his Render account.
+2. **Steven** removes Render's access to the repository: Render → Account settings → GitHub, or github.com/settings/installations.
+3. **You** (or Claude Code, if you ask) delete the stale deployment environments on GitHub: the repository → **Settings → Environments** → `main - gymtrainer` and `main - gymtrainer-db`.
+
+---
+
+# Upgrading to paid (going public)
+
+Upgrade when **any one** of these is true:
+- testing passes day 25 of the free database;
+- the one-minute wake-ups get in the way;
+- anyone outside the test group signs up.
+
+It costs about $14 a month, and everything stays in the same Render account:
+1. **Render → `gymtrainer-db` → Upgrade** to Basic (256 MB). The data is kept.
+2. **Render → `gymtrainer` → Upgrade** to Starter.
+3. **The blueprint:** ask Steven or Claude Code to reverse the free-tier changes listed at the top of `render.yaml`:
+   - the paid plans;
+   - migrations back in a pre-deploy step, with 3 workers;
+   - the `gymtrainer-cron` service back.
+
+   Render applies the blueprint when it reaches `main`.
+4. **Switch the GitHub job off:** delete the `CRON_TOKEN` repository secret and the `CRON_TOKEN` setting on Render. The workflow then does nothing, and the endpoint answers 404.
+5. **Do the backup restore drill** (`docs/OPERATIONS.md`, "Backups"), then every few months.
+6. **Only if Steven needs his own logins:** Render → upgrade the workspace to Pro ($25 a month), then invite him. Sentry → Team plan ($26 a month).
+7. **Before opening Apple or Google Play, decide whether a business will own the accounts.**
+   - If it will, move the accounts to it first:
+     - point `ops@` at the business;
+     - make the business the owner in Cloudflare, GitHub, Expo and Resend;
+     - for Render, which can't move services between accounts: create the services from `render.yaml` in the business's Render account, then restore the database from a dump (`docs/OPERATIONS.md`, "Backups").
+   - Google Play personal accounts can never become business accounts, and an individual Apple account shows your legal name as the seller.
+
+**Check:** `https://api.liftmason.com/healthz` answers straight away after an hour of quiet, and the next hour's Render cron run logs its `cron:` line.
 
 ---
 
 # Part 2: the stores (after web testing)
 
+**Upgrade to paid first** (the section above). This part also uses Render's shell, which free services don't have.
+
 ## 1. Accounts
 
-1. **A D-U-N-S number** for the business, from Dun & Bradstreet. It's free, and takes up to two weeks. Apple and Google both use it to verify an organisation. Skip this if the business already has one.
+Open these in the name you decided on in "Upgrading to paid", step 7.
+
+**If a business owns the accounts:**
+1. **A D-U-N-S number** for the business, from Dun & Bradstreet. It's free and takes up to two weeks. Apple and Google both use it to verify an organisation.
 2. **Apple Developer Program, as an organisation** (developer.apple.com → Account → Enroll).
-   - You'll need the D-U-N-S number, the business's legal name, and a website (`liftmason.com` from Part 1 works).
-   - Once approved, invite Steven's Apple ID as an "App Manager" if he'll handle builds.
+   - You'll need the D-U-N-S number, the business's legal name, and a website (`liftmason.com` works).
+   - Once approved, invite Steven's Apple ID as an Admin or "App Manager".
 3. **Google Play Console, as an organisation** (play.google.com/console).
-   - Use an organisation account. **New personal accounts must run a closed test with 12 or more testers for 14 days before they can publish.**
-4. **Expo:** the project already exists under `spearws-team` (expo.dev). Add the owner as an admin of that team.
+
+**If you stay personal:**
+- Apple: enroll as an individual. Your legal name shows as the seller, and Steven can use App Store Connect but can't manage signing certificates.
+- Google Play: a personal account. **It can never become an organisation account, and new personal accounts must run a closed test with 12 or more testers for 14 days before they can publish.**
+
+Steven is already an Admin of the Expo team (Part 1, step 4).
 
 ---
 
@@ -274,21 +383,31 @@ Gyms subscribe on the web, in Settings → Plan (it never shows in the phone app
 
 ## Checklist
 
-**Part 1, the web app:**
-- [ ] Render, Cloudflare, Resend, Sentry accounts
-- [ ] `liftmason.com` bought; `liftmason.com` redirects to the app
-- [ ] Resend domain verified, and DMARC added
+**Part 1, the test run:**
+- [ ] `liftmason` GitHub organization; repository moved; Steven an owner; remotes updated
+- [ ] Cloudflare account; `liftmason.com` bought with auto-renew; `ops@` forwarding; Steven an Administrator; `liftmason.com` redirects to the app
+- [ ] Resend domain verified, DMARC added, API key; Steven invited if allowed
+- [ ] Sentry projects and alert emails; Steven an Admin in Expo
+- [ ] Two-factor sign-in and recovery codes on every account
 - [ ] R2 bucket and token
-- [ ] Render blueprint deployed and settings filled in; `api.liftmason.com` works; `storage_setup` run
+- [ ] Render blueprint deployed **on the day testing starts**; settings filled in; `api.liftmason.com` works; CORS set
 - [ ] Cloudflare Pages deployed; `app.liftmason.com` works; a coach-and-athlete run-through done on a computer
 - [ ] The phone check done on an iPhone (Safari) and an Android phone (Chrome)
-- [ ] Testers told what the web app can't do yet
+- [ ] `CRON_TOKEN` secret on GitHub; a manual "Hourly jobs" run is green
+- [ ] Testers told about the one-minute wake-up and what the web app can't do yet
 - [ ] `LOG_CLIENT_IP` check done and removed
-- [ ] Backup restore drill done
+- [ ] Day-25 reminder in the diary
+- [ ] Steven's old Render service, database and GitHub access removed; stale GitHub environments deleted
 - [ ] Privacy policy and terms finished; `DRAFT = false` (before anyone outside the test group)
 
+**Upgrading to paid:**
+- [ ] Render database on Basic and API on Starter
+- [ ] `render.yaml` back on paid plans with the cron service; `CRON_TOKEN` removed from Render and GitHub
+- [ ] Backup restore drill done
+- [ ] Decided whether a business owns the accounts, before opening Apple or Google
+
 **Part 2, the stores:**
-- [ ] D-U-N-S number; Apple Developer (organisation); Google Play (organisation); owner added to the Expo team
+- [ ] D-U-N-S number (for an organisation); Apple Developer; Google Play
 - [ ] Designed icon in place
 - [ ] Review account settings set; `seed_review` run
 - [ ] Sentry DSN set in EAS; Firebase key uploaded for Android push
