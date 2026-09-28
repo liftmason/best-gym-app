@@ -20,7 +20,7 @@ Nothing in S8a deploys, buys, or sends anything anywhere.
 ## What the stores require that the app doesn't have yet
 
 - **Deleting your own account.** Apple's guideline 5.1.1(v) and Google Play both require it for apps with sign-up; Google also wants a web page for it. Today only the admin can erase an athlete (`accounts.erase.erase_athlete`), and nothing erases a coach.
-- **Sign in with Apple.** Apple requires it wherever Google sign-in is offered (guideline 4.8). It's built (S2, S4), and it waits for the Apple account.
+- **Sign in with Apple: not needed at launch.** Apple requires it only where another third-party sign-in (such as Google) is offered (guideline 4.8). The app offers email codes only. The backend supports Apple and Google (S2); the app's buttons can come after launch, together.
 - **A privacy policy and terms**, linked from the app and the store listings.
 - **The data-safety answers** (Google) and the **privacy "nutrition label"** (Apple): what's collected and why.
 - **A review account** with realistic data, so Apple's reviewers can sign in as a coach and as an athlete. The fixed review code exists (`REVIEW_ACCOUNT_EMAIL`/`_CODE`), but there's no data to go with it.
