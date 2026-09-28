@@ -16,6 +16,7 @@ import { useAthlete, useOverview } from '@/coaching/queries';
 import { dayMonth } from '@/training/format';
 import { Button, Card, colors, fonts, Sheet, space, Text } from '@/ui';
 import { confirm } from '@/ui/confirm';
+import { APP_NAME } from '@/name';
 
 const TABS = [
   ['overview', 'Overview'],
@@ -37,7 +38,7 @@ function ProgramGlance({ id, name }: { id: string; name: string }) {
       <Card style={{ gap: space.s }}>
         <Text variant="h4">Programming is on a computer for now</Text>
         <Text variant="small" tone="muted">
-          Open GymTrainer on the web to build and publish {name}&apos;s weeks. Programming on a phone is planned.
+          Open {APP_NAME} on the web to build and publish {name}&apos;s weeks. Programming on a phone is planned.
         </Text>
       </Card>
     </View>

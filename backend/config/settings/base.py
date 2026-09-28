@@ -56,6 +56,10 @@ MIDDLEWARE = [
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
 
+# The product's name, as people see it (docs/OPERATIONS.md, "Naming the app").
+# Emails say it with {% app_name %}.
+APP_NAME = os.environ.get("APP_NAME") or "Liftmason"
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -67,6 +71,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
+            "builtins": ["apps.core.templatetags.naming"],
         },
     },
 ]
@@ -166,7 +171,7 @@ STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 # Email: invites, reminders and the digest. EMAIL_PROVIDER is "resend" or "postmark" (with
 # EMAIL_API_KEY) to send for real, or blank / "console" to print email instead. Anything
 # else stops the site from starting (config/settings/checks.py).
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Platform <no-reply@localhost>")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", f"{APP_NAME} <no-reply@localhost>")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 EMAIL_PROVIDER = os.environ.get("EMAIL_PROVIDER", "").strip().lower()
 EMAIL_BACKEND, ANYMAIL = checks.email(EMAIL_PROVIDER, os.environ.get("EMAIL_API_KEY", ""))

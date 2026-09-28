@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "GymTrainer",
+    "name": "Liftmason",
     "slug": "best-gym-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "gymtrainer",
+    "scheme": "liftmason",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
@@ -39,7 +39,7 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "GymTrainer uses the camera to record form videos for your coach.",
+          "cameraPermission": "$(PRODUCT_NAME) uses the camera to record form videos for your coach.",
           "microphonePermission": "Form videos are recorded with sound.",
           "photosPermission": "Choose a form video from your library for your coach."
         }

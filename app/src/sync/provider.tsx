@@ -14,6 +14,7 @@ import type { SyncStatus } from './engine';
 import { startScheduler } from './scheduler';
 import { startSession, type SyncSession } from './session';
 import { surroundings } from './surroundings';
+import { APP_NAME } from '@/name';
 
 const Context = createContext<(SyncSession & { profile: TrainingProfile }) | null>(null);
 
@@ -49,7 +50,7 @@ export function SyncProvider({ profile, children }: { profile: TrainingProfile; 
       <View style={styles.centre}>
         {failed === 'other-tab' ? (
           <>
-            <Text variant="h3">GymTrainer is open in another tab</Text>
+            <Text variant="h3">{APP_NAME} is open in another tab</Text>
             <Text tone="muted">Your training can be open in one tab at a time. Close the other one, then try again here.</Text>
           </>
         ) : (
