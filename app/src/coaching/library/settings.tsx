@@ -5,7 +5,7 @@
 import { Feather } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Linking, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { api, ApiError, ok } from '@/api';
 import { ME, useMe } from '@/auth/me';
@@ -24,7 +24,8 @@ export function Settings() {
       {settings.data ? <GymCard key={JSON.stringify(settings.data)} saved={settings.data} /> : null}
       <TrackedLifts />
       <WeekTypes />
-      {entitlements?.billing_enabled ? <Plan owner={me.data?.coach?.role === 'owner'} /> : null}
+      {/* Web only: the stores don't allow pointing to payment outside the app (docs/STORE_LISTING.md). */}
+      {entitlements?.billing_enabled && Platform.OS === 'web' ? <Plan owner={me.data?.coach?.role === 'owner'} /> : null}
     </View>
   );
 }

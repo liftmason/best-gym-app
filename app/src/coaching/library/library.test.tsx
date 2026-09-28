@@ -138,8 +138,10 @@ test('settings save, and the plan shows only when billing is on', async () => {
   expect(screen.queryByText('Plan')).toBeNull();
 });
 
-test('the owner sees the plan with Stripe’s buttons', async () => {
+test('on the web the owner sees the plan with Stripe’s buttons', async () => {
   mockBilling = true;
+  const { Platform } = jest.requireActual('react-native');
+  const os = jest.replaceProperty(Platform, 'OS', 'web');
   await show(<Settings />, {
     'GET /api/v1/settings': () => body('/api/v1/settings', 'get', { gym_name: 'Iron Ridge', timezone: 'UTC', units: 'kg', week_start: 0, coach_title: '', digest: false }),
     'GET /api/v1/tracked-lifts': () => body('/api/v1/tracked-lifts', 'get', []),
@@ -150,4 +152,17 @@ test('the owner sees the plan with Stripe’s buttons', async () => {
   expect(await screen.findByText('7 athletes of 15 · form videos included')).toBeTruthy();
   expect(await screen.findByRole('button', { name: 'Choose Gym' })).toBeTruthy();
   expect(screen.getByRole('button', { name: 'Manage billing' })).toBeTruthy();
+  os.restore();
+});
+
+test('a phone never shows the plan, even with billing on', async () => {
+  mockBilling = true;
+  await show(<Settings />, {
+    'GET /api/v1/settings': () => body('/api/v1/settings', 'get', { gym_name: 'Iron Ridge', timezone: 'UTC', units: 'kg', week_start: 0, coach_title: '', digest: false }),
+    'GET /api/v1/tracked-lifts': () => body('/api/v1/tracked-lifts', 'get', []),
+    'GET /api/v1/trackable-lifts': () => body('/api/v1/trackable-lifts', 'get', []),
+    'GET /api/v1/week-types': () => body('/api/v1/week-types', 'get', []),
+  });
+  expect(await screen.findByText('Tracked lifts')).toBeTruthy();
+  expect(screen.queryByText('Plan')).toBeNull();
 });
