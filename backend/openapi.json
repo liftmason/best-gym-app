@@ -3291,11 +3291,27 @@
           "choices": {
             "$ref": "#/components/schemas/Choices"
           },
+          "moved": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Moved",
+            "type": "array"
+          },
           "placements": {
             "items": {
               "$ref": "#/components/schemas/Placement"
             },
             "title": "Placements",
+            "type": "array"
+          },
+          "replaced": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Replaced",
             "type": "array"
           },
           "summary": {
@@ -3313,7 +3329,9 @@
           "choices",
           "placements",
           "weeks",
-          "summary"
+          "summary",
+          "replaced",
+          "moved"
         ],
         "title": "Preview",
         "type": "object"

@@ -71,6 +71,8 @@ class Preview(Schema):
     placements: list[Placement]
     weeks: list[PlannedWeek]
     summary: Summary
+    replaced: list[uuid.UUID]  # the athlete's empty weeks the new ones replace
+    moved: list[uuid.UUID]  # their weeks with work that move after the new ones
 
 
 class Applied(Schema):
@@ -145,6 +147,8 @@ def preview(request, athlete_id: uuid.UUID, data: Choices):
         "placements": [{"value": p.value, "label": p.label} for p in apply.placements(athlete)],
         "weeks": weeks,
         "summary": shown["summary"],
+        "replaced": [w.pk for w in shown["placement"].replaced],
+        "moved": [w.pk for w in shown["placement"].moved],
     }
 
 
