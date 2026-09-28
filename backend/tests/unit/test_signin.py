@@ -101,7 +101,6 @@ def test_production_refuses_fixed_codes_for_anyone_else():
     assert checks.production_problems(**good, review_email="r@gym.example", review_code="42")
 
 
-
 def test_the_test_run_code_works_for_every_email(settings, mailoutbox):
     # The free test run (docs/plans/S8B_TEST_RUN.md): no sending domain yet, so everyone
     # signs in with one shared code instead of an emailed one.

@@ -116,7 +116,8 @@ def test_a_coach_can_coach_themselves(coach):
         HTTP_AUTHORIZATION=f"Bearer {signin.open_session(coach.user).access}", HTTP_X_SCHEMA_VERSION="1"
     )
     invite = invites.create(coach)
-    assert api.post(f"/api/v1/join/{invite.token}/accept", {}, content_type="application/json").status_code == 200
+    joined = api.post(f"/api/v1/join/{invite.token}/accept", {}, content_type="application/json")
+    assert joined.status_code == 200
     me = api.get("/api/v1/me").json()
     assert me["coach"] and me["athlete"]
     assert [row["athlete"]["name"] for row in api.get("/api/v1/roster").json()] == [coach.user.name]

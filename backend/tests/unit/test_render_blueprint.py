@@ -70,7 +70,8 @@ def headers_file():
 
 def test_the_web_app_is_a_static_site_with_the_same_headers_as_cloudflare():
     site = next(s for s in SPEC["services"] if s.get("runtime") == "static")
-    assert "npx expo export --platform web" in site["buildCommand"] and site["staticPublishPath"] == "app/dist"
+    assert "npx expo export --platform web" in site["buildCommand"]
+    assert site["staticPublishPath"] == "app/dist"
     # The local database needs cross-origin isolation, so every header in app/public/_headers
     # must be served here too.
     served = {(h["path"], h["name"]): h["value"] for h in site["headers"]}

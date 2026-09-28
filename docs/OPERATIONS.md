@@ -38,6 +38,12 @@ is at the top of the file.
 | `gymtrainer` (web) | gunicorn, 2 workers; migrations and `ensure_admin` run in the start command; sleeps after 15 minutes without traffic | gunicorn, 3 workers; migrations run in the pre-deploy step |
 | `gymtrainer-db` (Postgres 16) | free: no backups, deleted 30 days after it's created unless upgraded | `basic-256mb`; see "Backups" |
 | Hourly jobs | `.github/workflows/cron.yml` calls `POST /api/v1/ops/cron` | `gymtrainer-cron` (cron, hourly) runs `manage.py cron` |
+| `gymtrainer-web` (static site) | the Expo web export on Render's CDN, with the isolation headers | the same, at `app.liftmason.com` |
+
+**Sign-in during the test run:** `TEST_SIGNIN_CODE` signs anyone in with one shared code, and
+`ACCESS_TOKEN_TTL_MINUTES=10080` with the web app's `EXPO_PUBLIC_WEB_REMEMBER_SIGN_IN=1` keeps
+web sign-ins for a week. They exist because the web app and the API are on different
+`onrender.com` sites with no email; `docs/LAUNCH.md` Part 1b removes them.
 
 Free services have no shell: run one-off commands from a computer, with the database's
 external URL as `DATABASE_URL` where the command needs the database.
