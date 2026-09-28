@@ -548,6 +548,7 @@ Rewrite Part 1 to follow `docs/plans/S8B_TEST_RUN.md` section 3, steps 1–10, i
 - **New step, "The hourly job":** add the repository secret `CRON_TOKEN` (GitHub → the repo → Settings → Secrets and variables → Actions). Then Actions → "Hourly jobs" → Run workflow. **Check:** the run is green, and Render's log shows the `ensure_admin`/gunicorn start and a request to `/api/v1/ops/cron` with status 200.
 - **"What the web app can't do yet":** add the first-visit wake-up (about a minute after 15 minutes of quiet).
 - **"After the first deploy":** the backup drill moves to "Upgrading to paid" (the free database has no backups). Add the day-25 diary note.
+- **New short section, "Steven's old Render account":** plan section 4's three steps (Steven deletes the service and database, removes Render's GitHub access; the stale GitHub deployment environments get deleted).
 - **New section after Part 1, "Upgrading to paid (going public)":** plan section 5, steps 1–6, as the owner's steps.
 - **Checklist:** Part 1's list follows the new steps; add an "Upgrading" list.
 
