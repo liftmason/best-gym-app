@@ -432,4 +432,6 @@ function useLive<T>(run: () => Promise<T>, tables: string[]): T | undefined {
 
 **Checks the spike ran** (all passed on web and iOS with the code above): migrations on first launch; one set plus outbox entry (~10 ms); 13,500-row insert in one transaction (0.8 s web, 1.2 s iOS dev build); indexed history query (3–4 ms); a transaction whose second insert fails leaves the count unchanged; a read issued during an uncommitted transaction doesn't see its rows; data survives reload (web) and force-quit (iOS); a second browser tab fails to open the database (expected; see rule 5).
 
-**Sub-project 6 (the coach on a phone)** is built (plan in `docs/plans/S6_COACH_PHONE.md`, branch `s6-coach`): Today and the attention feed, the roster and invites, an athlete's overview, sessions, metrics and messages, form-video review, and a Messages inbox.
+**Sub-project 6 (the coach on a phone)** is merged (PR #12; plan in `docs/plans/S6_COACH_PHONE.md`): Today and the attention feed, the roster and invites, an athlete's overview, sessions, metrics and messages, form-video review, and a Messages inbox.
+
+**Sub-project 7 (the coach's programming screens)** is in two parts (plan in `docs/plans/S7_COACH_DESKTOP.md`, decisions A–H accepted). **S7a, the program board**, is built on branch `s7-programming`: weeks and publishing, the board with drag and drop on the web, the prescription editor, the exercise rail, habits, undo, and applying templates with a preview. S7b (Programming, Settings, billing) follows.

@@ -192,8 +192,23 @@ The old HTML coach screens had all of these, and the rules and their wording sti
 
 ## 3. Steps
 
+**As built (S7a):**
+- **Where the board is:** the athlete's Program tab. At 960 px and wider it is the board; on a phone it shows this week at a glance with "Edit program", which opens the same board (decision D). The athlete's top bar has "Edit program" on a wide screen.
+- **Commands:** every change goes through `src/coaching/program/commands.ts`. Buttons, each card's menu ("Move to…", "Remove"), drag and drop, and Ctrl/Cmd+Z all call the same commands. `moves.ts` decides what a drop means (a position among the target's other exercises).
+- **Drag and drop:** web-only (`dnd.web.tsx`, dnd-kit). The drag overlay renders in a portal, because a transformed ancestor in the navigator offset it and drops missed.
+- **UI kit:** toasts (`useToast`, with the old screens' wording) and a picker (`Select`, `Segmented`).
+- **Backend changes, each with a test:**
+  - **A privacy bug in the rail:** it read the athlete's whole history, so a new coach saw lifts from before their link even when the athlete hides them. It now passes `visible_from`, like every other coach read.
+  - The rail returns each exercise's dated log, for the history popover.
+  - "Clear week" says how many completed days it kept.
+  - The apply preview names the weeks it would replace or move, not just their counts.
+  - A move can target a day: dropping onto a rest day gives it one unnamed session.
+  - **A bug in the published API schema:** OpenAPI keeps one schema per name, and three names had two different classes (`Move`, `WeekSettings`, and `/me`'s `PlanOut`). The app's types were wrong for `/me`'s plan. They are renamed, and a test fails when two schemas share a name but not their fields.
+- **Checked in a real browser** (Playwright, against a separate seeded database): the board at 1440 and 1100 px, list layout, the editor, a drag, and a phone at 420 px. Also editing, undo with Ctrl+Z, habits, saving a week, and applying with confirm.
+- **Moved to S7b:** the sidebar's Programming and Settings items, and "+ New" exercise in the rail. Both need S7b's screens.
+
 **S7a:**
-1. The desktop sidebar (Programming, Settings), the lapsed-plan banner, and the query hooks.
+1. The lapsed-plan banner and the query hooks.
 2. The board: start a program, the week strip, the toolbar, the day columns, publish, notes, undo.
 3. The prescription editor and swap; the rail; adding, moving and removing (commands, then drag and drop on the web).
 4. Habits; saving to the library; apply with preview.

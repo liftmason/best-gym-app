@@ -12,7 +12,7 @@ import { api, ok } from '@/api';
 import { dayMonth, shortDay } from '@/training/format';
 import { Button, Chip, colors, fonts, radius, Select, Text, weekTypeColours } from '@/ui';
 
-import { programKeys, type Choices, type Preview } from './queries';
+import type { Choices, Preview } from './queries';
 
 export type Source = { id: string; kind: string; name: string };
 
@@ -25,7 +25,8 @@ export function dayNames(weekStart: number): string[] {
 
 export function usePreview(athleteId: string, choices: Choices | null) {
   return useQuery({
-    queryKey: [...programKeys.all(athleteId), 'preview', choices],
+    // Not under the athlete's key: refreshing after a change mustn't ask for the preview again.
+    queryKey: ['coach', 'apply-preview', athleteId, choices],
     queryFn: () => ok(api.client.POST('/api/v1/athletes/{athlete_id}/apply/preview', { params: { path: { athlete_id: athleteId } }, body: choices! })),
     enabled: Boolean(choices),
     placeholderData: keepPreviousData,
