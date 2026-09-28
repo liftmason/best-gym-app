@@ -107,6 +107,23 @@ def test_the_endpoints(athlete, coach):
     assert coach_api.get("/api/v1/sync/bootstrap").status_code == 404  # coaches don't sync
 
 
+def test_a_coach_can_coach_themselves(coach):
+    # Dogfooding in the test run: a coach opens their own invite link and trains as their own
+    # athlete, on one account with both profiles (docs/plans/S8B_TEST_RUN.md).
+    from apps.accounts import invites
+
+    api = Client(
+        HTTP_AUTHORIZATION=f"Bearer {signin.open_session(coach.user).access}", HTTP_X_SCHEMA_VERSION="1"
+    )
+    invite = invites.create(coach)
+    assert api.post(f"/api/v1/join/{invite.token}/accept", {}, content_type="application/json").status_code == 200
+    me = api.get("/api/v1/me").json()
+    assert me["coach"] and me["athlete"]
+    assert [row["athlete"]["name"] for row in api.get("/api/v1/roster").json()] == [coach.user.name]
+    shot = api.get("/api/v1/sync/bootstrap").json()
+    assert shot["tables"]["accounts_coaching"] and shot["tables"]["exercises_exercise"]
+
+
 def test_old_apps_are_told_to_update(athlete, settings, monkeypatch):
     from apps.sync import api as sync_api
 

@@ -11,7 +11,11 @@
 #   Paid: `plan: basic-256mb` (upgrading keeps the data);
 # - there's no cron service (Render has none free): .github/workflows/cron.yml calls
 #   /api/v1/ops/cron hourly with CRON_TOKEN. Paid: the `gymtrainer-cron` service (git history,
-#   docs/plans/S8B_TEST_RUN.md section 5) and CRON_TOKEN removed.
+#   docs/plans/S8B_TEST_RUN.md section 5) and CRON_TOKEN removed;
+# - the web app is a free static site here (`gymtrainer-web`) on Render's own address, and
+#   the API keeps sign-ins for a week (ACCESS_TOKEN_TTL_MINUTES) with a shared code
+#   (TEST_SIGNIN_CODE) instead of emailed ones. Going public: the web app moves to
+#   app.liftmason.com, both settings are removed, and email goes through Resend.
 # The settings shared with that cron service stay in one env var group, ready for it.
 # Every variable the backend reads is listed here (backend/tests/unit/test_render_blueprint.py).
 
@@ -89,6 +93,14 @@ services:
       # repository secret CRON_TOKEN (.github/workflows/cron.yml). Blank once the cron job runs.
       - key: CRON_TOKEN
         sync: false
+      # The free test run's sign-in (docs/plans/S8B_TEST_RUN.md): one shared six-digit code for
+      # everyone while there's no sending domain, and access tokens that last a week, because
+      # the web app is on a different site and can't refresh through its cookie. Remove both
+      # when going public.
+      - key: TEST_SIGNIN_CODE
+        sync: false
+      - key: ACCESS_TOKEN_TTL_MINUTES
+        value: "10080"
       # The Django admin's address: something not guessable, e.g. manage-7f3k2/ (with the slash).
       - key: ADMIN_PATH
         sync: false
@@ -122,6 +134,48 @@ services:
         sync: false
       - key: STORAGE_REGION
         value: auto
+
+  # The web app, for the free test run: the Expo web export on Render's CDN, with the headers
+  # from app/public/_headers (the local database needs cross-origin isolation). Its address
+  # goes in the API's SITE_URL and WEB_APP_ORIGINS; the API's address in EXPO_PUBLIC_API_URL.
+  - type: web
+    name: gymtrainer-web
+    runtime: static
+    branch: main
+    buildCommand: cd app && npm ci && npx expo export --platform web
+    staticPublishPath: app/dist
+    headers:
+      - path: /*
+        name: Cross-Origin-Opener-Policy
+        value: same-origin
+      - path: /*
+        name: Cross-Origin-Embedder-Policy
+        value: require-corp
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /_expo/static/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # The API's address, e.g. https://gymtrainer.onrender.com (read at build time).
+      - key: EXPO_PUBLIC_API_URL
+        sync: false
+      - key: EXPO_PUBLIC_SENTRY_DSN
+        sync: false
+      # Keep the access token across reloads (app/src/api/tokens.ts): the cookie can't cross
+      # from this site to the API's. Remove when the app and the API share liftmason.com.
+      - key: EXPO_PUBLIC_WEB_REMEMBER_SIGN_IN
+        value: "1"
 
 databases:
   - name: gymtrainer-db

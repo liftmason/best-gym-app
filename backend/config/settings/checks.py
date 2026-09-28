@@ -44,6 +44,7 @@ def production_problems(
     review_email="",
     review_code="",
     demo_code="",
+    test_code="",
     billing=False,
     stripe_key="",
     stripe_webhook_secret="",
@@ -54,6 +55,8 @@ def production_problems(
         problems.append("fixed demo sign-in codes are for development only")
     if review_code and (not review_email or not (review_code.isdigit() and len(review_code) == 6)):
         problems.append("REVIEW_ACCOUNT_CODE needs REVIEW_ACCOUNT_EMAIL and six digits")
+    if test_code and (not (test_code.isdigit() and len(test_code) == 6) or test_code == "123456"):
+        problems.append("TEST_SIGNIN_CODE needs six digits, and not the published demo code")
     if not email_provider:
         problems.append('set EMAIL_PROVIDER (resend, postmark, or "console" to send no email)')
     elif email_provider != "console" and "localhost" in from_email:
