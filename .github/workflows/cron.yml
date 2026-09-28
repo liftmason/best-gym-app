@@ -20,7 +20,7 @@ concurrency:
 jobs:
   cron:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15  # the wake-up's retries (at most about 10 minutes) plus the jobs
     steps:
       - name: Run the hourly jobs on the API
         env:
@@ -31,7 +31,11 @@ jobs:
             echo "CRON_TOKEN isn't set: nothing to do."
             exit 0
           fi
-          # A free service asleep takes about a minute to wake, hence the long timeout.
+          # A free service asleep takes about a minute to wake: wake it first, retrying freely,
+          # then run the jobs once. No retry there: a 500 means a step failed after the rest ran,
+          # and running it all again could resend an email the provider took but timed out on.
+          curl --fail --silent --show-error --output /dev/null --max-time 90 \
+            --retry 5 --retry-delay 15 --retry-all-errors "$API_URL/healthz"
           # The answer holds only counts and step names, so it's safe in public logs.
-          curl --fail-with-body --silent --show-error --max-time 240 --retry 2 --retry-delay 30 \
+          curl --fail-with-body --silent --show-error --max-time 150 \
             -X POST -H "Authorization: Bearer $CRON_TOKEN" "$API_URL/api/v1/ops/cron"

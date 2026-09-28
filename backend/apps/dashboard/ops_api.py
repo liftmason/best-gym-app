@@ -26,7 +26,12 @@ def _allowed(request):
     expected = settings.CRON_TOKEN
     scheme, _, given = request.headers.get("Authorization", "").partition(" ")
     # An empty setting must never match an empty token.
-    return bool(expected) and scheme.lower() == "bearer" and hmac.compare_digest(given, expected)
+    # Bytes, because compare_digest raises on non-ASCII strings, and anyone can send a header.
+    return (
+        bool(expected)
+        and scheme.lower() == "bearer"
+        and hmac.compare_digest(given.encode(), expected.encode())
+    )
 
 
 @router.post("/ops/cron", auth=None, response={200: HourlyOut, 500: HourlyOut}, include_in_schema=False)

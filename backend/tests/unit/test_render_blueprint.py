@@ -40,3 +40,6 @@ def test_the_free_web_service_migrates_at_start():
     web = BLUEPRINT.split("  - type: web")[1].split("\n  - type: ")[0]
     assert "plan: free" in web and "preDeployCommand" not in web
     assert "manage.py migrate --noinput && python manage.py ensure_admin && gunicorn" in web
+    # The hourly jobs run inside one request (/api/v1/ops/cron): gunicorn's default 30 seconds
+    # would kill the worker partway through a slow digest run.
+    assert "--timeout 120" in web

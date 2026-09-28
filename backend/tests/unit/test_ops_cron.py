@@ -33,6 +33,7 @@ def test_a_missing_or_wrong_token_is_not_found(cron_on):
     assert call().status_code == 404
     assert call("Bearer wrong").status_code == 404
     assert call(TOKEN).status_code == 404  # no scheme
+    assert call("Bearer é-not-ascii").status_code == 404  # compare_digest refuses non-ASCII str
 
 
 def test_a_sign_in_token_is_not_a_cron_token(cron_on, coach):

@@ -4,8 +4,9 @@
 #
 # The free test run (docs/plans/S8B_TEST_RUN.md). Going public reverses these, in one commit:
 # - the web service is `plan: free`: migrations run in the start command (free services have
-#   no pre-deploy step), with 2 workers for 512 MB. Paid: `plan: starter`, `preDeployCommand:
-#   python manage.py migrate --noinput && python manage.py ensure_admin`, 3 workers;
+#   no pre-deploy step), with 2 workers for 512 MB and a 120-second timeout, because the hourly
+#   jobs run inside one request. Paid: `plan: starter`, `preDeployCommand: python manage.py
+#   migrate --noinput && python manage.py ensure_admin`, 3 workers, the default timeout;
 # - the database is `plan: free`, deleted 30 days after it's created unless upgraded.
 #   Paid: `plan: basic-256mb` (upgrading keeps the data);
 # - there's no cron service (Render has none free): .github/workflows/cron.yml calls
@@ -66,7 +67,7 @@ services:
     plan: free
     branch: main
     buildCommand: pip install uv && uv export --locked --no-dev --no-hashes -o /tmp/requirements.txt && pip install -r /tmp/requirements.txt && python manage.py collectstatic --noinput
-    startCommand: python manage.py migrate --noinput && python manage.py ensure_admin && gunicorn config.wsgi:application --workers 2 --access-logfile -
+    startCommand: python manage.py migrate --noinput && python manage.py ensure_admin && gunicorn config.wsgi:application --workers 2 --timeout 120 --access-logfile -
     healthCheckPath: /healthz
     envVars:
       - fromGroup: gymtrainer-shared
