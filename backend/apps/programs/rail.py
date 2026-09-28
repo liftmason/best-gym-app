@@ -7,13 +7,14 @@ from django.db.models import Q
 from apps.exercises.models import Exercise
 
 
-def with_history(exercises, athlete, unit):
-    """Attach the athlete's history to each exercise: `hist` is None if never logged, else
+def with_history(exercises, athlete, unit, since=None):
+    """Attach the athlete's history (from `since`, for a coach the athlete hides earlier
+    training from) to each exercise: `hist` is None if never logged, else
     {"line": "78 kg ×1 · 2 days ago", "trend": "up", "series", "date", "log": [(date, top set)]}."""
     from apps.workouts import history
     from apps.workouts.charts import rail_series
 
-    logs = history.exercise_history(athlete, [e.pk for e in exercises])
+    logs = history.exercise_history(athlete, [e.pk for e in exercises], since=since)
     today = athlete.today()
     for ex in exercises:
         entries = logs.get(ex.pk)
@@ -40,10 +41,10 @@ def by_last_done(exercises):
     return done + [e for e in exercises if not e.hist]
 
 
-def search(gym, q="", tag_ids=(), athlete=None, sort="recent"):
+def search(gym, q="", tag_ids=(), athlete=None, sort="recent", since=None):
     """(exercises, sort): the gym's active exercises matching `q` and every tag. With an
-    athlete, each carries their history and "recent" puts the last done first; without one
-    (the template editor) the list is always A–Z."""
+    athlete, each carries their history from `since` and "recent" puts the last done first;
+    without one (the template editor) the list is always A–Z."""
     sort = "az" if sort == "az" or athlete is None else "recent"
     exercises = (
         Exercise.objects.filter(gym=gym, archived=False)
@@ -60,7 +61,7 @@ def search(gym, q="", tag_ids=(), athlete=None, sort="recent"):
         exercises = exercises.filter(tags__pk=tag_id)
     exercises = list(exercises)
     if athlete is not None:
-        exercises = with_history(exercises, athlete, gym.units)
+        exercises = with_history(exercises, athlete, gym.units, since)
     if sort == "recent":
         exercises = by_last_done(exercises)
     return exercises, sort

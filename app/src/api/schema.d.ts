@@ -3958,10 +3958,22 @@ export interface components {
         RailHistory: {
             /** Line */
             line: string;
+            /** Log */
+            log: components["schemas"]["RailLog"][];
             /** Series */
             series: number[];
             /** Trend */
             trend: string | null;
+        };
+        /** RailLog */
+        RailLog: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Top */
+            top: string;
         };
         /** RecentSession */
         RecentSession: {
@@ -4513,6 +4525,32 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /** Label */
+            label: string;
+            /** Published */
+            published: boolean;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /** Undo */
+            undo: string | null;
+            week_type: components["schemas"]["WeekTypeRef"] | null;
+        };
+        /** WeekCleared */
+        WeekCleared: {
+            /** Days */
+            days: components["schemas"]["Day"][];
+            /** Focus Note */
+            focus_note: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kept */
+            kept: number;
             /** Label */
             label: string;
             /** Published */
@@ -5834,7 +5872,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Week"];
+                    "application/json": components["schemas"]["WeekCleared"];
                 };
             };
         };

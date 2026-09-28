@@ -221,12 +221,16 @@ def delete_week(request, athlete_id: uuid.UUID, week_id: uuid.UUID):
     return Status(204, None)
 
 
-@router.post("/athletes/{athlete_id}/weeks/{week_id}/clear", response=Week)
+class WeekCleared(Week):
+    kept: int  # days kept because a session there is done
+
+
+@router.post("/athletes/{athlete_id}/weeks/{week_id}/clear", response=WeekCleared)
 def clear_week(request, athlete_id: uuid.UUID, week_id: uuid.UUID):
     """Remove every session except logged days."""
     coach, _athlete_, week = _athlete_week(request, athlete_id, week_id)
-    services.clear_week(week, by=request.user)
-    return _week(week, coach.gym.units)
+    kept = services.clear_week(week, by=request.user)
+    return {**_week(week, coach.gym.units), "kept": kept}
 
 
 class WeekSettings(Schema):
@@ -414,10 +418,16 @@ def swap(request, athlete_id: uuid.UUID, rx_id: uuid.UUID, data: Swap):
 # ---------------------------------------------------------------- the exercise rail
 
 
+class RailLog(Schema):
+    date: datetime.date
+    top: str  # "78 kg ×1"
+
+
 class RailHistory(Schema):
     line: str  # "78 kg ×1 · 2 days ago"
     trend: str | None
     series: list[float]
+    log: list[RailLog]  # newest first, for "{exercise} — {name}'s log"
 
 
 class RailExercise(Schema):
@@ -436,7 +446,8 @@ def exercise_rail(
     """The gym's exercises to add, with this athlete's history: search by name, tag or
     category, filter by every tag in `tags`; "recent" puts the last done first."""
     coach, athlete = _athlete(request, athlete_id)
-    exercises, _sort = rail.search(coach.gym, q, tags, athlete=athlete, sort=sort)  # with their history
+    since = coaching.visible_from(coach, athlete)
+    exercises, _sort = rail.search(coach.gym, q, tags, athlete=athlete, sort=sort, since=since)
     return [
         {
             "id": e.pk,
@@ -448,6 +459,7 @@ def exercise_rail(
                 "line": e.hist["line"],
                 "trend": e.hist["trend"],
                 "series": [float(v) for v in e.hist["series"]],
+                "log": [{"date": d, "top": top} for d, top in e.hist["log"]],
             }
             if e.hist
             else None,

@@ -28,6 +28,8 @@ The old HTML coach screens had all of these, and the rules and their wording sti
 
 ## 1. Decisions
 
+**Accepted as recommended** (28 September 2026).
+
 | # | Question | Recommendation | Why |
 |---|---|---|---|
 | A | One PR or two? | **Two.** **S7a:** the program board (with habits, the rail, the prescription editor, undo, publishing, and apply with preview). **S7b:** the Programming area (templates, saved weeks and sessions, the exercise library, categories and tags, default check-in questions) plus Settings and billing. | About three weeks of work. The board is the hard half and worth reviewing on its own. |

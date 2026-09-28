@@ -133,6 +133,8 @@ def test_week_settings_publish_duplicate_and_delete(api, board, athlete):
     assert call(api, "delete", f"{base}/weeks/{copy.json()['id']}").status_code == 204
     added = call(api, "post", f"{base}/program/weeks")
     assert added.status_code == 201 and added.json()["label"] == "Wk 3"
+    cleared = call(api, "post", f"{base}/weeks/{week_id}/clear").json()
+    assert cleared["kept"] == 0 and cleared["undo"] == "Clear Wk 1"
 
 
 def test_sessions_on_a_day(api, board, athlete):

@@ -3581,6 +3581,13 @@
             "title": "Line",
             "type": "string"
           },
+          "log": {
+            "items": {
+              "$ref": "#/components/schemas/RailLog"
+            },
+            "title": "Log",
+            "type": "array"
+          },
           "series": {
             "items": {
               "type": "number"
@@ -3603,9 +3610,29 @@
         "required": [
           "line",
           "trend",
-          "series"
+          "series",
+          "log"
         ],
         "title": "RailHistory",
+        "type": "object"
+      },
+      "RailLog": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "top": {
+            "title": "Top",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "top"
+        ],
+        "title": "RailLog",
         "type": "object"
       },
       "RecentSession": {
@@ -5014,6 +5041,77 @@
           "undo"
         ],
         "title": "Week",
+        "type": "object"
+      },
+      "WeekCleared": {
+        "properties": {
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/Day"
+            },
+            "title": "Days",
+            "type": "array"
+          },
+          "focus_note": {
+            "title": "Focus Note",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kept": {
+            "title": "Kept",
+            "type": "integer"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "published": {
+            "title": "Published",
+            "type": "boolean"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "undo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Undo"
+          },
+          "week_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WeekTypeRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "start_date",
+          "week_type",
+          "published",
+          "focus_note",
+          "days",
+          "undo",
+          "kept"
+        ],
+        "title": "WeekCleared",
         "type": "object"
       },
       "WeekOut": {
@@ -7722,7 +7820,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Week"
+                  "$ref": "#/components/schemas/WeekCleared"
                 }
               }
             },

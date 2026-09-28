@@ -152,6 +152,9 @@ def test_a_new_coach_sees_only_what_the_athlete_allows(athlete, coach, gym, froz
     athlete.save()
     assert count() == 1
     assert len(client.get(f"/api/v1/athletes/{athlete.pk}/overview").json()["chart"]["points"]) == 1
+    rail = client.get(f"/api/v1/athletes/{athlete.pk}/rail?q=Snatch").json()
+    (snatch,) = [e for e in rail if e["name"] == "Snatch"]
+    assert [e["date"] for e in snatch["history"]["log"]] == [str(athlete.today())]  # not the hidden one
 
 
 def test_a_pr_waiting_for_the_coach(api, athlete, gym):
