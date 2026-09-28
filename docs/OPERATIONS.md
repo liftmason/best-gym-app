@@ -76,7 +76,7 @@ Changing `ADMIN_PASSWORD` later changes the password at the next start.
 4. Remove `DEMO_PASSWORD`, and delete the demo gym's coach and athletes if the client's
    real gym is going in alongside it.
 
-## Services (`deploy/render.paid.yaml`)
+## Services (`render.yaml`)
 
 | Service | What it runs |
 | --- | --- |
