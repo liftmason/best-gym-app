@@ -18,6 +18,11 @@ export async function signOut(): Promise<void> {
     );
     if (!sure) return;
   }
+  await signOutNow();
+}
+
+/** Sign out without asking (after deleting the account, when nothing is left to keep). */
+export async function signOutNow(): Promise<void> {
   await forgetDevice().catch(() => {});
   await saveProfile(null);
   await api.signOut();

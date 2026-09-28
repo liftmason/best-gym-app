@@ -23,7 +23,7 @@ const queryClient = makeQueryClient();
 /**
  * The app's root: signing in, the athlete's training (offline-first) and coaching (online).
  * The splash stays up until the fonts are in and the saved session is read. Signed-in routes
- * and sign-in are guarded; an invite link opens either way.
+ * and sign-in are guarded; an invite link and the delete-account page open either way.
  */
 export default function RootLayout() {
   const [loaded, failed] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold });
@@ -79,6 +79,7 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" />
         </Stack.Protected>
         <Stack.Screen name="join/[token]" />
+        <Stack.Screen name="delete-account" />
         <Stack.Screen name="kit" />
       </Stack>
     </QueryClientProvider>
