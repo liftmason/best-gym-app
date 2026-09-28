@@ -2,8 +2,9 @@
  * The sign-in card from the mockup (`.login-card`): the dark pitch panel beside the form on
  * wide screens, and the form alone under the logo on a phone.
  */
+import { router } from 'expo-router';
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, radius, shadows, space, Text } from '@/ui';
@@ -16,7 +17,7 @@ function Logo({ onDark }: { onDark?: boolean }) {
     <View style={styles.logo}>
       <View style={styles.mark}>
         <Text variant="label" tone="white">
-          GT
+          {APP_NAME.charAt(0)}
         </Text>
       </View>
       <Text variant="h3" tone={onDark ? 'white' : 'ink'}>
@@ -50,6 +51,21 @@ export function SignInFrame({ children }: { children: ReactNode }) {
               {children}
             </View>
           </View>
+          <View style={styles.legal}>
+            <Pressable accessibilityRole="link" onPress={() => router.push('/privacy')}>
+              <Text variant="tiny" tone="muted">
+                Privacy
+              </Text>
+            </Pressable>
+            <Text variant="tiny" tone="faint">
+              ·
+            </Text>
+            <Pressable accessibilityRole="link" onPress={() => router.push('/terms')}>
+              <Text variant="tiny" tone="muted">
+                Terms
+              </Text>
+            </Pressable>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -76,6 +92,7 @@ const styles = StyleSheet.create({
   right: { flex: 1, paddingVertical: 44, paddingHorizontal: 40, gap: space.m, justifyContent: 'center' },
   rightNarrow: { paddingVertical: space.xxl, paddingHorizontal: space.xl },
   logo: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  legal: { flexDirection: 'row', gap: 8, marginTop: space.m },
   mark: {
     width: 34,
     height: 34,
