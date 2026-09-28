@@ -9,7 +9,9 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { Card, colors, fonts, Segmented, Sheet, Text } from '@/ui';
+import { Button, Card, colors, fonts, Segmented, Sheet, Text } from '@/ui';
+
+import { ExerciseSheet } from '../library/exercises';
 
 import { Draggable } from './dnd';
 import { useRail, useTags, type RailExercise } from './queries';
@@ -37,6 +39,7 @@ export function Rail({ athleteId, first, dayLabel, readOnly, onAdd }: Props) {
   const [tags, setTags] = useState<string[]>([]);
   const [sort, setSort] = useState<'recent' | 'az'>('recent');
   const [log, setLog] = useState<RailExercise | null>(null);
+  const [creating, setCreating] = useState(false);
   const rail = useRail(athleteId, q.trim(), tags, sort);
   const allTags = useTags();
   const items = rail.data ?? [];
@@ -44,7 +47,10 @@ export function Rail({ athleteId, first, dayLabel, readOnly, onAdd }: Props) {
   return (
     <Card style={styles.rail} padded={false}>
       <View style={styles.head}>
-        <Text variant="h4">Exercise library</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text variant="h4">Exercise library</Text>
+          {!readOnly ? <Button size="sm" variant="ghost" title="+ New" onPress={() => setCreating(true)} /> : null}
+        </View>
         <View style={styles.search}>
           <Feather name="search" size={14} color={colors.ink4} />
           <TextInput accessibilityLabel="Search exercises" value={q} onChangeText={setQ} placeholder="Search exercises…" placeholderTextColor={colors.ink4} style={styles.searchInput} />
@@ -126,6 +132,7 @@ export function Rail({ athleteId, first, dayLabel, readOnly, onAdd }: Props) {
           ]}
         />
       </View>
+      <ExerciseSheet exercise={creating ? 'new' : null} onClose={() => setCreating(false)} />
       <Sheet open={Boolean(log)} onClose={() => setLog(null)} title={log ? `${log.name} — ${first}'s log` : ''}>
         {log?.history?.log.map((entry, i) => (
           <View key={i} style={styles.logRow}>

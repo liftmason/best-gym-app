@@ -4414,6 +4414,32 @@
         "title": "Source",
         "type": "object"
       },
+      "StarterAdded": {
+        "properties": {
+          "added": {
+            "title": "Added",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "added"
+        ],
+        "title": "StarterAdded",
+        "type": "object"
+      },
+      "StarterIn": {
+        "properties": {
+          "pack": {
+            "title": "Pack",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pack"
+        ],
+        "title": "StarterIn",
+        "type": "object"
+      },
       "StarterOut": {
         "properties": {
           "description": {
@@ -10452,6 +10478,44 @@
         "summary": "Update Settings",
         "tags": [
           "Settings"
+        ]
+      }
+    },
+    "/api/v1/starter-exercises": {
+      "post": {
+        "description": "Add a starter pack's exercises (and its categories, tags and week types) that the\nlibrary doesn't have yet, as at sign-up. Nothing already there is changed.",
+        "operationId": "apps_exercises_api_starter_exercises",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StarterIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StarterAdded"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Starter Exercises",
+        "tags": [
+          "Exercise library"
         ]
       }
     },

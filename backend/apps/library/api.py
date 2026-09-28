@@ -326,7 +326,7 @@ def add_slot(request, template_id: uuid.UUID, template_session_id: uuid.UUID, da
     coach, template = _template(request, template_id)
     session = services.template_session(template, template_session_id)
     if data.tag_ids:
-        services.add_tag_slot(session, _gym_tags(coach.gym, data.tag_ids))
+        services.add_tag_slot(session, _gym_tags(coach.gym, data.tag_ids), data.index)
     else:
         services.add_slot(session, _gym_exercise(coach.gym, data.exercise_id), data.index)
     return Status(201, _editor(template, coach.gym.units))

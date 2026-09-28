@@ -1901,6 +1901,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/starter-exercises": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Starter Exercises
+         * @description Add a starter pack's exercises (and its categories, tags and week types) that the
+         *     library doesn't have yet, as at sign-up. Nothing already there is changed.
+         */
+        post: operations["apps_exercises_api_starter_exercises"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sync/bootstrap": {
         parameters: {
             query?: never;
@@ -4264,6 +4285,16 @@ export interface components {
             kind: string;
             /** Name */
             name: string;
+        };
+        /** StarterAdded */
+        StarterAdded: {
+            /** Added */
+            added: number;
+        };
+        /** StarterIn */
+        StarterIn: {
+            /** Pack */
+            pack: string;
         };
         /** StarterOut */
         StarterOut: {
@@ -7424,6 +7455,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SettingsOut"];
+                };
+            };
+        };
+    };
+    apps_exercises_api_starter_exercises: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StarterIn"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StarterAdded"];
                 };
             };
         };

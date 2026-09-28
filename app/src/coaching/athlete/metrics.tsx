@@ -9,6 +9,7 @@ import { dayMonth } from '@/training/format';
 import { Button, Card, Chip, colors, Field, fonts, radius, Sheet, space, Text } from '@/ui';
 
 import { Loading } from '../layout';
+import { QuestionsEditor } from '../library/questions';
 import { keys } from '../queries';
 
 type Metric = components['schemas']['MetricOut'];
@@ -196,6 +197,7 @@ export function Metrics({ id, first, unit, maxUpdates, focus }: { id: string; fi
         </Card>
       ) : null}
       <MetricSheet id={id} metric={editing} unit={unit} first={first} onClose={() => setEditing(null)} onSaved={refresh} />
+      <QuestionsEditor athlete={id} first={first} />
     </View>
   );
 }

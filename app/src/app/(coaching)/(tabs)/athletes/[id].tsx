@@ -52,7 +52,7 @@ function ProgramGlance({ id }: { id: string }) {
 
 /** One athlete (the mockup's #panel-client): header, tabs, and what's in each. */
 export default function AthleteScreen() {
-  const { id, tab: wanted, focus, range, edit } = useLocalSearchParams<{ id: string; tab?: string; focus?: string; range?: string; edit?: string }>();
+  const { id, tab: wanted, focus, range, edit, apply } = useLocalSearchParams<{ id: string; tab?: string; focus?: string; range?: string; edit?: string; apply?: string }>();
   const wide = useWindowDimensions().width >= WIDE;
   const tab: Tab = (TABS.find(([t]) => t === wanted)?.[0] ?? 'overview') as Tab;
   const athlete = useAthlete(id);
@@ -115,7 +115,7 @@ export default function AthleteScreen() {
             </Text>
           ) : null}
           {tab === 'overview' ? <Overview id={id} unit={unit} /> : null}
-          {tab === 'program' ? wide || edit ? <ProgramBoard key={id} id={id} first={first} /> : <ProgramGlance id={id} /> : null}
+          {tab === 'program' ? wide || edit ? <ProgramBoard key={id} id={id} first={first} applyTemplate={apply} onApplyDone={() => router.setParams({ apply: undefined })} /> : <ProgramGlance id={id} /> : null}
           {tab === 'sessions' ? <Sessions key={`${id}-${focus ?? ''}`} id={id} first={first} focus={focus} range={range} /> : null}
           {tab === 'metrics' ? <Metrics id={id} first={first} unit={unit} maxUpdates={athlete.data.max_updates} focus={focus} /> : null}
           {tab === 'messages' ? <Messages id={id} first={first} /> : null}

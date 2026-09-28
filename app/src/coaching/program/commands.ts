@@ -3,7 +3,7 @@
  * later"): buttons, menus, drag and drop and Ctrl+Z all call these. Each one asks the API,
  * refreshes the athlete's program, and says what happened in a toast, with the old coach
  * screens' wording. A refusal (a logged week that can't move, a lapsed plan…) shows the
- * API's message and returns undefined.
+ * API's message and returns undefined; success returns the answer, or null when it has no body.
  */
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
@@ -36,7 +36,8 @@ export function useProgramCommands(id: string, first: string) {
         await refresh();
         const message = said?.(result);
         if (message) toast(message, 'good');
-        return result;
+        // A 204 has no body: success is null, so undefined always means refused.
+        return result === undefined ? (null as T) : result;
       } catch (error) {
         toast(error instanceof ApiError ? error.message : 'Something went wrong. Try again.', 'bad');
         return undefined;

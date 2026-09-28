@@ -112,6 +112,28 @@ def exercise(request, exercise_id: uuid.UUID):
     return _exercise(_gym_exercise(gym, exercise_id), _tracked(gym))
 
 
+class StarterIn(Schema):
+    pack: str  # a key from GET /auth/signup/starters
+
+
+class StarterAdded(Schema):
+    added: int  # exercises the library didn't have yet
+
+
+@router.post("/starter-exercises", response=StarterAdded)
+def starter_exercises(request, data: StarterIn):
+    """Add a starter pack's exercises (and its categories, tags and week types) that the
+    library doesn't have yet, as at sign-up. Nothing already there is changed."""
+    from . import starter
+
+    gym = programmer_of(request).gym
+    if data.pack not in starter.PACKS:
+        raise errors.Invalid({"pack": "Pick one of the starter packs."})
+    before = Exercise.objects.filter(gym=gym).count()
+    starter.install_pack(gym, data.pack)
+    return {"added": Exercise.objects.filter(gym=gym).count() - before}
+
+
 @router.post("/exercises", response={201: ExerciseOut})
 def create(request, data: ExerciseIn):
     gym = programmer_of(request).gym
