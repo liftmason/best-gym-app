@@ -73,6 +73,31 @@ Nothing in S8a deploys, buys, or sends anything anywhere.
 
 ## 3. Steps
 
+**As built (S8a):**
+- **Deleting an account:**
+  - `POST /me/delete` (`accounts/erase.py`), in the athlete's Profile, the coach's Account, and at `/delete-account` on the web.
+  - The coach case turned out to need **scrubbing, not deleting**. Athletes' coaching links, the gym's exercises and week types, and messages all point at the coach, and deleting them would break the athletes' history and what their phones sync. So the coach's details go ("Former coach", no email, no password, no sessions), and the rows stay.
+  - A gym's last coach leaving deletes its templates, default questions and invites, and cancels its subscription (`stripe_billing.cancel`).
+  - An athlete's coach is emailed when they leave.
+- **Render:** `render.yaml` is the real blueprint now (`deploy/` is gone), in Virginia, with the custom-domain settings. `test_render_blueprint.py` fails if a setting the backend reads isn't listed.
+- **The app:**
+  - `com.liftmason.app`; EAS profiles calling `https://api.liftmason.com`;
+  - Sentry (off until `EXPO_PUBLIC_SENTRY_DSN`);
+  - a placeholder icon (`scripts/placeholder-icons.py`).
+- **Tests:**
+  - Playwright coach flows in CI (job `e2e`, `app/e2e/`).
+  - A Maestro offline-session flow (`app/.maestro/`, which needs a development build).
+- **`seed_review`:** the reviewers' gym. The review account coaches it and trains in it.
+- **Legal:** `/privacy` and `/terms`, drafts in `app/src/legal/texts.ts` with a visible "Draft" notice.
+- **Store:** `docs/STORE_LISTING.md` has the listing texts, Apple's privacy label and Google's data-safety answers.
+- **The runbook:** `docs/LAUNCH.md`, for the owner. `docs/OPERATIONS.md` is rewritten for running the service after launch.
+- **Found on the way:**
+  - The app offers only email codes, so **Sign in with Apple isn't required at launch**.
+  - Settings' **Plan section now shows on the web only.** Apple doesn't allow pointing to payment outside the app.
+  - Two hard-coded "GT" logo marks are now the name's initial.
+  - `OPERATIONS.md`'s naming notes are corrected. The earlier fix had missed the merge of PR #13.
+  - **The app has no "Report a bug" button.** The API takes reports, but the old site's button wasn't rebuilt. It's left for Steven to decide.
+
 1. Account deletion: backend, the app's screens, the web page.
 2. Production configuration: Render, Cloudflare Pages, EAS, Sentry, icon and splash.
 3. Playwright coach flows in CI; the Maestro flows.
