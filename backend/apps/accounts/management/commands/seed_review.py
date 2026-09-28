@@ -15,7 +15,7 @@ from apps.accounts.models import Gym, User
 
 from .seed_demo import build_gym, remove_gym
 
-REVIEW_GYM = "Liftmason Review Gym"
+REVIEW_GYM = f"{settings.APP_NAME} Review Gym"
 TRAINS_AS = "maya@ironridge.example"  # the demo athlete with the fullest program
 
 
