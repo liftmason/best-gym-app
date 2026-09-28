@@ -1,12 +1,12 @@
 # Launching Liftmason: the runbook
 
-*For the owner (S8b). Written 28 September 2026 at the end of S8a (`docs/plans/S8_LAUNCH.md`).*
+*For the owner (S8b). Written 28 September 2026 at the end of S8a (`docs/plans/S8_LAUNCH.md`). Split the same day into a web launch and a later store launch, when the owner chose to launch on the web first (`docs/EXPO_MIGRATION.md`, "Decided at launch").*
 
-**Where things stand.** The app is built and tested: the backend, the web app, and the iOS and Android apps. Nothing is deployed and nothing is in a store. This runbook covers everything left, in order:
-- the accounts to open;
-- the domain and email;
-- deploying the backend and the web app;
-- building the phone apps and submitting them.
+**Where things stand.** The app is built and tested: the backend, the web app, and the iOS and Android apps. Nothing is deployed and nothing is in a store.
+
+**The plan.** Launch in two parts:
+- **Part 1, the web app (now).** Deploy the backend and the web app at `app.liftmason.com`, and test with real coaches and athletes. Coaches and athletes both use it in a browser, on a computer or a phone.
+- **Part 2, the stores (after testing).** Apple and Google accounts, a designed icon, phone builds, and submission. Nothing in Part 1 needs to be redone for it.
 
 **How to use it.** Each step says:
 - what to do;
@@ -22,35 +22,32 @@ Settings you enter are marked like `THIS`. Keep them in a password manager as yo
 
 ## 0. Costs and time
 
-| What | Cost | Time to set up |
-|---|---|---|
-| Domain `liftmason.com` | about $10 a year | minutes |
-| Apple Developer Program (organisation) | $99 a year | **days to weeks** (needs a D-U-N-S number) |
-| Google Play Console (organisation) | $25 once | a few days (identity and D-U-N-S checks) |
-| Render: API ($7) + cron job (about $1) + database ($6), in Virginia | about $14 a month | an hour |
-| Cloudflare: website, DNS and video storage | free at launch | an hour |
-| Resend: email | free up to 3,000 emails a month | 30 minutes |
-| Sentry: crash reports | free tier | 20 minutes |
-| Expo (EAS builds) | free tier (limited builds a month), or $19 a month for faster builds | exists |
-| Stripe: gym subscriptions | a fee per payment, when billing is turned on | later |
+| What | Cost | Time to set up | When |
+|---|---|---|---|
+| Domain `liftmason.com` | about $10 a year | minutes | Part 1 |
+| Render: API ($7) + cron job (about $1) + database ($6), in Virginia | about $14 a month | an hour | Part 1 |
+| Cloudflare: website, DNS and video storage | free at launch | an hour | Part 1 |
+| Resend: email | free up to 3,000 emails a month | 30 minutes | Part 1 |
+| Sentry: crash reports | free tier | 20 minutes | Part 1 |
+| Apple Developer Program (organisation) | $99 a year | **days to weeks** (needs a D-U-N-S number) | Part 2 |
+| Google Play Console (organisation) | $25 once | a few days (identity and D-U-N-S checks) | Part 2 |
+| Expo (EAS builds) | free tier (limited builds a month), or $19 a month for faster builds | exists | Part 2 |
+| Stripe: gym subscriptions | a fee per payment, when billing is turned on | later | When you charge |
 
-**Start Apple first.** It's the slowest step, and everything else can happen while you wait.
+**Part 1 costs about $14 a month plus the domain.**
+
+If you already know you'll go to the stores, **request the D-U-N-S number now** (Part 2, step 1). It's free, it's the slowest step, and it can run while you test.
 
 ---
 
-## 1. Accounts (start now)
+# Part 1: the web app
 
-1. **A D-U-N-S number** for the business, from Dun & Bradstreet. It's free, and takes up to two weeks. Apple and Google both use it to verify an organisation. Skip this if the business already has one.
-2. **Apple Developer Program, as an organisation** (developer.apple.com → Account → Enroll).
-   - You'll need the D-U-N-S number, the business's legal name, and a website.
-   - Once approved, invite Steven's Apple ID as an "App Manager" if he'll handle builds.
-3. **Google Play Console, as an organisation** (play.google.com/console).
-   - Use an organisation account. **New personal accounts must run a closed test with 12 or more testers for 14 days before they can publish.**
-4. **Render** (render.com): a team account for the business, with a card.
-5. **Cloudflare** (cloudflare.com): free.
-6. **Resend** (resend.com): free.
-7. **Sentry** (sentry.io): free. Create two projects: "liftmason-api" (Python, Django) and "liftmason-app" (React Native).
-8. **Expo:** the project already exists under `spearws-team` (expo.dev). Add the owner as an admin of that team.
+## 1. Accounts
+
+1. **Render** (render.com): a team account for the business, with a card.
+2. **Cloudflare** (cloudflare.com): free.
+3. **Resend** (resend.com): free.
+4. **Sentry** (sentry.io): free. Create two projects: "liftmason-api" (Python, Django) and "liftmason-app" (React Native; it covers the web app too).
 
 ---
 
@@ -102,24 +99,20 @@ Settings you enter are marked like `THIS`. Keep them in a password manager as yo
 | `SENTRY_DSN` | the "liftmason-api" project's DSN |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` (API) | the admin sign-in: your email, and a long password |
 | `ADMIN_PATH` (API) | something unguessable, e.g. `manage-7f3k2/` |
-| `REVIEW_ACCOUNT_EMAIL` | an address for the store reviewers, e.g. `review@liftmason.com` (it needn't receive mail) |
-| `REVIEW_ACCOUNT_CODE` | six digits of your choosing, e.g. `246810` |
-| `LOG_CLIENT_IP` (API) | `1` for now; see step 11 |
+| `LOG_CLIENT_IP` (API) | `1` for now; see step 8 |
 
 Leave these blank:
+- `REVIEW_ACCOUNT_EMAIL`, `REVIEW_ACCOUNT_CODE`: only the store reviewers need them (Part 2). Left blank, no fixed sign-in code exists.
 - `APPLE_CLIENT_IDS`, `GOOGLE_CLIENT_IDS`: not used at launch.
-- `BILLING_ENABLED` and the Stripe keys: see step 10.
-- `EXPO_ACCESS_TOKEN`, `APP_NAME`.
+- `EXPO_ACCESS_TOKEN`: only if the Expo project turns on "enhanced push security".
+- `BILLING_ENABLED` and the Stripe keys: see "Billing" at the end.
+- `APP_NAME`.
 
 4. **Deploy.** The first deploy migrates the database and creates the admin account.
 5. **Add the API's own address:** Render → `gymtrainer` → **Settings → Custom Domains** → `api.liftmason.com`. Add the `CNAME` it gives you in Cloudflare, with the proxy switched **off** (grey cloud).
 6. **Allow uploads from the web app.** Open Render → `gymtrainer` → **Shell** and run:
 
        python manage.py storage_setup --origin https://app.liftmason.com
-
-7. **Build the reviewers' gym**, in the same shell:
-
-       python manage.py seed_review
 
 **Check:**
 - `https://api.liftmason.com/healthz` answers `{"status": "ok"}`.
@@ -140,28 +133,75 @@ Leave these blank:
      - `NODE_VERSION` = `22`
 2. **Custom domains → Set up a custom domain** → `app.liftmason.com`.
 
-**Check:**
+**Check, on a computer:**
 1. `https://app.liftmason.com` shows the sign-in page.
 2. Sign up as a new coach with your own email, then invite an athlete (a second email of yours).
 3. Open the invite link, and join.
 4. Log a session as the athlete, and see it on the coach's Today screen.
 5. Try `https://app.liftmason.com/privacy`, `/terms` and `/delete-account`.
 
+**Check, on phones.** Athletes will train from a phone's browser, and the local training database has only been tested in desktop Chrome, so do this on **an iPhone in Safari** and **an Android phone in Chrome** before inviting anyone:
+1. Sign in as the athlete. The week appears, and the sync pill says **Synced**.
+2. Start a session, then switch on airplane mode **without closing the page**. Log the rest of the session and finish it. The pill says **Offline · N waiting**.
+3. Switch airplane mode off. The pill goes to **Synced**, and the coach sees the whole session.
+4. Close the tab and open the app again. The session is still there.
+5. With the connection on, pick a form video and send it; the coach can play it.
+
+If anything here fails, stop and send Steven what you saw before going further.
+
 ---
 
-## 6. Legal pages (before anyone real signs up)
+## 6. Legal pages (before anyone outside the test group signs up)
 
-The privacy policy and terms are drafts in `app/src/legal/texts.ts`, shown at `/privacy` and `/terms` with a "Draft" notice.
+The privacy policy and terms are drafts in `app/src/legal/texts.ts`, shown at `/privacy` and `/terms` with a "Draft" notice. Testing with people you know can start while they're drafts.
 
 1. Have them read by someone qualified for where the business operates.
 2. Fill in everything in [brackets]. That covers the business's legal name and address, the contact email, the **minimum age** (weightlifting coaches often train teenagers), the plans and refunds, and the governing law.
-3. Set `DRAFT = false` and `UPDATED` to the date, then push. Cloudflare redeploys the web app by itself; the phone apps pick the change up in their next build.
+3. Set `DRAFT = false` and `UPDATED` to the date, then push. Cloudflare redeploys the web app by itself.
 
 ---
 
-## 7. The icon
+## 7. What the web app can't do yet
 
-The icon is a placeholder: a white "L" on the brand blue, made by `app/scripts/placeholder-icons.py`. **Replace it before submitting to the stores.**
+Tell your testers these. They go away with the store apps (Part 2).
+
+- **No notifications.** Nobody gets a push when a coach publishes a week or sends a message; they see it next time they open the app.
+- **Offline works only while the page is open.** Training data is kept on the phone, and a whole session logs and saves with no signal. But the page itself isn't stored for offline use, so opening the app for the first time that day with no signal doesn't work. **Open it before going somewhere with no signal.**
+- **Form videos need a connection** while they're sent. The phone apps queue them for later; the web app can't keep the file.
+- **One tab at a time.** A second tab says the app is open in another tab.
+- **iPhones: add it to the home screen** (Share → Add to Home Screen). Safari clears a website's stored data after seven days of use without a visit, which would lose anything not yet synced; a home-screen app keeps it.
+
+---
+
+## 8. After the first deploy
+
+- **The rate-limit check:** with `LOG_CLIENT_IP=1` set:
+  1. Sign in once from a phone on mobile data.
+  2. In Render → `gymtrainer` → **Logs**, find the `client-ip check:` line and send it to Steven. It shows whether sign-in limits count each visitor separately behind Render's proxy.
+  3. Then remove `LOG_CLIENT_IP`.
+- **A backup restore drill:** once before real users arrive, then every few months (`docs/OPERATIONS.md`, "Backups").
+- **Watch Sentry** for the first week.
+- **Ongoing running:** `docs/OPERATIONS.md`.
+
+---
+
+# Part 2: the stores (after web testing)
+
+## 1. Accounts
+
+1. **A D-U-N-S number** for the business, from Dun & Bradstreet. It's free, and takes up to two weeks. Apple and Google both use it to verify an organisation. Skip this if the business already has one.
+2. **Apple Developer Program, as an organisation** (developer.apple.com → Account → Enroll).
+   - You'll need the D-U-N-S number, the business's legal name, and a website (`liftmason.com` from Part 1 works).
+   - Once approved, invite Steven's Apple ID as an "App Manager" if he'll handle builds.
+3. **Google Play Console, as an organisation** (play.google.com/console).
+   - Use an organisation account. **New personal accounts must run a closed test with 12 or more testers for 14 days before they can publish.**
+4. **Expo:** the project already exists under `spearws-team` (expo.dev). Add the owner as an admin of that team.
+
+---
+
+## 2. The icon
+
+The icon is a placeholder: a white "L" on the brand blue, made by `app/scripts/placeholder-icons.py`. **Replace it before submitting to the stores.** (The web app's favicon comes from the same files, so replacing it earlier is fine.)
 
 A designer needs to supply:
 - `icon.png` (1024 × 1024, no transparency);
@@ -173,26 +213,36 @@ They go in `app/assets/images/`, replacing the files there.
 
 ---
 
-## 8. Phone apps: test builds
+## 3. The reviewers' account
+
+Apple's reviewers need to sign in and see real screens.
+
+1. On Render, set `REVIEW_ACCOUNT_EMAIL` (an address for the store reviewers, e.g. `review@liftmason.com`; it needn't receive mail) and `REVIEW_ACCOUNT_CODE` (six digits of your choosing, e.g. `246810`).
+2. In Render → `gymtrainer` → **Shell**, build the reviewers' gym:
+
+       python manage.py seed_review
+
+---
+
+## 4. Phone apps: test builds
 
 From `app/`, signed in to the Expo team (`npx eas-cli@latest login`):
 
 1. **The app's crash reporting:** `npx eas-cli@latest env:create --name EXPO_PUBLIC_SENTRY_DSN --value <the app project's DSN> --environment production --environment preview`.
-2. **Android push notifications:** create a Firebase project, add an Android app `com.liftmason.app`, and download its service-account key. Upload the key with `npx eas-cli@latest credentials` (Android → Google Service Account → FCM V1). iOS push is set up by EAS during the first iOS build.
+2. **Push notifications:**
+   - Android: create a Firebase project, add an Android app `com.liftmason.app`, and download its service-account key. Upload the key with `npx eas-cli@latest credentials` (Android → Google Service Account → FCM V1).
+   - iOS push is set up by EAS during the first iOS build.
 3. **Test builds:** `npx eas-cli@latest build --profile preview --platform all`.
    - EAS asks to create the iOS certificates and the Android keystore: let it (it keeps them).
    - Android testers install from the link it gives.
-   - iOS testers are added with `npx eas-cli@latest device:create` first, or use TestFlight (step 9).
-4. **The offline check on a real phone:**
-   1. Sign in as an athlete.
-   2. Switch on airplane mode and log a whole session.
-   3. Reconnect, and see it arrive on the coach's side.
+   - iOS testers are added with `npx eas-cli@latest device:create` first, or use TestFlight (step 5).
+4. **The offline check on a real phone:** `docs/OFFLINE_CHECKLIST.md`, including closing the app completely while offline, which the web app can't do.
 
    The same check is automated for Android emulators in `app/.maestro` (see its README; it needs a development build: `--profile development`).
 
 ---
 
-## 9. The stores
+## 5. Submitting
 
 `docs/STORE_LISTING.md` has every text, answer and screenshot to use.
 
@@ -210,7 +260,7 @@ From `app/`, signed in to the Expo team (`npx eas-cli@latest login`):
 
 ---
 
-## 10. Billing (when you want to charge)
+# Billing (when you want to charge)
 
 Billing is built but off, so everything is free until it's turned on. When plans and prices are decided:
 1. In Stripe, create a product and a monthly price for each plan.
@@ -222,40 +272,26 @@ Gyms subscribe on the web, in Settings → Plan (it never shows in the phone app
 
 ---
 
-## 11. After the first deploy
-
-- **The rate-limit check:** with `LOG_CLIENT_IP=1` set:
-  1. Sign in once from a phone on mobile data.
-  2. In Render → `gymtrainer` → **Logs**, find the `client-ip check:` line and send it to Steven. It shows whether sign-in limits count each visitor separately behind Render's proxy.
-  3. Then remove `LOG_CLIENT_IP`.
-- **A backup restore drill:** once before real users arrive, then every few months (`docs/OPERATIONS.md`, "Backups").
-- **Watch Sentry** for the first week.
-- **Ongoing running:** `docs/OPERATIONS.md`.
-
----
-
 ## Checklist
 
-**Accounts and services:**
-- [ ] D-U-N-S number; Apple Developer (organisation); Google Play (organisation)
-- [ ] Render, Cloudflare, Resend, Sentry accounts; owner added to the Expo team
+**Part 1, the web app:**
+- [ ] Render, Cloudflare, Resend, Sentry accounts
 - [ ] `liftmason.com` bought; `liftmason.com` redirects to the app
 - [ ] Resend domain verified, and DMARC added
 - [ ] R2 bucket and token
-
-**Deploy:**
-- [ ] Render blueprint deployed and settings filled in; `api.liftmason.com` works; `storage_setup` and `seed_review` run
-- [ ] Cloudflare Pages deployed; `app.liftmason.com` works; a coach-and-athlete run-through done
-
-**Before submitting:**
-- [ ] Privacy policy and terms finished; `DRAFT = false`
-- [ ] Designed icon in place
-- [ ] Sentry DSNs set (backend, web, EAS)
-- [ ] Firebase key uploaded for Android push
-- [ ] Preview builds tested on real phones, including the airplane-mode session
-- [ ] App Store: listing, privacy answers, review account, submitted
-- [ ] Google Play: listing, data safety, deletion URL, internal test, production
-
-**Afterwards:**
+- [ ] Render blueprint deployed and settings filled in; `api.liftmason.com` works; `storage_setup` run
+- [ ] Cloudflare Pages deployed; `app.liftmason.com` works; a coach-and-athlete run-through done on a computer
+- [ ] The phone check done on an iPhone (Safari) and an Android phone (Chrome)
+- [ ] Testers told what the web app can't do yet
 - [ ] `LOG_CLIENT_IP` check done and removed
 - [ ] Backup restore drill done
+- [ ] Privacy policy and terms finished; `DRAFT = false` (before anyone outside the test group)
+
+**Part 2, the stores:**
+- [ ] D-U-N-S number; Apple Developer (organisation); Google Play (organisation); owner added to the Expo team
+- [ ] Designed icon in place
+- [ ] Review account settings set; `seed_review` run
+- [ ] Sentry DSN set in EAS; Firebase key uploaded for Android push
+- [ ] Preview builds tested on real phones, including `docs/OFFLINE_CHECKLIST.md`
+- [ ] App Store: listing, privacy answers, review account, submitted
+- [ ] Google Play: listing, data safety, deletion URL, internal test, production

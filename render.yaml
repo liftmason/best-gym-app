@@ -1,4 +1,4 @@
-# Render blueprint (docs/LAUNCH.md, "Hosting"): the API, the hourly cron job and Postgres,
+# Render blueprint (docs/LAUNCH.md, "The backend (Render)"): the API, the hourly cron job and Postgres,
 # in Virginia (docs/EXPO_MIGRATION.md, decision log). Nothing deploys until the owner
 # connects this repository as a Blueprint in their Render account.
 # The web service and the cron job share one env var group plus DATABASE_URL, so the cron

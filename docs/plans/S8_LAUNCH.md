@@ -17,6 +17,8 @@ S8 is in two parts, because going live needs accounts that only the owner has or
 
 Nothing in S8a deploys, buys, or sends anything anywhere.
 
+**Update, 28 September 2026:** the owner chose to launch on the web first. S8b's runbook is now in two parts: the web app now, and the stores after initial testing (`docs/LAUNCH.md`; decision in `docs/EXPO_MIGRATION.md`, "Decided at launch").
+
 ## What the stores require that the app doesn't have yet
 
 - **Deleting your own account.** Apple's guideline 5.1.1(v) and Google Play both require it for apps with sign-up; Google also wants a web page for it. Today only the admin can erase an athlete (`accounts.erase.erase_athlete`), and nothing erases a coach.
