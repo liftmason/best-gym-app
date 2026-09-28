@@ -1014,6 +1014,19 @@
         "title": "Decision",
         "type": "object"
       },
+      "DeleteAccount": {
+        "properties": {
+          "confirm": {
+            "title": "Confirm",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirm"
+        ],
+        "title": "DeleteAccount",
+        "type": "object"
+      },
       "DeleteCategory": {
         "properties": {
           "move_to_id": {
@@ -10004,6 +10017,37 @@
           }
         ],
         "summary": "Update Profile",
+        "tags": [
+          "Account"
+        ]
+      }
+    },
+    "/api/v1/me/delete": {
+      "post": {
+        "description": "Delete one's own account (the stores require it): the athlete's data is erased, a\ncoach's details scrubbed (accounts/erase.py). Every session ends with it.",
+        "operationId": "apps_accounts_api_delete_account",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAccount"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Delete Account",
         "tags": [
           "Account"
         ]

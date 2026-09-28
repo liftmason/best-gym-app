@@ -1,0 +1,1 @@
+{{ athlete_name }} deleted their account

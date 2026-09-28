@@ -135,6 +135,24 @@ def update_profile(request, data: Profile):
     return Status(204, None)
 
 
+class DeleteAccount(Schema):
+    confirm: str  # the word DELETE, typed
+
+
+@router.post("/me/delete", response={204: None})
+def delete_account(request, data: DeleteAccount):
+    """Delete one's own account (the stores require it): the athlete's data is erased, a
+    coach's details scrubbed (accounts/erase.py). Every session ends with it."""
+    from django.conf import settings
+
+    from . import erase
+
+    if data.confirm.strip().upper() != "DELETE":
+        raise errors.Invalid({"confirm": "Type DELETE to confirm."})
+    erase.erase_account(request.user, base_url=settings.SITE_URL)
+    return Status(204, None)
+
+
 # ---------------------------------------------------------------- invites
 
 
