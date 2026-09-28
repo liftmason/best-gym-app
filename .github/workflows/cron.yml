@@ -1,0 +1,37 @@
+# The hourly jobs for the free test run (docs/plans/S8B_TEST_RUN.md): Render has no free
+# cron jobs, so GitHub calls the API's /api/v1/ops/cron every hour. It does nothing until
+# the repository secret CRON_TOKEN is set, and should be emptied when the paid setup's cron
+# service takes over. GitHub may start scheduled runs late (alerts and the "after 7am"
+# digest allow for it) and turns schedules off after 60 days with no repository activity.
+name: Hourly jobs
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+# Never two runs at once: a slow cold start mustn't overlap the next hour's run.
+concurrency:
+  group: hourly-jobs
+  cancel-in-progress: false
+
+jobs:
+  cron:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Run the hourly jobs on the API
+        env:
+          CRON_TOKEN: ${{ secrets.CRON_TOKEN }}
+          API_URL: ${{ vars.API_URL || 'https://api.liftmason.com' }}
+        run: |
+          if [ -z "$CRON_TOKEN" ]; then
+            echo "CRON_TOKEN isn't set: nothing to do."
+            exit 0
+          fi
+          # A free service asleep takes about a minute to wake, hence the long timeout.
+          # The answer holds only counts and step names, so it's safe in public logs.
+          curl --fail-with-body --silent --show-error --max-time 240 --retry 2 --retry-delay 30 \
+            -X POST -H "Authorization: Bearer $CRON_TOKEN" "$API_URL/api/v1/ops/cron"
