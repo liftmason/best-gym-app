@@ -122,6 +122,7 @@ def _routers():
     from apps.billing.api import router as billing
     from apps.dashboard.api import router as dashboard
     from apps.dashboard.bug_api import router as bugs
+    from apps.dashboard.ops_api import router as ops
     from apps.exercises.api import router as library
     from apps.library.api import router as templates
     from apps.library.apply_api import router as applying
@@ -152,6 +153,7 @@ def _routers():
     api.add_router("", bugs)
     api.add_router("", billing)
     api.add_router("", sync)
+    api.add_router("", ops)
 
 
 def coach_of(request):

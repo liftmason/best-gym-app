@@ -168,6 +168,11 @@ DEFAULT_PLAN = os.environ.get("DEFAULT_PLAN", "unlimited")
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
+# The hourly jobs over HTTP (POST /api/v1/ops/cron), for hosts with no cron service: the
+# free test run calls it from GitHub Actions (docs/plans/S8B_TEST_RUN.md). Blank turns the
+# endpoint off; once Render's cron job runs `manage.py cron`, leave it blank.
+CRON_TOKEN = os.environ.get("CRON_TOKEN", "").strip()
+
 # Email: invites, reminders and the digest. EMAIL_PROVIDER is "resend" or "postmark" (with
 # EMAIL_API_KEY) to send for real, or blank / "console" to print email instead. Anything
 # else stops the site from starting (config/settings/checks.py).

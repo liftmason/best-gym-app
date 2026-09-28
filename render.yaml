@@ -76,6 +76,10 @@ services:
       # proxy sets (docs/LAUNCH.md, "After the first deploy"); then remove it.
       - key: LOG_CLIENT_IP
         sync: false
+      # The free test run's hourly jobs: a long random value, the same as the GitHub
+      # repository secret CRON_TOKEN (.github/workflows/cron.yml). Blank once the cron job runs.
+      - key: CRON_TOKEN
+        sync: false
       # The Django admin's address: something not guessable, e.g. manage-7f3k2/ (with the slash).
       - key: ADMIN_PATH
         sync: false
