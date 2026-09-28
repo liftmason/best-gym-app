@@ -226,14 +226,13 @@ on each side, and tests fail if a screen, an email or the API spells it out inst
 - `ios.bundleIdentifier` and `android.package` in `app/app.json` (not set yet; `com.liftmason.app`
   is the plan).
 - `expo.scheme` (`liftmason`): the app's link scheme.
-- `expo.slug` (`best-gym-app`) and the Expo project's name: rename the project on expo.dev to
-  `liftmason` first, then the slug here, before any builds exist.
 - The web and API domains, `SITE_URL`, and the email sender's domain (liftmason.com and
   liftmason.app were free on 28 September 2026).
 
-Internal names can stay `gymtrainer`, since no one sees them: the database and its user, the
-storage bucket, the Render services, the Python and npm package names, the local database file
-and the repository.
+Internal names can stay as they are, since no one sees them: the Expo slug `best-gym-app`
+(Expo can't rename a slug; the project's display name is Liftmason), the GitHub repository
+`best-gym-app`, and `gymtrainer` for the database and its user, the storage bucket, the Render
+services, the Python and npm package names and the local database file.
 
 ## Push notifications
 
