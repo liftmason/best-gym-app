@@ -1,48 +1,31 @@
 # Expo migration design
 
-*26 September 2026 · design approved by the owner; supersedes the stack sections of `docs/BUILD_PLAN.md`*
+*26 September 2026 · design approved by the owner; supersedes the stack sections of `docs/BUILD_PLAN.md`. Status updated 28 September 2026.*
 
 Liftmason (called GymTrainer until September 2026) moves from server-rendered Django + HTMX pages to a single Expo (React Native) app that ships to iOS, Android and the web. Django stays as the backend and becomes a JSON API with an offline sync layer. This document is the overall design; each sub-project in "Order of work" gets its own spec, plan and build.
 
 ## Handoff
 
-**Status (26 September 2026).** The design below is approved, and **sub-project 0 is done** (branch `s0-restructure`, PR #2; plan in `docs/plans/S0_RESTRUCTURE.md`):
-- The HTML pages are deleted, and every rule they held moved into tested services first.
-- Django lives in `backend/` on Python 3.14 with a `uv` lockfile.
-- The schema is fresh: UUIDv7 ids, coaching and gym-membership links, owner columns on synced tables, constraints and indexes.
+**Status (28 September 2026): the build is finished.** Sub-projects 0–7 and the first half of 8 are merged, and CI is green on `main`. What's left is going live, which needs the business's own accounts (S8b, `docs/LAUNCH.md`). **Launch is web-first** (decision log, "Decided at launch"): the web app goes live for initial testing, and the App Store and Play Store follow once that testing is done.
 
-**Sub-project 1 is done** (branch `s1-hardening`; plan in `docs/plans/S1_HARDENING.md`): every S1 item in the audit is fixed with a test. The owner decided that "program runs out" counts published weeks only.
+| # | What was built | Plan | PRs |
+|---|---|---|---|
+| 0 | Restructure: the HTML pages deleted after their rules moved into tested services; Django in `backend/` on Python 3.14; a fresh schema with UUIDv7 ids, coaching and gym-membership links, and owner columns | `docs/plans/S0_RESTRUCTURE.md` | #2 |
+| 1 | Backend hardening: every S1 item in the audit, each with a test | `docs/plans/S1_HARDENING.md` | #3 |
+| 2 | The API at `/api/v1/`; sign-in with email codes, Apple and Google; device sessions; the coach endpoints; billing that allows everything until it's turned on; the permission sweep | `docs/plans/S2_API.md` | #4, #5 |
+| 3 | Sync backend: a trigger-fed change log; bootstrap, pull and push; the action registry; schema versions; the shared rules cases | `docs/plans/S3_SYNC.md` | #6 |
+| 4 | App foundation: the Expo project, theme and components, the typed API client, sign-in; the phone's tables, the database queue, the sync engine, push, web hosting headers | `docs/plans/S4_APP_FOUNDATION.md` | #7, #8 |
+| 5 | The athlete's app: the training loop offline, progress, messages, profile, onboarding, form videos | `docs/plans/S5_ATHLETE.md` | #10, #11 |
+| 6 | The coach on a phone: Today and the attention feed, the roster and invites, an athlete's overview, messages, form-video review | `docs/plans/S6_COACH_PHONE.md` | #12 |
+| 7 | The coach's programming screens: the program board, templates, the library, check-in questions, settings, the plan | `docs/plans/S7_COACH_DESKTOP.md` | #14, #15 |
+| 8a | Getting ready to launch: account deletion, production configuration, crash reports, Playwright and Maestro flows, the review gym, legal drafts, store listing drafts, the runbook; "Report a bug" | `docs/plans/S8_LAUNCH.md` | #16, #17 |
+| 8b | **Going live (the owner):** the web app first, then the stores | `docs/LAUNCH.md` | — |
 
-Nothing is deployed: the free-tier Render blueprint is disconnected. The offline storage spike is done, and its working code is in the appendix.
+The product was renamed Liftmason in PR #13 (`APP_NAME` in both the backend and the app).
 
-**Read in this order:** this document; `docs/AUDIT_2026-09.md` (the evidence behind section 2 and the checklist for sub-project 1); `mockup/index.html` (the visual spec, still authoritative for look and wording); `docs/BUILD_PLAN.md` for the domain rules and data model it describes, ignoring its stack and deployment choices.
+**Read in this order:** this document; `docs/LAUNCH.md` for what's left; `docs/OPERATIONS.md` for running the service; `mockup/index.html` for the look and wording; `docs/BUILD_PLAN.md` for the domain rules and data model, ignoring its stack and deployment choices. `docs/AUDIT_2026-09.md` is the evidence behind section 2; every item in it is fixed.
 
-**Sub-project 2 is done** (PR #4 for S2a; S2b on branch `s2b`; plan in `docs/plans/S2_API.md`). It covers the API at `/api/v1/`, sign-in with email codes, Apple and Google, device sessions, every coach endpoint, billing that allows everything until it's turned on, and the permission sweep.
-
-**Sub-project 3 is merged** (PR #6; plan in `docs/plans/S3_SYNC.md`):
-- a trigger-fed change log, with pull on a cursor that can't skip a late commit;
-- bootstrap with 12 months of history;
-- push with the eleven actions, stored per action id;
-- schema versions, and the shared rules cases.
-
-**Sub-project 4 is built** (plan in `docs/plans/S4_APP_FOUNDATION.md`), in two PRs:
-- **S4a (PR #7):** the Expo project, the theme and component kit, the typed API client, sign-in and mode switching, and the shared rules in TypeScript.
-- **S4b (branch `s4b-app`):**
-  - the phone's tables, generated from the server;
-  - the database queue;
-  - the sync engine, with an undo log so pending actions sit on top of the server's state;
-  - push notifications;
-  - web hosting headers, and one tab at a time.
-- **Waiting for the owner's accounts:** Apple and Google sign-in, and push on devices.
-
-**Sub-project 4 is merged** (PRs #7, #8).
-
-**Sub-project 5 (the athlete's app)** is in progress (plan in `docs/plans/S5_ATHLETE.md`):
-- **S5a (the training loop):** the rules ported to the phone and checked against the server's (`shared/parity.json`); the session actions; home and week; check-in, player, finish and done; offline end-to-end checks.
-- **S5a and S5b are merged** (PRs #10, #11).
-- S5b covered: progress charts, messages (with the new `message.read` action), profile and metrics, onboarding after an invite, and form videos with an upload queue.
-
-**How to work.** Each sub-project in "Order of work" gets its own short spec (only where this document leaves real decisions open), then an implementation plan, then the build, one branch and PR per sub-project. Keep the Django service tests passing throughout; write tests before fixes for the audit items. When this document and the code disagree, raise it rather than silently diverging; update this document when a decision changes.
+**How to work.** New work gets a short spec where decisions are open, then a plan under `docs/plans/`, then the build, one branch and PR each. Keep the Django service tests passing; write tests before fixes. When this document and the code disagree, raise it rather than silently diverging; update this document when a decision changes.
 
 **Decided and not to be reopened without the owner:** everything in the decision log below.
 
@@ -50,10 +33,15 @@ Nothing is deployed: the free-tier Render blueprint is disconnected. The offline
 
 | Item | Owner | Needed by |
 |---|---|---|
-| Product name and domain | Owner | Before sub-project 8 (email authentication, the API address in the apps, store listings) |
-| Whether web Safari embeds YouTube under cross-origin isolation or links out | Whoever builds the exercise demo view (sub-project 5) | Sub-project 5 |
-| Plan limits and prices | Owner | When billing is turned on (after launch) |
-| Hosting account (moving off the current free-tier Render account to the owner's own) | Owner | Sub-project 8 |
+| The privacy policy and terms, reviewed and finished | Owner, with someone qualified | Before anyone outside the test group signs up |
+| When to submit to the App Store and Play Store | Owner | After the web app's initial testing |
+| The designed app icon | Owner | Before submitting to the stores |
+| Plan limits and prices | Owner | When billing is turned on |
+
+Settled since the design was written:
+- The name is **Liftmason**, at `liftmason.com` (S8a, decision C).
+- Exercise demos **link out to YouTube** rather than embedding, so Safari's cross-origin isolation doesn't affect them (S5).
+- Hosting is on the owner's own Render account (S8b).
 
 ## Why
 
@@ -110,6 +98,18 @@ As built:
 - The profile classes kept the names `Coach` and `Athlete`, and `athlete.coach`, `athlete.gym` and `coach.gym` read from the active link.
 - Owner columns (`athlete`, `gym`) are filled from the parent row automatically on save and in bulk creates. `apps/core/sync.py` lists which tables sync, and a guard test enforces it.
 - An ended coaching link's thread takes no new messages from either side.
+
+### Decided at launch
+
+| Decision | Chosen | Rejected, and why |
+|---|---|---|
+| How to launch (owner, 28 September 2026) | **Web first.** Deploy the backend and the web app at `app.liftmason.com` for initial testing with real coaches and athletes; submit to the App Store and Play Store once that testing is done. | **Web and both stores together:** Apple's organisation enrolment needs a D-U-N-S number and can take weeks, and store review slows every fix while the product is still being tested. |
+
+What this means for athletes during web testing (details in `docs/LAUNCH.md`, "What the web app can't do yet"):
+- No push notifications (the web has none; they come with the store apps).
+- Training data is kept in the browser and sessions log with no signal while the page stays open, but there's no offline page cache, so reopening the page with no connection doesn't work.
+- One tab at a time.
+- Safari clears a site's stored data after seven days of use without a visit to it (unless it was added to the home screen), so anything not yet synced could be lost there.
 
 ## Offline storage spike (done)
 
@@ -297,11 +297,11 @@ Each row is its own sub-project with a spec, a plan and a build.
 | 1 ✓ | **Done 26 September 2026.** Backend hardening: the audit fixes in section 2. | S–M |
 | 2 ✓ | **Done 27 September 2026.** API and sign-in: Django Ninja; generated TypeScript types; email codes; Apple and Google; tokens and device sessions; entitlements and Stripe; the permission sweep. | L |
 | 3 ✓ | **Done 27 September 2026.** Sync backend: change-log triggers; bootstrap, pull and push; the action registry; idempotency; visibility rules. | M–L |
-| 4 | App foundation: Expo project; database layer; sync engine; sign-in screens; theme and component kit; push notification setup; web hosting headers. | L |
-| 5 | Athlete app: all training screens; offline end-to-end tests. | L |
-| 6 | Coach phone screens (scope B). | M |
-| 7 | Coach desktop web: board, templates and apply, library, settings, billing page. | L |
-| 8 | Launch: naming; domain and email authentication; deployment (Render Virginia, Cloudflare Pages, EAS); App Store and Play Store submission. | M |
+| 4 ✓ | **Done 27 September 2026.** App foundation: Expo project; database layer; sync engine; sign-in screens; theme and component kit; push notification setup; web hosting headers. | L |
+| 5 ✓ | **Done 27 September 2026.** Athlete app: all training screens; offline end-to-end tests. | L |
+| 6 ✓ | **Done 27 September 2026.** Coach phone screens (scope B). | M |
+| 7 ✓ | **Done 27 September 2026.** Coach desktop web: board, templates and apply, library, settings, billing page. | L |
+| 8 | **S8a done 28 September 2026; S8b, going live, is the owner's, web first.** Launch: naming; domain and email authentication; deployment (Render Virginia, Cloudflare Pages, EAS); App Store and Play Store submission. | M |
 
 The athlete app (4–5) comes before the coach screens because offline is the riskiest part; seeded demo data stands in for coach-built programs until step 7.
 
@@ -431,16 +431,3 @@ function useLive<T>(run: () => Promise<T>, tables: string[]): T | undefined {
 ```
 
 **Checks the spike ran** (all passed on web and iOS with the code above): migrations on first launch; one set plus outbox entry (~10 ms); 13,500-row insert in one transaction (0.8 s web, 1.2 s iOS dev build); indexed history query (3–4 ms); a transaction whose second insert fails leaves the count unchanged; a read issued during an uncommitted transaction doesn't see its rows; data survives reload (web) and force-quit (iOS); a second browser tab fails to open the database (expected; see rule 5).
-
-**Sub-project 6 (the coach on a phone)** is merged (PR #12; plan in `docs/plans/S6_COACH_PHONE.md`): Today and the attention feed, the roster and invites, an athlete's overview, sessions, metrics and messages, form-video review, and a Messages inbox.
-
-**Sub-project 7 (the coach's programming screens)** is in two parts (plan in `docs/plans/S7_COACH_DESKTOP.md`, decisions A–H accepted). **S7a, the program board**, is merged (PR #14): weeks and publishing, the board with drag and drop on the web, the prescription editor, the exercise rail, habits, undo, and applying templates with a preview. **S7b** is merged (PR #15): Programming (templates, saved weeks and sessions, the template editor, the exercise library, check-in questions), Settings (gym, tracked lifts, week types) and the plan.
-
-**Sub-project 8 (launch)** is in two parts (plan in `docs/plans/S8_LAUNCH.md`). **S8a**, getting ready, is built on branch `s8a-launch-prep`:
-- account deletion; the production configuration for Render, Cloudflare Pages and EAS;
-- crash reports; the placeholder icon;
-- Playwright coach flows in CI, and a Maestro offline flow;
-- the review gym; draft privacy policy and terms; store listing drafts;
-- the owner's runbook, `docs/LAUNCH.md`.
-
-**S8b**, going live, is the owner's: accounts, the domain, deploying, and the stores.

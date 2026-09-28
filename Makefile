@@ -1,4 +1,4 @@
-# The Django backend lives in backend/ (the Expo app arrives in app/, sub-project 4).
+# The Django backend lives in backend/; the Expo app is in app/ (its commands are in app/package.json).
 # One command to a working local backend:  make dev
 B := cd backend &&
 PY := .venv/bin/python
