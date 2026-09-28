@@ -2,7 +2,7 @@ import { Redirect, Stack } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 
 import { useMe } from '@/auth/me';
-import { colors } from '@/ui';
+import { colors, ToastProvider } from '@/ui';
 
 /** Coaching mode: online, through the API (the design keeps coaches online). */
 export default function CoachingLayout() {
@@ -15,5 +15,9 @@ export default function CoachingLayout() {
     );
   }
   if (!me.data?.coach) return <Redirect href="/" />;
-  return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }} />;
+  return (
+    <ToastProvider>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }} />
+    </ToastProvider>
+  );
 }
