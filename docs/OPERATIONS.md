@@ -10,10 +10,10 @@ Running Liftmason in production:
 
 ## Bug reports and the admin
 
-Bug reports arrive through the API (`POST /api/v1/bug-reports`) and go to the Django admin
-under **Dashboard → Bug reports**, newest first, with the page, the device, the screen size,
-who sent it and their gym. **The app has no "Report a bug" button yet**: the old site's
-didn't carry over to the rebuild.
+**Report a bug** is the icon in the athlete's header, and for coaches it's in the sidebar
+(on a computer) or under Account (on a phone). Reports go to the Django admin under
+**Dashboard → Bug reports**, newest first, with the screen they were sent from, the device
+and app version, the screen size, who sent it and their gym.
 Set each one's status (new / seen / fixed / won't fix) as you go; add notes in "Admin note".
 
 The admin account comes from two settings on the web service, applied at every start

@@ -8,6 +8,7 @@ import { WIDE } from '@/coaching/layout';
 import { useDashboard, useThreads } from '@/coaching/queries';
 import { Avatar, colors, fonts, Text } from '@/ui';
 import { APP_NAME } from '@/name';
+import { ReportBugLink } from '@/support/report-bug';
 
 const TABS: Record<string, { label: string; wide: string; icon: keyof typeof Feather.glyphMap }> = {
   dashboard: { label: 'Today', wide: 'Dashboard', icon: 'home' },
@@ -82,6 +83,9 @@ function Bar({ state, navigation }: BottomTabBarProps) {
           <Text variant="h4">{APP_NAME}</Text>
         </View>
         <View style={{ gap: 2 }}>{items.map(item)}</View>
+        <View style={{ marginTop: 'auto' }}>
+          <ReportBugLink side="coach" />
+        </View>
         <View style={styles.foot}>
           <Avatar name={me.data?.name ?? ''} size={32} />
           <View style={{ flex: 1, minWidth: 0 }}>
@@ -128,7 +132,7 @@ const styles = StyleSheet.create({
   side: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10 },
   sideOn: { backgroundColor: colors.brandLight },
   sideLabel: { fontSize: 14, fontFamily: fonts.semibold, flex: 1 },
-  foot: { marginTop: 'auto', marginBottom: 18, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 8 },
+  foot: { marginBottom: 18, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 8 },
   badge: { position: 'absolute', top: -5, right: -9, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 3, backgroundColor: colors.bad, alignItems: 'center', justifyContent: 'center' },
   badgeInline: { position: 'relative', top: 0, right: 0 },
   badgeText: { color: colors.white, fontSize: 9.5, fontFamily: fonts.bold },

@@ -1,10 +1,11 @@
-/** The top of the athlete's app (the mockup's .app-head): who, which block and week, sync, messages. */
+/** The top of the athlete's app (the mockup's .app-head): who, which block and week, sync, reporting a bug, messages. */
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { unread } from '@/domain/messages';
 import { useSync } from '@/sync/provider';
+import { ReportBugIcon } from '@/support/report-bug';
 import { SyncPill } from '@/sync/status';
 import { Avatar, colors, fonts, space, Text } from '@/ui';
 
@@ -25,6 +26,7 @@ export function TrainingHeader({ subtitle }: { subtitle?: string }) {
         </Text>
       </View>
       <SyncPill />
+      <ReportBugIcon side="athlete" />
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={waiting ? `Messages, ${waiting} unread` : 'Messages'}
