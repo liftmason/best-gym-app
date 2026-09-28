@@ -56,9 +56,9 @@ MIDDLEWARE = [
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
 
-# The product's name, as people see it: a placeholder until the name is chosen
-# (docs/OPERATIONS.md, "Naming the app"). Emails say it with {% app_name %}.
-APP_NAME = os.environ.get("APP_NAME") or "GymTrainer"
+# The product's name, as people see it (docs/OPERATIONS.md, "Naming the app").
+# Emails say it with {% app_name %}.
+APP_NAME = os.environ.get("APP_NAME") or "Liftmason"
 
 TEMPLATES = [
     {

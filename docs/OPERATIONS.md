@@ -96,8 +96,8 @@ Set these on **both** the web service and the cron job, unless marked otherwise.
 | --- | --- | --- |
 | `EMAIL_PROVIDER` | `resend` | or `postmark`; without it email goes to the log |
 | `EMAIL_API_KEY` | | from the provider |
-| `APP_NAME` | `GymTrainer` | the product's name in emails and the API's title; see "Naming the app" |
-| `DEFAULT_FROM_EMAIL` | `GymTrainer <coach@yourdomain>` | a sender the provider has verified |
+| `APP_NAME` | `Liftmason` | the product's name in emails and the API's title; see "Naming the app" |
+| `DEFAULT_FROM_EMAIL` | `Liftmason <coach@liftmason.com>` | a sender the provider has verified |
 | `SITE_URL` | `https://gymtrainer.onrender.com` | cron job only: the digest's links |
 | `PUSH_PROVIDER` | `expo` | set by the blueprint; see "Push notifications" |
 | `STORAGE_ENDPOINT` | `https://<account id>.r2.cloudflarestorage.com` | form videos |
@@ -207,7 +207,9 @@ One Expo app in `app/` for iOS, Android and the web (`app/README.md` has the com
 
 ## Naming the app
 
-"GymTrainer" is a placeholder until the product has a name. What people see is written once
+The product is **Liftmason** (chosen 28 September 2026; the code name was GymTrainer). Before
+launch, a trademark clearance search should confirm it, LiftMaster (Chamberlain's garage-door
+brand) being the name to ask about. What people see is written once
 on each side, and tests fail if a screen, an email or the API spells it out instead:
 
 - **The app:** `expo.name` in `app/app.json`. Screens use `APP_NAME` (`app/src/name.ts`), and
@@ -221,11 +223,13 @@ on each side, and tests fail if a screen, an email or the API spells it out inst
 **Fix these before the first store build or real invite**, since they can't change afterwards
 (or only by breaking links people have):
 
-- `ios.bundleIdentifier` and `android.package` in `app/app.json` (not set yet).
-- `expo.scheme` (`gymtrainer`): the app's link scheme.
-- `expo.slug` (`best-gym-app`) and the Expo project's name, which can be renamed on expo.dev
-  until builds exist.
-- The web and API domains, `SITE_URL`, and the email sender's domain.
+- `ios.bundleIdentifier` and `android.package` in `app/app.json` (not set yet; `com.liftmason.app`
+  is the plan).
+- `expo.scheme` (`liftmason`): the app's link scheme.
+- `expo.slug` (`best-gym-app`) and the Expo project's name: rename the project on expo.dev to
+  `liftmason` first, then the slug here, before any builds exist.
+- The web and API domains, `SITE_URL`, and the email sender's domain (liftmason.com and
+  liftmason.app were free on 28 September 2026).
 
 Internal names can stay `gymtrainer`, since no one sees them: the database and its user, the
 storage bucket, the Render services, the Python and npm package names, the local database file

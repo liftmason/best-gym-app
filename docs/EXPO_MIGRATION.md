@@ -2,7 +2,7 @@
 
 *26 September 2026 · design approved by the owner; supersedes the stack sections of `docs/BUILD_PLAN.md`*
 
-GymTrainer moves from server-rendered Django + HTMX pages to a single Expo (React Native) app that ships to iOS, Android and the web. Django stays as the backend and becomes a JSON API with an offline sync layer. This document is the overall design; each sub-project in "Order of work" gets its own spec, plan and build.
+Liftmason (called GymTrainer until September 2026) moves from server-rendered Django + HTMX pages to a single Expo (React Native) app that ships to iOS, Android and the web. Django stays as the backend and becomes a JSON API with an offline sync layer. This document is the overall design; each sub-project in "Order of work" gets its own spec, plan and build.
 
 ## Handoff
 

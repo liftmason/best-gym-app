@@ -1,4 +1,4 @@
-# GymTrainer app
+# Liftmason app
 
 One Expo app for iOS, Android and the web: athletes train offline-first, coaches work online.
 The design is `docs/EXPO_MIGRATION.md` (section 6); this sub-project's plan is

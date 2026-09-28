@@ -8,7 +8,7 @@ from django.core import mail
 from apps.accounts import emails, invites
 
 BACKEND = Path(__file__).resolve().parents[2]
-PLACEHOLDERS = [settings.APP_NAME, "Platform"]  # "Platform" was the mockup's
+PLACEHOLDERS = [settings.APP_NAME, "GymTrainer", "Platform"]  # and the old placeholders
 
 
 def test_no_code_or_email_spells_out_the_name():
