@@ -1,0 +1,10 @@
+# Ticks every set of the exercise on screen: "Mark set 1 done", "Mark set 2 done", …
+appId: com.liftmason.app
+---
+- evalScript: ${output.set = 1}
+- repeat:
+    while:
+      visible: "Mark set ${output.set} done"
+    commands:
+      - tapOn: "Mark set ${output.set} done"
+      - evalScript: ${output.set = output.set + 1}

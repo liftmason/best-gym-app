@@ -1,9 +1,11 @@
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
+import { DeleteAccount } from '@/auth/delete-account';
 import { useMe } from '@/auth/me';
 import { HOME, rememberMode } from '@/auth/mode';
 import { signOut } from '@/auth/sign-out';
+import { LegalLinks } from '@/legal/links';
 import { CoachScreen } from '@/coaching/layout';
 import { Avatar, Button, Card, space, Text } from '@/ui';
 import { APP_NAME } from '@/name';
@@ -45,6 +47,8 @@ export default function More() {
         />
       ) : null}
       <Button title="Sign out" variant="ghost" block onPress={signOut} />
+      <DeleteAccount />
+      <LegalLinks />
     </CoachScreen>
   );
 }

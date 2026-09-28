@@ -1701,6 +1701,27 @@ export interface paths {
         patch: operations["apps_accounts_api_update_profile"];
         trace?: never;
     };
+    "/api/v1/me/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete Account
+         * @description Delete one's own account (the stores require it): the athlete's data is erased, a
+         *     coach's details scrubbed (accounts/erase.py). Every session ends with it.
+         */
+        post: operations["apps_accounts_api_delete_account"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/history": {
         parameters: {
             query?: never;
@@ -2919,6 +2940,11 @@ export interface components {
         Decision: {
             /** Use */
             use: boolean;
+        };
+        /** DeleteAccount */
+        DeleteAccount: {
+            /** Confirm */
+            confirm: string;
         };
         /** DeleteCategory */
         DeleteCategory: {
@@ -7159,6 +7185,28 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["Profile"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_accounts_api_delete_account: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteAccount"];
             };
         };
         responses: {

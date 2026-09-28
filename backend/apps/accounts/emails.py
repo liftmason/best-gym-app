@@ -38,3 +38,11 @@ def send_metrics_reminder(base_url, athlete, missing_keys):
     subject = render_to_string("emails/metrics_reminder_subject.txt", context).strip()
     body = render_to_string("emails/metrics_reminder.txt", context)
     send_mail(subject, body, None, [athlete.user.email])
+
+
+def send_athlete_left(base_url, coach, athlete_name):
+    """Tell a coach that one of their athletes deleted their account (and all their data)."""
+    context = {"coach": coach, "athlete_name": athlete_name, "base_url": base_url}
+    subject = render_to_string("emails/athlete_left_subject.txt", context).strip()
+    body = render_to_string("emails/athlete_left.txt", context)
+    send_mail(subject, body, None, [coach.user.email])

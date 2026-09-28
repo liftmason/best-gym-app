@@ -6,6 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMe } from '@/auth/me';
 import { HOME, rememberMode } from '@/auth/mode';
 import { signOut } from '@/auth/sign-out';
+import { DeleteAccount } from '@/auth/delete-account';
+import { LegalLinks } from '@/legal/links';
 import { currentMetrics, type Current } from '@/domain/metrics';
 import { useSync } from '@/sync/provider';
 import { TrainingHeader } from '@/training/header';
@@ -95,6 +97,8 @@ export default function Profile() {
           />
         ) : null}
         <Button title="Sign out" variant="ghost" block onPress={signOut} />
+        <DeleteAccount />
+        <LegalLinks />
       </ScrollView>
       <MetricSheet metric={editing} unit={profile.units} engine={engine} onClose={() => setEditing(null)} />
     </SafeAreaView>

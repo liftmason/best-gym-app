@@ -125,15 +125,19 @@ def _next_date(today, month, day):
 
 
 def remove_demo_gym():
-    """Delete the demo gym, its coaches and athletes and everything they made. Training
-    history is protected from deletion, so this goes leaf-first: athletes through
-    erase_athlete, then the library, then the gym."""
+    remove_gym(GYM_NAME)
+
+
+def remove_gym(name):
+    """Delete a seeded gym (the demo, or the app-review gym), its coaches and athletes and
+    everything they made. Training history is protected from deletion, so this goes
+    leaf-first: athletes through erase_athlete, then the library, then the gym."""
     from apps.accounts.erase import erase_athlete
     from apps.exercises.models import Exercise
     from apps.library.models import Template
     from apps.programs.models import WeekType
 
-    gym = Gym.objects.filter(name=GYM_NAME).first()
+    gym = Gym.objects.filter(name=name).first()
     if gym is None:
         return
     for athlete in Athlete.objects.filter(coachings__gym=gym).distinct():
@@ -177,90 +181,110 @@ class Command(BaseCommand):
                 self.stdout.write("The database has data; not seeding.")
                 return
             raise CommandError("The database already has a gym. Pass --reset to replace the demo gym.")
-        gym, _ = Gym.objects.update_or_create(name=GYM_NAME, defaults={"timezone": TZ, "units": "kg"})
-        exercises = install_pack(gym, "weightlifting")
-        install_default_questions(gym)
-        today = gym.today()
-
-        email, name, title = COACH
-        coach_user = self._user(email, name, is_staff=True)
-        coach, _ = Coach.objects.update_or_create(user=coach_user, defaults={"title": title})
-        if coach.gym != gym:
-            coaching.join_gym(coach, gym, GymRole.OWNER)
-
-        athletes_by_email = {}
-        for spec in ATHLETES:
-            user = self._user(spec["email"], spec["name"])
-            comp_name, comp_date = "", None
-            if spec["comp"]:
-                comp_name = spec["comp"][0]
-                comp_date = _next_date(today, *spec["comp"][1])
-            athlete, _ = Athlete.objects.update_or_create(
-                user=user,
-                defaults={
-                    "weight_class": spec["class"],
-                    "competition_name": comp_name,
-                    "competition_date": comp_date,
-                    "height_cm": Decimal(spec["height"]) if spec["height"] else None,
-                    "years_training": spec["years"],
-                    "units": "kg",
-                },
-            )
-            coach_athlete(coach, athlete)
-            athlete.bodyweights.all().delete()
-            BodyweightEntry.objects.bulk_create(
-                [
-                    BodyweightEntry(
-                        athlete=athlete,
-                        date=today - datetime.timedelta(days=d),
-                        kg=Decimal(kg),
-                        source=MeasurementSource.ATHLETE,
-                    )
-                    for d, kg in spec["bodyweight_history"]
-                ]
-            )
-            athlete.maxes.all().delete()
-            MaxEntry.objects.bulk_create(
-                [
-                    MaxEntry(
-                        athlete=athlete,
-                        exercise=exercises[key],
-                        date=today - datetime.timedelta(days=d),
-                        kg=Decimal(kg),
-                        reps=1,
-                        source=MeasurementSource.SESSION,
-                    )
-                    for key, kg, d in spec["maxes"]
-                ]
-            )
-            if not CheckinQuestion.objects.for_athlete(athlete).filter(archived=False).exists():
-                copy_defaults_to(athlete)
-            athletes_by_email[spec["email"]] = athlete
-            self.stdout.write(f"athlete {spec['email']}")
-
-        seed_programs(athletes_by_email, exercises, coach_user, today)
-        seed_sessions(athletes_by_email, exercises, today)
-        seed_library(gym, exercises, coach_user)
-        seed_habits(athletes_by_email, today)
-        seed_meso(gym, coach, coach_user, today)
+        gym = build_gym(
+            self.stdout,
+            gym_name=GYM_NAME,
+            coach=COACH,
+            email_for=lambda spec: spec["email"],
+            password=settings.DEMO_PASSWORD,
+            staff=settings.DEMO_STAFF,
+        )
         self.stdout.write(
             self.style.SUCCESS(
                 f"Demo data ready: {GYM_NAME}, coach {COACH[0]}, {len(ATHLETES) + 1} athletes, "
-                f"{len(exercises)} exercises. New demo users' password is DEMO_PASSWORD."
+                f"{gym.exercises.count()} exercises. New demo users' password is DEMO_PASSWORD."
             )
         )
 
-    def _user(self, email, name, is_staff=False):
-        user, created = User.objects.update_or_create(
-            email=email,
+
+def seeded_user(email, name, password=None, staff=False):
+    """A seeded person: `password` only for new users (None: code sign-in only)."""
+    user, created = User.objects.update_or_create(
+        email=email, defaults={"name": name, "timezone": TZ, "is_staff": staff, "is_superuser": staff}
+    )
+    if created:
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
+        user.save(update_fields=["password"])
+    return user
+
+
+def build_gym(
+    stdout, *, gym_name, coach, email_for, password=None, staff=False, coach_trains_as=None, meso=True
+):
+    """A gym with the demo's people and history. `email_for(spec)` gives each athlete's
+    email; `coach_trains_as` (a demo email) makes the coach that athlete too, so one
+    account shows both sides. Returns the gym."""
+    gym, _ = Gym.objects.update_or_create(name=gym_name, defaults={"timezone": TZ, "units": "kg"})
+    exercises = install_pack(gym, "weightlifting")
+    install_default_questions(gym)
+    today = gym.today()
+
+    email, name, title = coach
+    coach_user = seeded_user(email, name, password, staff=staff)
+    coach, _ = Coach.objects.update_or_create(user=coach_user, defaults={"title": title})
+    if coach.gym != gym:
+        coaching.join_gym(coach, gym, GymRole.OWNER)
+
+    athletes_by_email = {}
+    for spec in ATHLETES:
+        if spec["email"] == coach_trains_as:
+            user = coach_user
+        else:
+            user = seeded_user(email_for(spec), spec["name"], password)
+        comp_name, comp_date = "", None
+        if spec["comp"]:
+            comp_name = spec["comp"][0]
+            comp_date = _next_date(today, *spec["comp"][1])
+        athlete, _ = Athlete.objects.update_or_create(
+            user=user,
             defaults={
-                "name": name,
-                "timezone": TZ,
-                "is_staff": is_staff and settings.DEMO_STAFF,
-                "is_superuser": is_staff and settings.DEMO_STAFF,
+                "weight_class": spec["class"],
+                "competition_name": comp_name,
+                "competition_date": comp_date,
+                "height_cm": Decimal(spec["height"]) if spec["height"] else None,
+                "years_training": spec["years"],
+                "units": "kg",
             },
         )
-        if created:
-            user.set_password(settings.DEMO_PASSWORD)
-            user.save(update_fields=["password"])
-        return user
+        coach_athlete(coach, athlete)
+        athlete.bodyweights.all().delete()
+        BodyweightEntry.objects.bulk_create(
+            [
+                BodyweightEntry(
+                    athlete=athlete,
+                    date=today - datetime.timedelta(days=d),
+                    kg=Decimal(kg),
+                    source=MeasurementSource.ATHLETE,
+                )
+                for d, kg in spec["bodyweight_history"]
+            ]
+        )
+        athlete.maxes.all().delete()
+        MaxEntry.objects.bulk_create(
+            [
+                MaxEntry(
+                    athlete=athlete,
+                    exercise=exercises[key],
+                    date=today - datetime.timedelta(days=d),
+                    kg=Decimal(kg),
+                    reps=1,
+                    source=MeasurementSource.SESSION,
+                )
+                for key, kg, d in spec["maxes"]
+            ]
+        )
+        if not CheckinQuestion.objects.for_athlete(athlete).filter(archived=False).exists():
+            copy_defaults_to(athlete)
+        athletes_by_email[spec["email"]] = athlete
+        stdout.write(f"athlete {user.email}")
+
+    seed_programs(athletes_by_email, exercises, coach_user, today)
+    seed_sessions(athletes_by_email, exercises, today)
+    seed_library(gym, exercises, coach_user)
+    seed_habits(athletes_by_email, today)
+    if meso:
+        seed_meso(gym, coach, coach_user, today)
+    return gym

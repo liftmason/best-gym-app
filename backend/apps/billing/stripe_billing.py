@@ -88,6 +88,17 @@ def portal_url(coach):
     return session.url
 
 
+def cancel(gym):
+    """End the gym's Stripe subscription now: its last coach deleted their account. Nothing
+    to do while billing is off or the gym never subscribed."""
+    sub = getattr(gym, "subscription", None)
+    if not settings.BILLING_ENABLED or sub is None or not sub.stripe_subscription_id:
+        return
+    client().v1.subscriptions.cancel(sub.stripe_subscription_id)
+    sub.status = SubscriptionStatus.CANCELED
+    sub.save(update_fields=["status", "updated_at"])
+
+
 # ---------------------------------------------------------------- webhooks
 
 

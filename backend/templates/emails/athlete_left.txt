@@ -1,0 +1,5 @@
+Hi {{ coach.user.get_short_name }},
+
+{{ athlete_name }} deleted their {% app_name %} account. Their training history, messages and videos were deleted with it, and they've left your roster.
+
+Nothing else changed: your programs, templates and other athletes are as they were.

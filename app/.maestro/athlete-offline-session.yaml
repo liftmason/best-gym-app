@@ -1,0 +1,56 @@
+# An athlete logs a whole session with no signal, then it syncs (docs/EXPO_MIGRATION.md,
+# "End to end"). Android: Maestro can switch airplane mode there. Needs a development build
+# pointed at a backend with the demo gym (seed_demo); see README.md here.
+appId: com.liftmason.app
+name: A whole session offline, then it syncs
+---
+- launchApp:
+    clearState: true
+- tapOn: "Email"
+- inputText: "maya@ironridge.example"
+- tapOn: "Email me a code"
+- tapOn: "Code"
+- inputText: "123456"
+- tapOn: "Sign in"
+- extendedWaitUntil:
+    visible: "Synced"
+    timeout: 60000
+
+# No signal from here on.
+- setAirplaneMode: enabled
+- tapOn:
+    text: "Log this session|Start session →|Resume session →"
+- runFlow:
+    when:
+      visible: "Skip check-in this time"
+    commands:
+      - tapOn: "Skip check-in this time"
+- runFlow:
+    when:
+      visible: "Start session →"
+    commands:
+      - tapOn: "Start session →"
+
+# Every set of every exercise, then finish.
+- repeat:
+    while:
+      notVisible: "Finish session →"
+    commands:
+      - runFlow: log-sets.yaml
+      - runFlow:
+          when:
+            visible: "Next exercise →"
+          commands:
+            - tapOn: "Next exercise →"
+- runFlow: log-sets.yaml
+- tapOn: "Finish session →"
+- tapOn: "RPE 8"
+- tapOn: "Finish & save"
+- assertVisible: "Session complete"
+- assertVisible: "Offline.*waiting"
+
+# Signal again: what was logged goes to the server.
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible: "Synced"
+    timeout: 60000

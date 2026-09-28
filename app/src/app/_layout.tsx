@@ -15,6 +15,7 @@ import { api, makeQueryClient, useAuth } from '@/api';
 import { handlePushes, pushTarget, registerForPush } from '@/push/register';
 import { syncNow } from '@/sync/session';
 import { colors } from '@/ui';
+import { withReporting } from '@/errors/reporting';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -23,9 +24,9 @@ const queryClient = makeQueryClient();
 /**
  * The app's root: signing in, the athlete's training (offline-first) and coaching (online).
  * The splash stays up until the fonts are in and the saved session is read. Signed-in routes
- * and sign-in are guarded; an invite link opens either way.
+ * and sign-in are guarded; invite links, the delete-account page and the legal pages open either way.
  */
-export default function RootLayout() {
+function RootLayout() {
   const [loaded, failed] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold });
   const auth = useAuth();
   const ready = (loaded || failed) && auth !== 'loading';
@@ -79,8 +80,13 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" />
         </Stack.Protected>
         <Stack.Screen name="join/[token]" />
+        <Stack.Screen name="delete-account" />
+        <Stack.Screen name="privacy" />
+        <Stack.Screen name="terms" />
         <Stack.Screen name="kit" />
       </Stack>
     </QueryClientProvider>
   );
 }
+
+export default withReporting(RootLayout);

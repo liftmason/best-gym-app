@@ -434,4 +434,13 @@ function useLive<T>(run: () => Promise<T>, tables: string[]): T | undefined {
 
 **Sub-project 6 (the coach on a phone)** is merged (PR #12; plan in `docs/plans/S6_COACH_PHONE.md`): Today and the attention feed, the roster and invites, an athlete's overview, sessions, metrics and messages, form-video review, and a Messages inbox.
 
-**Sub-project 7 (the coach's programming screens)** is in two parts (plan in `docs/plans/S7_COACH_DESKTOP.md`, decisions A–H accepted). **S7a, the program board**, is merged (PR #14): weeks and publishing, the board with drag and drop on the web, the prescription editor, the exercise rail, habits, undo, and applying templates with a preview. **S7b** is built on branch `s7b-programming`: Programming (templates, saved weeks and sessions, the template editor, the exercise library, check-in questions), Settings (gym, tracked lifts, week types) and the plan.
+**Sub-project 7 (the coach's programming screens)** is in two parts (plan in `docs/plans/S7_COACH_DESKTOP.md`, decisions A–H accepted). **S7a, the program board**, is merged (PR #14): weeks and publishing, the board with drag and drop on the web, the prescription editor, the exercise rail, habits, undo, and applying templates with a preview. **S7b** is merged (PR #15): Programming (templates, saved weeks and sessions, the template editor, the exercise library, check-in questions), Settings (gym, tracked lifts, week types) and the plan.
+
+**Sub-project 8 (launch)** is in two parts (plan in `docs/plans/S8_LAUNCH.md`). **S8a**, getting ready, is built on branch `s8a-launch-prep`:
+- account deletion; the production configuration for Render, Cloudflare Pages and EAS;
+- crash reports; the placeholder icon;
+- Playwright coach flows in CI, and a Maestro offline flow;
+- the review gym; draft privacy policy and terms; store listing drafts;
+- the owner's runbook, `docs/LAUNCH.md`.
+
+**S8b**, going live, is the owner's: accounts, the domain, deploying, and the stores.
