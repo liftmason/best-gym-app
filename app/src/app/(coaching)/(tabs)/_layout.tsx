@@ -13,8 +13,12 @@ const TABS: Record<string, { label: string; wide: string; icon: keyof typeof Fea
   dashboard: { label: 'Today', wide: 'Dashboard', icon: 'home' },
   'athletes/index': { label: 'Athletes', wide: 'Athletes', icon: 'users' },
   inbox: { label: 'Messages', wide: 'Messages', icon: 'message-circle' },
+  'programming/index': { label: 'Programming', wide: 'Programming', icon: 'layers' },
+  settings: { label: 'Settings', wide: 'Settings', icon: 'settings' },
   more: { label: 'More', wide: 'Account', icon: 'menu' },
 };
+/** On a phone the bar keeps four tabs; Programming and Settings open from More. */
+const WIDE_ONLY = new Set(['programming/index', 'settings']);
 
 function Badge({ count }: { count: number }) {
   if (!count) return null;
@@ -37,12 +41,13 @@ function Bar({ state, navigation }: BottomTabBarProps) {
     inbox: (threads.data ?? []).reduce((n, t) => n + t.unread, 0),
   };
   const current = state.routes[state.index]?.name;
-  const items = state.routes.filter((r) => TABS[r.name]);
+  const items = state.routes.filter((r) => TABS[r.name] && (wide || !WIDE_ONLY.has(r.name)));
 
   const item = (route: (typeof state.routes)[number]) => {
     const tab = TABS[route.name];
-    // An athlete's page belongs to Athletes.
-    const active = current === route.name || (route.name === 'athletes/index' && current === 'athletes/[id]');
+    // An athlete's page belongs to Athletes, a template to Programming.
+    const active =
+      current === route.name || (route.name === 'athletes/index' && current === 'athletes/[id]') || (route.name === 'programming/index' && current === 'programming/[id]');
     const colour = active ? colors.brand : wide ? colors.ink3 : colors.ink4;
     return (
       <Pressable
@@ -104,8 +109,11 @@ export default function CoachingTabs() {
       <Tabs.Screen name="dashboard" />
       <Tabs.Screen name="athletes/index" />
       <Tabs.Screen name="inbox" />
+      <Tabs.Screen name="programming/index" />
+      <Tabs.Screen name="settings" />
       <Tabs.Screen name="more" />
       <Tabs.Screen name="athletes/[id]" options={{ href: null }} />
+      <Tabs.Screen name="programming/[id]" options={{ href: null }} />
     </Tabs>
   );
 }

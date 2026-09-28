@@ -24,10 +24,14 @@ export default function More() {
         </View>
       </Card>
       <Card style={{ gap: space.s }}>
-        <Text variant="h4">Programming, the library and settings</Text>
+        <Text variant="h4">Programming and settings</Text>
         <Text variant="small" tone="muted">
-          These are on the web for now: open {APP_NAME} on a computer. Programming on a phone is planned.
+          Templates, the exercise library, check-in questions and your gym&apos;s settings. They&apos;re laid out for a computer — open {APP_NAME} on the web — but work here too.
         </Text>
+        <View style={{ flexDirection: 'row', gap: space.s }}>
+          <Button title="Programming" size="sm" variant="soft" onPress={() => router.push('/programming')} />
+          <Button title="Settings" size="sm" variant="soft" onPress={() => router.push('/settings')} />
+        </View>
       </Card>
       {me.data?.athlete ? (
         <Button

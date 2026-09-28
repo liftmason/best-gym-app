@@ -44,7 +44,7 @@ export function columnsFor(width: number): number {
   return width >= 840 ? 7 : width >= 520 ? 4 : width >= 300 ? 2 : 1;
 }
 
-export function ProgramBoard({ id, first }: { id: string; first: string }) {
+export function ProgramBoard({ id, first, applyTemplate, onApplyDone }: { id: string; first: string; applyTemplate?: string; onApplyDone?: () => void }) {
   const me = useMe();
   const gym = me.data?.coach?.gym;
   const unit = gym?.units ?? 'kg';
@@ -64,8 +64,18 @@ export function ProgramBoard({ id, first }: { id: string; first: string }) {
   const [saving, setSaving] = useState<SaveWhat | null>(null);
   const [list, setList] = useState(storedList);
   const [restart, setRestart] = useState(false);
-  const [applying, setApplying] = useState<Choices | null>(null);
-  const [ghost, setGhost] = useState<number | null>(null);
+  // Opened from Programming's "Apply to athlete…": straight into that template's preview.
+  const [applying, setApplying] = useState<Choices | null>(applyTemplate ? { template_id: applyTemplate, days: null, mode: 'recent', start: '', publish: false } : null);
+  const [ghost, setGhost] = useState<number | null>(applyTemplate ? 0 : null);
+  const [seenApply, setSeenApply] = useState(applyTemplate);
+  if (applyTemplate !== seenApply) {
+    // Another "Apply to athlete…" while this board is open (tabs stay mounted).
+    setSeenApply(applyTemplate);
+    if (applyTemplate) {
+      setApplying({ template_id: applyTemplate, days: null, mode: 'recent', start: '', publish: false });
+      setGhost(0);
+    }
+  }
   const [confirming, setConfirming] = useState(false);
   const [width, setWidth] = useState(0);
   const [boardWidth, setBoardWidth] = useState(0);
@@ -124,6 +134,7 @@ export function ProgramBoard({ id, first }: { id: string; first: string }) {
       setApplying(null);
       setGhost(null);
       setWeekId(applied.first_week_id);
+      onApplyDone?.();
     }
   }
 
@@ -166,6 +177,7 @@ export function ProgramBoard({ id, first }: { id: string; first: string }) {
           onCancel={() => {
             setApplying(null);
             setGhost(null);
+            onApplyDone?.();
             toast('Apply cancelled — nothing changed');
           }}
           onConfirm={confirmApply}

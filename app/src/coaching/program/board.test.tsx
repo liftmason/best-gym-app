@@ -50,13 +50,13 @@ function routes(extra: Partial<Record<Route, Handler>> = {}): Partial<Record<Rou
 
 const fakeApi = useFakeApi; // not a React hook, despite its name
 
-async function show(extra: Partial<Record<Route, Handler>> = {}) {
+async function show(extra: Partial<Record<Route, Handler>> = {}, applyTemplate?: string) {
   const calls = fakeApi(routes(extra));
   const queries = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   await render(
     <QueryClientProvider client={queries}>
       <ToastProvider>
-        <ProgramBoard id="ath-1" first="Maya" />
+        <ProgramBoard id="ath-1" first="Maya" applyTemplate={applyTemplate} />
       </ToastProvider>
     </QueryClientProvider>,
   );
@@ -134,6 +134,16 @@ test("editing a dose shows the server's message under the field", async () => {
   expect(sent(calls, 'PUT /api/v1/athletes/{athlete_id}/prescriptions/{rx_id}')[1]).toMatchObject({ sets: 5, rir: '1-2', load_basis: 'percent', load_value: '78', set_rows: [] });
 });
 
+test('removing from the editor closes it', async () => {
+  const calls = await show({ 'DELETE /api/v1/athletes/{athlete_id}/prescriptions/{rx_id}': () => ({ status: 204 }) });
+  await fireEvent.press(await screen.findByRole('button', { name: 'Edit Snatch, 6×2 @ 78%' }));
+  await screen.findByText('≈ 64 kg of Snatch max 82 kg'); // loaded (the editor starts afresh when it is)
+  await fireEvent.press(screen.getByRole('button', { name: 'Remove from day' }));
+  expect(await screen.findByText('Removed Snatch from Sat')).toBeTruthy();
+  await waitFor(() => expect(screen.queryByText('≈ 64 kg of Snatch max 82 kg')).toBeNull());
+  expect(sent(calls, 'DELETE /api/v1/athletes/{athlete_id}/prescriptions/{rx_id}')).toHaveLength(1);
+});
+
 test('undo, and moving a card through its menu', async () => {
   const calls = await show({
     'GET /api/v1/athletes/{athlete_id}/program': () => body('/api/v1/athletes/{athlete_id}/program', 'get', board({ week: week({ undo: 'Add Snatch' }) })),
@@ -170,6 +180,12 @@ test('applying a template: preview, then confirm', async () => {
   await fireEvent.press(screen.getByRole('button', { name: 'Confirm apply' }));
   await waitFor(() => expect(sent(calls, 'POST /api/v1/athletes/{athlete_id}/apply')).toEqual([{ template_id: 'tpl-1', days: [0, 2, 4], mode: 'recent', start: 'append', publish: false }]));
   expect(await screen.findByText('“12-Week Competition Cycle” applied — from Wk 4, unpublished — review, then publish to Maya')).toBeTruthy();
+});
+
+test("opened from Programming's “Apply to athlete…”, the board starts in that template's preview", async () => {
+  const calls = await show({ 'POST /api/v1/athletes/{athlete_id}/apply/preview': () => ({ status: 400, body: { error: { code: 'x', message: 'x', fields: {} } } }) }, 'tpl-9');
+  expect(await screen.findByText('Previewing')).toBeTruthy();
+  await waitFor(() => expect(sent(calls, 'POST /api/v1/athletes/{athlete_id}/apply/preview')[0]).toMatchObject({ template_id: 'tpl-9' }));
 });
 
 test('when the plan has lapsed, the board is read-only and says why', async () => {
