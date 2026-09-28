@@ -106,14 +106,14 @@ Leave everything else blank:
 
 | Setting | Value |
 |---|---|
-| `EXPO_PUBLIC_API_URL` | the API's address, `https://gymtrainer.onrender.com` |
 | `EXPO_PUBLIC_SENTRY_DSN` | optional: the "liftmason-app" project's DSN |
+
+The API's address (`EXPO_PUBLIC_API_URL`) is written in `render.yaml`, not typed here: it's `https://gymtrainer-kqrl.onrender.com`, the address Render gave the API. The web build checks it first (`app/scripts/check-api-url.mjs`) and fails with a clear message if it isn't a bare `https://` address.
 
 4. **Deploy.** The API's first start migrates the database and creates your admin account. The web app builds the Expo export, which takes a few minutes.
 5. **Check the addresses.** Render → each service shows its real address at the top.
-   - If the API's differs from what you entered, fix `EXPO_PUBLIC_API_URL` on the web app.
-   - If the web app's differs, fix `SITE_URL` and `WEB_APP_ORIGINS` on the API.
-   - After changing `EXPO_PUBLIC_API_URL`, redeploy the web app with **Manual Deploy → Clear build cache & deploy**: the address is built into the app.
+   - If the web app's differs, fix `SITE_URL` and `WEB_APP_ORIGINS` on the API (in the `gymtrainer-shared` environment group).
+   - The API's address only changes if its service is ever recreated. Then Steven or Claude Code updates `EXPO_PUBLIC_API_URL` in `render.yaml`; pushing it rebuilds the web app.
 
 **Check:**
 - `<API address>/healthz` answers `{"status": "ok"}`. The first request after a quiet spell takes about a minute while the free service wakes up.
@@ -242,12 +242,12 @@ This gives sign-in codes by email, form videos, and permanent addresses. Nothing
 | API | `DEFAULT_FROM_EMAIL` | `Liftmason <no-reply@liftmason.com>` |
 | API | `STORAGE_ENDPOINT`, `STORAGE_BUCKET`, `STORAGE_ACCESS_KEY`, `STORAGE_SECRET` | from step 5 (`STORAGE_BUCKET` = `gymtrainer-videos`) |
 | API | `TEST_SIGNIN_CODE` | **remove**: codes now come by email |
-| Web app | `EXPO_PUBLIC_API_URL` | `https://api.liftmason.com` |
 | GitHub variable | `API_URL` | remove (the job's default is `https://api.liftmason.com`) |
 
 7. **Blueprint changes (Steven or Claude Code):** now that the web app and the API share `liftmason.com`, the sign-in cookie works:
    - remove `ACCESS_TOKEN_TTL_MINUTES` from the API, back to 15 minutes;
-   - remove `EXPO_PUBLIC_WEB_REMEMBER_SIGN_IN` from the web app.
+   - remove `EXPO_PUBLIC_WEB_REMEMBER_SIGN_IN` from the web app;
+   - set the web app's `EXPO_PUBLIC_API_URL` to `https://api.liftmason.com`.
 
 **Check:** sign in on `https://app.liftmason.com` with a real email. The code arrives within a minute, not in spam. You stay signed in across a reload.
 
@@ -384,7 +384,7 @@ Gyms subscribe on the web, in Settings → Plan (it never shows in the phone app
 **Part 1, the test run:**
 - [ ] Steven an Owner of the `liftmason` organization; remotes updated
 - [ ] Render account with two-factor sign-in; blueprint deployed **on the day testing starts**
-- [ ] API settings filled in (`EMAIL_PROVIDER=console`, `TEST_SIGNIN_CODE`, `SITE_URL`/`WEB_APP_ORIGINS` = the web app's address, admin, `CRON_TOKEN`); web app's `EXPO_PUBLIC_API_URL` = the API's address
+- [ ] API settings filled in (`EMAIL_PROVIDER=console`, `TEST_SIGNIN_CODE`, `SITE_URL`/`WEB_APP_ORIGINS` = the web app's address, admin, `CRON_TOKEN`); the web app built against the API's address (`EXPO_PUBLIC_API_URL` in `render.yaml`)
 - [ ] `/healthz`, the admin and the web app's sign-in page all work
 - [ ] Tried it yourself: coach sign-up, a week programmed, a session logged
 - [ ] The phone check on an iPhone (Safari) and an Android phone (Chrome)

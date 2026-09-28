@@ -137,12 +137,12 @@ services:
 
   # The web app, for the free test run: the Expo web export on Render's CDN, with the headers
   # from app/public/_headers (the local database needs cross-origin isolation). Its address
-  # goes in the API's SITE_URL and WEB_APP_ORIGINS; the API's address in EXPO_PUBLIC_API_URL.
+  # goes in the API's SITE_URL and WEB_APP_ORIGINS; the API's address is EXPO_PUBLIC_API_URL below.
   - type: web
     name: gymtrainer-web
     runtime: static
     branch: main
-    buildCommand: cd app && npm ci && npx expo export --platform web
+    buildCommand: cd app && npm ci && node scripts/check-api-url.mjs && npx expo export --platform web
     staticPublishPath: app/dist
     headers:
       - path: /*
@@ -167,9 +167,12 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "22"
-      # The API's address, e.g. https://gymtrainer.onrender.com (read at build time).
+      # The API's public address, built into the app. Written out here because Render's
+      # fromService only gives the private hostname, and a value typed into the dashboard
+      # shipped a broken first build; scripts/check-api-url.mjs now fails a malformed one.
+      # Render named the API gymtrainer-kqrl; this becomes https://api.liftmason.com in Part 1b.
       - key: EXPO_PUBLIC_API_URL
-        sync: false
+        value: https://gymtrainer-kqrl.onrender.com
       - key: EXPO_PUBLIC_SENTRY_DSN
         sync: false
       # Keep the access token across reloads (app/src/api/tokens.ts): the cookie can't cross

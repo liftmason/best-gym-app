@@ -70,7 +70,8 @@ def headers_file():
 
 def test_the_web_app_is_a_static_site_with_the_same_headers_as_cloudflare():
     site = next(s for s in SPEC["services"] if s.get("runtime") == "static")
-    assert "npx expo export --platform web" in site["buildCommand"]
+    # The API's address is built into the app, so the build checks it first (app/scripts).
+    assert "node scripts/check-api-url.mjs && npx expo export --platform web" in site["buildCommand"]
     assert site["staticPublishPath"] == "app/dist"
     # The local database needs cross-origin isolation, so every header in app/public/_headers
     # must be served here too.
@@ -79,5 +80,7 @@ def test_the_web_app_is_a_static_site_with_the_same_headers_as_cloudflare():
     # One page app: any path without a file is the app's router's to handle.
     assert {"type": "rewrite", "source": "/*", "destination": "/index.html"} in site["routes"]
     env = {e["key"]: e for e in site["envVars"]}
-    assert env["EXPO_PUBLIC_API_URL"].get("sync") is False
+    # Set here, not typed into the dashboard: a pasted-over value shipped a broken first build.
+    # Render's fromService only gives the private hostname, so the public address is written out.
+    assert re.fullmatch(r"https://[a-z0-9-]+(\.[a-z0-9-]+)+", env["EXPO_PUBLIC_API_URL"]["value"])
     assert env["EXPO_PUBLIC_WEB_REMEMBER_SIGN_IN"]["value"] == "1"
