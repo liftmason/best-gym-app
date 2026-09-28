@@ -96,7 +96,7 @@ Nothing in S8a deploys, buys, or sends anything anywhere.
   - Settings' **Plan section now shows on the web only.** Apple doesn't allow pointing to payment outside the app.
   - Two hard-coded "GT" logo marks are now the name's initial.
   - `OPERATIONS.md`'s naming notes are corrected. The earlier fix had missed the merge of PR #13.
-  - **The app has no "Report a bug" button.** The API takes reports, but the old site's button wasn't rebuilt. It's left for Steven to decide.
+  - **The app had no "Report a bug" button:** the API took reports, but the old site's button hadn't been rebuilt. Added after S8a, at Steven's request: the athlete's header, the coach's sidebar and Account.
 
 1. Account deletion: backend, the app's screens, the web page.
 2. Production configuration: Render, Cloudflare Pages, EAS, Sentry, icon and splash.
