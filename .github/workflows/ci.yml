@@ -83,3 +83,64 @@ jobs:
         run: npm run lint
       - name: Unit tests
         run: npx jest --ci
+
+  # The coach's web flows end to end (app/e2e): the backend with the demo gym, the web
+  # export, and Playwright driving Chromium through them.
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: gymtrainer
+          POSTGRES_USER: gymtrainer
+          POSTGRES_PASSWORD: gymtrainer
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U gymtrainer"
+          --health-interval 2s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgres://gymtrainer:gymtrainer@localhost:5432/gymtrainer
+      EMAIL_PROVIDER: console
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: The backend with the demo gym, on :8000
+        working-directory: backend
+        run: |
+          uv python install
+          uv sync --locked
+          uv run python manage.py migrate --noinput
+          uv run python manage.py seed_demo --reset
+          nohup uv run python manage.py runserver 8000 > /tmp/backend.log 2>&1 &
+          for i in $(seq 60); do curl -sf http://localhost:8000/healthz && break; sleep 1; done
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: The web app, on :8082
+        working-directory: app
+        run: |
+          npm ci
+          npx expo export --platform web
+          nohup node scripts/serve-web.mjs > /tmp/web.log 2>&1 &
+          for i in $(seq 30); do curl -sf http://localhost:8082/ > /dev/null && break; sleep 1; done
+      - name: Playwright
+        working-directory: app
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test
+      - name: The report and logs, when something failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            app/playwright-report
+            app/test-results
+            /tmp/backend.log
+            /tmp/web.log

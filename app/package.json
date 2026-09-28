@@ -49,6 +49,7 @@
     "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.57",
     "@testing-library/react-native": "^14.0.1",
     "@types/big.js": "^7.0.0",
     "@types/jest": "29.5.14",
@@ -72,13 +73,18 @@
     "api:types": "openapi-typescript ../backend/openapi.json -o src/api/schema.d.ts",
     "db:schema": "node scripts/db-schema.mjs",
     "export:web": "expo export --platform web",
-    "serve:web": "node scripts/serve-web.mjs"
+    "serve:web": "node scripts/serve-web.mjs",
+    "e2e": "playwright test"
   },
   "private": true,
   "jest": {
     "preset": "jest-expo",
     "setupFiles": [
       "./jest.setup.ts"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/e2e/"
     ]
   },
   "overrides": {
