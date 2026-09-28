@@ -19,7 +19,7 @@ Liftmason (called GymTrainer until September 2026) moves from server-rendered Dj
 | 6 | The coach on a phone: Today and the attention feed, the roster and invites, an athlete's overview, messages, form-video review | `docs/plans/S6_COACH_PHONE.md` | #12 |
 | 7 | The coach's programming screens: the program board, templates, the library, check-in questions, settings, the plan | `docs/plans/S7_COACH_DESKTOP.md` | #14, #15 |
 | 8a | Getting ready to launch: account deletion, production configuration, crash reports, Playwright and Maestro flows, the review gym, legal drafts, store listing drafts, the runbook; "Report a bug" | `docs/plans/S8_LAUNCH.md` | #16, #17 |
-| 8b | **Going live (the owner):** the web app first, then the stores | `docs/LAUNCH.md` | — |
+| 8b | **Going live (the owner):** a free web test run first, then the stores | `docs/plans/S8B_TEST_RUN.md`, `docs/LAUNCH.md` | — |
 
 The product was renamed Liftmason in PR #13 (`APP_NAME` in both the backend and the app).
 
@@ -104,6 +104,7 @@ As built:
 | Decision | Chosen | Rejected, and why |
 |---|---|---|
 | How to launch (owner, 28 September 2026) | **Web first.** Deploy the backend and the web app at `app.liftmason.com` for initial testing with real coaches and athletes; submit to the App Store and Play Store once that testing is done. | **Web and both stores together:** Apple's organisation enrolment needs a D-U-N-S number and can take weeks, and store review slows every fix while the product is still being tested. |
+| Hosting for the test run (owner, 28 September 2026) | **Free tiers in the owner's name** (`docs/plans/S8B_TEST_RUN.md`): Render's free web service, static web app and database, first on Render's own addresses with one shared sign-in code and week-long web sign-ins (no domain yet); the hourly jobs from GitHub Actions; the repo in a `liftmason` GitHub organization with Steven as an owner. Going public upgrades Render in place (about $14 a month); a business owning the accounts is decided before opening Apple or Google. | **Paid hosting from the start:** about $14–65 a month (Render Pro and Sentry Team for a second login) while the product is still changing. **A business entity now:** not decided yet, and only Apple and Google are hard to move later. |
 
 What this means for athletes during web testing (details in `docs/LAUNCH.md`, "What the web app can't do yet"):
 - No push notifications (the web has none; they come with the store apps).

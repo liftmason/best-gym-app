@@ -12,6 +12,7 @@ _problems = checks.production_problems(  # noqa: F405
     review_email=REVIEW_ACCOUNT_EMAIL,  # noqa: F405
     review_code=REVIEW_ACCOUNT_CODE,  # noqa: F405
     demo_code=DEMO_SIGNIN_CODE,  # noqa: F405
+    test_code=TEST_SIGNIN_CODE,  # noqa: F405
     billing=BILLING_ENABLED,  # noqa: F405
     stripe_key=STRIPE_SECRET_KEY,  # noqa: F405
     stripe_webhook_secret=STRIPE_WEBHOOK_SECRET,  # noqa: F405

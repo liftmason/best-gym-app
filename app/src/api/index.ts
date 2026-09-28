@@ -7,7 +7,7 @@ import { Platform } from 'react-native';
 
 import { makeApi } from './client';
 import { apiBaseUrl } from './config';
-import { memoryStore, secureStore } from './tokens';
+import { secureStore, webTokenStore } from './tokens';
 
 export { ApiError, ok } from './errors';
 export { makeQueryClient } from './query';
@@ -16,7 +16,11 @@ export type { components, paths } from './schema';
 
 const web = Platform.OS === 'web';
 
-export const api = makeApi({ baseUrl: apiBaseUrl(), store: web ? memoryStore : secureStore, web });
+export const api = makeApi({
+  baseUrl: apiBaseUrl(),
+  store: web ? webTokenStore(process.env.EXPO_PUBLIC_WEB_REMEMBER_SIGN_IN) : secureStore,
+  web,
+});
 
 export function useAuth() {
   return useSyncExternalStore(api.subscribe, () => api.state);

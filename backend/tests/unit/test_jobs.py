@@ -50,6 +50,23 @@ def test_cron_command_runs_everything(coach, athlete, capsys):
     assert "synced alerts" in out and "digest(s) sent" in out
 
 
+def test_run_hourly_reports_what_it_did_and_what_failed(coach, athlete, monkeypatch):
+    import io
+
+    from apps.dashboard import jobs
+
+    result = jobs.run_hourly(io.StringIO())
+    assert result.failures == [] and result.sent >= 0
+    assert result.summary().startswith("cron: ")
+
+    def broken(coach):
+        raise ConnectionError("email provider down")
+
+    monkeypatch.setattr(digest, "send", broken)
+    result = jobs.run_hourly(io.StringIO())
+    assert result.failures == [f"digest for coach {coach.pk}"]
+
+
 def test_nightly_command_runs(capsys):
     call_command("nightly")
     assert "synced alerts" in capsys.readouterr().out

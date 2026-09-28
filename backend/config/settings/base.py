@@ -154,6 +154,13 @@ REVIEW_ACCOUNT_EMAIL = os.environ.get("REVIEW_ACCOUNT_EMAIL", "").strip().lower(
 REVIEW_ACCOUNT_CODE = os.environ.get("REVIEW_ACCOUNT_CODE", "").strip()
 DEMO_SIGNIN_CODE = ""
 DEMO_EMAIL_DOMAIN = "ironridge.example"
+# The free test run (docs/plans/S8B_TEST_RUN.md): with no sending domain yet, one shared code
+# signs anyone in (six digits, not the demo code). Blank once email is set up.
+TEST_SIGNIN_CODE = os.environ.get("TEST_SIGNIN_CODE", "").strip()
+# How long an access token lasts. 15 minutes normally; the free test run sets a week, because
+# the web app and the API are on different sites there, so the web app can't refresh through
+# its cookie and keeps the access token instead.
+ACCESS_TOKEN_TTL_MINUTES = int(os.environ.get("ACCESS_TOKEN_TTL_MINUTES") or 15)
 
 # Sign in with Apple and Google: the client ids tokens must be issued to (the iOS bundle id
 # and the web Services ID for Apple; the iOS, Android and web client ids for Google),
@@ -167,6 +174,11 @@ BILLING_ENABLED = os.environ.get("BILLING_ENABLED") == "1"
 DEFAULT_PLAN = os.environ.get("DEFAULT_PLAN", "unlimited")
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+
+# The hourly jobs over HTTP (POST /api/v1/ops/cron), for hosts with no cron service: the
+# free test run calls it from GitHub Actions (docs/plans/S8B_TEST_RUN.md). Blank turns the
+# endpoint off; once Render's cron job runs `manage.py cron`, leave it blank.
+CRON_TOKEN = os.environ.get("CRON_TOKEN", "").strip()
 
 # Email: invites, reminders and the digest. EMAIL_PROVIDER is "resend" or "postmark" (with
 # EMAIL_API_KEY) to send for real, or blank / "console" to print email instead. Anything

@@ -101,6 +101,26 @@ def test_production_refuses_fixed_codes_for_anyone_else():
     assert checks.production_problems(**good, review_email="r@gym.example", review_code="42")
 
 
+def test_the_test_run_code_works_for_every_email(settings, mailoutbox):
+    # The free test run (docs/plans/S8B_TEST_RUN.md): no sending domain yet, so everyone
+    # signs in with one shared code instead of an emailed one.
+    settings.TEST_SIGNIN_CODE = "739215"
+    settings.REVIEW_ACCOUNT_EMAIL, settings.REVIEW_ACCOUNT_CODE = "review@example.com", "424242"
+    assert services.fixed_code("anyone@example.com") == "739215"
+    assert services.fixed_code("review@example.com") == "424242"
+    services.start("anyone@example.com", IP)
+    assert services.verify("anyone@example.com", "739215") == "anyone@example.com"
+    settings.TEST_SIGNIN_CODE = ""
+    assert services.fixed_code("anyone@example.com") is None
+
+
+def test_production_refuses_a_weak_test_run_code():
+    good = {"email_provider": "console", "from_email": "x@localhost", "site_url": "https://gym.example"}
+    assert checks.production_problems(**good, test_code="739215") == []
+    assert checks.production_problems(**good, test_code="12")
+    assert checks.production_problems(**good, test_code="123456")  # the published demo code
+
+
 # ---------------------------------------------------------------- sign-up tickets
 
 
@@ -123,6 +143,17 @@ def test_an_access_token_works_for_fifteen_minutes(athlete, frozen_clock):
     frozen_clock.shift(datetime.timedelta(minutes=16))
     assert services.authenticate(tokens.access) is None
     assert services.authenticate("made-up") is None
+
+
+def test_the_access_token_lifetime_follows_the_setting(athlete, frozen_clock, settings):
+    # The free test run keeps web sign-ins for a week: the web app can't refresh through its
+    # cookie while the app and the API are on different sites (docs/plans/S8B_TEST_RUN.md).
+    settings.ACCESS_TOKEN_TTL_MINUTES = 7 * 24 * 60
+    tokens = services.open_session(athlete.user, "Maya's laptop")
+    frozen_clock.shift(datetime.timedelta(days=6))
+    assert services.authenticate(tokens.access).user == athlete.user
+    frozen_clock.shift(datetime.timedelta(days=2))
+    assert services.authenticate(tokens.access) is None
 
 
 def test_refreshing_rotates_both_tokens(athlete):

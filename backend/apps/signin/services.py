@@ -35,7 +35,6 @@ from .models import DeviceSession, EmailCode, IdentityKind, LinkedIdentity, Refr
 
 CODE_TTL = datetime.timedelta(minutes=10)
 MAX_GUESSES = 5
-ACCESS_TTL = datetime.timedelta(minutes=15)
 REFRESH_TTL = datetime.timedelta(days=90)
 REUSE_GRACE = datetime.timedelta(seconds=30)  # a retried refresh whose answer was lost
 TICKET_MAX_AGE = 30 * 60  # seconds to finish sign-up after verifying the email
@@ -85,10 +84,12 @@ def _token_hash(token):
 
 
 def fixed_code(email):
-    """The fixed code for this email, if it has one (the review account; demo users in
-    development)."""
+    """The fixed code for this email, if it has one (the review account; everyone during the
+    free test run; demo users in development)."""
     if settings.REVIEW_ACCOUNT_CODE and email == settings.REVIEW_ACCOUNT_EMAIL:
         return settings.REVIEW_ACCOUNT_CODE
+    if settings.TEST_SIGNIN_CODE:
+        return settings.TEST_SIGNIN_CODE
     if settings.DEMO_SIGNIN_CODE and email.endswith("@" + settings.DEMO_EMAIL_DOMAIN):
         return settings.DEMO_SIGNIN_CODE
     return None
@@ -194,7 +195,7 @@ def link_email(user, email):
 def _new_access(session, now):
     access = secrets.token_urlsafe(32)
     session.access_hash = _token_hash(access)
-    session.access_expires_at = now + ACCESS_TTL
+    session.access_expires_at = now + datetime.timedelta(minutes=settings.ACCESS_TOKEN_TTL_MINUTES)
     return access
 
 
