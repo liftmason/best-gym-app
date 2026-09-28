@@ -180,6 +180,19 @@ def test_previewing_writes_nothing_and_shows_what_confirming_writes(api, block, 
     assert program.weeks.count() == 2 and TemplateApplication.objects.count() == 1
 
 
+def test_the_preview_names_the_weeks_it_replaces_and_moves(api, block, athlete, coach, gym):
+    from apps.programs import services as program_services
+
+    week_type = gym.week_types.get(name="Accumulation")
+    program = program_services.start_program(athlete, "Block", athlete.today(), 3, week_type, by=coach.user)
+    _now, empty, busy = program.weeks.order_by("order")
+    program_services.add_prescription(busy.days.first(), ex(gym, "sn"), athlete)
+    choices = {"template_id": str(block.pk), "start": f"at:{empty.pk}"}
+    shown = call(api, "post", f"/athletes/{athlete.pk}/apply/preview", choices).json()
+    assert shown["replaced"] == [str(empty.pk)] and shown["moved"] == [str(busy.pk)]
+    assert shown["summary"]["replaced"] == 1 and shown["summary"]["moved"] == 1
+
+
 def test_a_stale_start_is_refused(api, block, athlete):
     response = call(
         api, "post", f"/athletes/{athlete.pk}/apply", {"template_id": str(block.pk), "start": "at:gone"}

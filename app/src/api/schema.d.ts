@@ -390,7 +390,7 @@ export interface paths {
         put?: never;
         /**
          * Move Prescription
-         * @description Put the exercise at `index` in a session (any day of the same program).
+         * @description Put the exercise at `index` in a session, or onto a day (any day of the same program).
          */
         post: operations["apps_programs_board_api_move_prescription"];
         delete?: never;
@@ -3037,7 +3037,7 @@ export interface components {
             billing_enabled: boolean;
             /** Form Videos */
             form_videos: boolean;
-            plan: components["schemas"]["PlanOut"];
+            plan: components["schemas"]["PlanRef"];
             /** Programming */
             programming: boolean;
             /** Status */
@@ -3588,13 +3588,15 @@ export interface components {
         };
         /** Move */
         Move: {
-            /** Index */
-            index: number;
+            /** Day Id */
+            day_id?: string | null;
             /**
-             * Session Id
-             * Format: uuid
+             * Index
+             * @default 0
              */
-            session_id: string;
+            index: number;
+            /** Session Id */
+            session_id?: string | null;
         };
         /** MyMetric */
         MyMetric: {
@@ -3774,6 +3776,13 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** PlanRef */
+        PlanRef: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+        };
         /** PlannedDay */
         PlannedDay: {
             /**
@@ -3854,8 +3863,12 @@ export interface components {
         /** Preview */
         Preview: {
             choices: components["schemas"]["Choices"];
+            /** Moved */
+            moved: string[];
             /** Placements */
             placements: components["schemas"]["Placement"][];
+            /** Replaced */
+            replaced: string[];
             summary: components["schemas"]["Summary"];
             /** Weeks */
             weeks: components["schemas"]["PlannedWeek"][];
@@ -3958,10 +3971,22 @@ export interface components {
         RailHistory: {
             /** Line */
             line: string;
+            /** Log */
+            log: components["schemas"]["RailLog"][];
             /** Series */
             series: number[];
             /** Trend */
             trend: string | null;
+        };
+        /** RailLog */
+        RailLog: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Top */
+            top: string;
         };
         /** RecentSession */
         RecentSession: {
@@ -4190,6 +4215,16 @@ export interface components {
              */
             tag_ids: string[];
         };
+        /** SlotMove */
+        SlotMove: {
+            /** Index */
+            index: number;
+            /**
+             * Session Id
+             * Format: uuid
+             */
+            session_id: string;
+        };
         /** SlotOut */
         SlotOut: {
             dose: components["schemas"]["Dose"];
@@ -4327,6 +4362,13 @@ export interface components {
             /** Sessions */
             sessions: components["schemas"]["TemplateSession"][];
             week_type: components["schemas"]["WeekTypeRef"];
+        };
+        /** TemplateWeekSettings */
+        TemplateWeekSettings: {
+            /** Focus Note */
+            focus_note?: string | null;
+            /** Week Type Id */
+            week_type_id?: string | null;
         };
         /** ThreadRow */
         ThreadRow: {
@@ -4526,6 +4568,32 @@ export interface components {
             undo: string | null;
             week_type: components["schemas"]["WeekTypeRef"] | null;
         };
+        /** WeekCleared */
+        WeekCleared: {
+            /** Days */
+            days: components["schemas"]["Day"][];
+            /** Focus Note */
+            focus_note: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kept */
+            kept: number;
+            /** Label */
+            label: string;
+            /** Published */
+            published: boolean;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /** Undo */
+            undo: string | null;
+            week_type: components["schemas"]["WeekTypeRef"] | null;
+        };
         /** WeekOut */
         WeekOut: {
             /**
@@ -4553,6 +4621,8 @@ export interface components {
         WeekSettings: {
             /** Focus Note */
             focus_note?: string | null;
+            /** Published */
+            published?: boolean | null;
             /** Week Type Id */
             week_type_id?: string | null;
         };
@@ -5834,7 +5904,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Week"];
+                    "application/json": components["schemas"]["WeekCleared"];
                 };
             };
         };
@@ -7786,7 +7856,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Move"];
+                "application/json": components["schemas"]["SlotMove"];
             };
         };
         responses: {
@@ -7992,7 +8062,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["WeekSettings"];
+                "application/json": components["schemas"]["TemplateWeekSettings"];
             };
         };
         responses: {

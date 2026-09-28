@@ -24,7 +24,7 @@ class GymOut(Schema):
     week_start: int
 
 
-class PlanOut(Schema):
+class PlanRef(Schema):
     code: str
     name: str
 
@@ -38,7 +38,7 @@ class Entitlements(Schema):
     """What the gym's plan allows now. Hide upgrade prompts while billing_enabled is false."""
 
     billing_enabled: bool
-    plan: PlanOut
+    plan: PlanRef
     status: str | None
     athletes: AthleteCount
     form_videos: bool

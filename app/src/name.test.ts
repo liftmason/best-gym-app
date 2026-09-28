@@ -2,6 +2,7 @@
 import { APP_NAME } from './name';
 
 type Entry = { name: string; isDirectory(): boolean };
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { readdirSync, readFileSync } = require('node:fs') as {
   readdirSync: (dir: string, options: { withFileTypes: true }) => Entry[];
   readFileSync: (file: string, encoding: 'utf8') => string;

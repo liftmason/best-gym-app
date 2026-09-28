@@ -113,7 +113,7 @@ test('the header and the overview', async () => {
   expect(calls.some((c) => JSON.stringify(c.init).includes('"lift":"cj"'))).toBe(true);
 });
 
-test('the program tab says where programming is; archiving asks first', async () => {
+test('on a phone the program tab offers the board; archiving asks first', async () => {
   const view = await show();
   await fireEvent.press(screen.getByRole('tab', { name: 'Program' }));
   await view.rerender(
@@ -121,7 +121,9 @@ test('the program tab says where programming is; archiving asks first', async ()
       <AthleteScreen />
     </QueryClientProvider>,
   );
-  expect(await screen.findByText('Programming is on a computer for now')).toBeTruthy();
+  expect(await screen.findByText('The program board')).toBeTruthy();
+  await fireEvent.press(screen.getByRole('button', { name: 'Edit program' }));
+  expect(mockRouter.setParams).toHaveBeenCalledWith({ edit: '1' });
   await fireEvent.press(screen.getByRole('button', { name: 'More actions' }));
   await fireEvent.press(await screen.findByRole('button', { name: 'Archive athlete' }));
   await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith('/athletes'));

@@ -221,12 +221,16 @@ def delete_week(request, athlete_id: uuid.UUID, week_id: uuid.UUID):
     return Status(204, None)
 
 
-@router.post("/athletes/{athlete_id}/weeks/{week_id}/clear", response=Week)
+class WeekCleared(Week):
+    kept: int  # days kept because a session there is done
+
+
+@router.post("/athletes/{athlete_id}/weeks/{week_id}/clear", response=WeekCleared)
 def clear_week(request, athlete_id: uuid.UUID, week_id: uuid.UUID):
     """Remove every session except logged days."""
     coach, _athlete_, week = _athlete_week(request, athlete_id, week_id)
-    services.clear_week(week, by=request.user)
-    return _week(week, coach.gym.units)
+    kept = services.clear_week(week, by=request.user)
+    return {**_week(week, coach.gym.units), "kept": kept}
 
 
 class WeekSettings(Schema):
@@ -381,17 +385,23 @@ def remove_prescription(request, athlete_id: uuid.UUID, rx_id: uuid.UUID):
 
 
 class Move(Schema):
-    session_id: uuid.UUID
-    index: int
+    session_id: uuid.UUID | None = None  # a session, or
+    day_id: uuid.UUID | None = None  # a day: its first session, or a new one on a rest day
+    index: int = 0
 
 
 @router.post("/athletes/{athlete_id}/prescriptions/{rx_id}/move", response={204: None})
 def move_prescription(request, athlete_id: uuid.UUID, rx_id: uuid.UUID, data: Move):
-    """Put the exercise at `index` in a session (any day of the same program)."""
+    """Put the exercise at `index` in a session, or onto a day (any day of the same program)."""
     _coach, athlete = _athlete(request, athlete_id)
     rx = services.athlete_prescription(athlete, rx_id)
-    target = services.athlete_session(athlete, data.session_id)
-    services.move_prescription(rx, target, data.index, by=request.user)
+    if data.session_id:
+        target = services.athlete_session(athlete, data.session_id)
+        services.move_prescription(rx, target, data.index, by=request.user)
+    elif data.day_id:
+        services.move_to_day(rx, services.athlete_day(athlete, data.day_id), data.index, by=request.user)
+    else:
+        raise errors.Invalid("Say which session or day to move it to.")
     return Status(204, None)
 
 
@@ -414,10 +424,16 @@ def swap(request, athlete_id: uuid.UUID, rx_id: uuid.UUID, data: Swap):
 # ---------------------------------------------------------------- the exercise rail
 
 
+class RailLog(Schema):
+    date: datetime.date
+    top: str  # "78 kg ×1"
+
+
 class RailHistory(Schema):
     line: str  # "78 kg ×1 · 2 days ago"
     trend: str | None
     series: list[float]
+    log: list[RailLog]  # newest first, for "{exercise} — {name}'s log"
 
 
 class RailExercise(Schema):
@@ -436,7 +452,8 @@ def exercise_rail(
     """The gym's exercises to add, with this athlete's history: search by name, tag or
     category, filter by every tag in `tags`; "recent" puts the last done first."""
     coach, athlete = _athlete(request, athlete_id)
-    exercises, _sort = rail.search(coach.gym, q, tags, athlete=athlete, sort=sort)  # with their history
+    since = coaching.visible_from(coach, athlete)
+    exercises, _sort = rail.search(coach.gym, q, tags, athlete=athlete, sort=sort, since=since)
     return [
         {
             "id": e.pk,
@@ -448,6 +465,7 @@ def exercise_rail(
                 "line": e.hist["line"],
                 "trend": e.hist["trend"],
                 "series": [float(v) for v in e.hist["series"]],
+                "log": [{"date": d, "top": top} for d, top in e.hist["log"]],
             }
             if e.hist
             else None,

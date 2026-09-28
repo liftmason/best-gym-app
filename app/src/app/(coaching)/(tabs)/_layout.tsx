@@ -72,7 +72,7 @@ function Bar({ state, navigation }: BottomTabBarProps) {
       <View style={[styles.sidebar, { paddingTop: 18 + insets.top }]}>
         <View style={styles.logo}>
           <View style={styles.mark}>
-            <Text style={{ color: colors.white, fontFamily: fonts.bold, fontSize: 12 }}>GT</Text>
+            <Text style={{ color: colors.white, fontFamily: fonts.bold, fontSize: 14 }}>{APP_NAME.charAt(0)}</Text>
           </View>
           <Text variant="h4">{APP_NAME}</Text>
         </View>

@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { api, ApiError, ok } from '@/api';
 import { useMe } from '@/auth/me';
@@ -11,7 +11,8 @@ import { Messages } from '@/coaching/athlete/messages';
 import { Metrics } from '@/coaching/athlete/metrics';
 import { Sessions } from '@/coaching/athlete/sessions';
 import { Overview, WeekGlance } from '@/coaching/athlete/overview';
-import { CoachScreen, Loading } from '@/coaching/layout';
+import { CoachScreen, Loading, WIDE } from '@/coaching/layout';
+import { ProgramBoard } from '@/coaching/program/board';
 import { useAthlete, useOverview } from '@/coaching/queries';
 import { dayMonth } from '@/training/format';
 import { Button, Card, colors, fonts, Sheet, space, Text } from '@/ui';
@@ -27,7 +28,8 @@ const TABS = [
 ] as const;
 type Tab = (typeof TABS)[number][0];
 
-function ProgramGlance({ id, name }: { id: string; name: string }) {
+/** On a phone: this week at a glance, and the board on request (it's built for a computer). */
+function ProgramGlance({ id }: { id: string }) {
   const overview = useOverview(id, null);
   return (
     <View style={{ gap: space.m }}>
@@ -36,10 +38,13 @@ function ProgramGlance({ id, name }: { id: string; name: string }) {
         {overview.data?.week.length ? <WeekGlance days={overview.data.week} /> : <Text variant="small" tone="muted">No program this week.</Text>}
       </Card>
       <Card style={{ gap: space.s }}>
-        <Text variant="h4">Programming is on a computer for now</Text>
+        <Text variant="h4">The program board</Text>
         <Text variant="small" tone="muted">
-          Open {APP_NAME} on the web to build and publish {name}&apos;s weeks. Programming on a phone is planned.
+          It&apos;s laid out for a computer: open {APP_NAME} on the web for the full week. It works here too.
         </Text>
+        <View style={{ alignSelf: 'flex-start' }}>
+          <Button title="Edit program" size="sm" onPress={() => router.setParams({ edit: '1' })} />
+        </View>
       </Card>
     </View>
   );
@@ -47,7 +52,8 @@ function ProgramGlance({ id, name }: { id: string; name: string }) {
 
 /** One athlete (the mockup's #panel-client): header, tabs, and what's in each. */
 export default function AthleteScreen() {
-  const { id, tab: wanted, focus, range } = useLocalSearchParams<{ id: string; tab?: string; focus?: string; range?: string }>();
+  const { id, tab: wanted, focus, range, edit } = useLocalSearchParams<{ id: string; tab?: string; focus?: string; range?: string; edit?: string }>();
+  const wide = useWindowDimensions().width >= WIDE;
   const tab: Tab = (TABS.find(([t]) => t === wanted)?.[0] ?? 'overview') as Tab;
   const athlete = useAthlete(id);
   const me = useMe();
@@ -86,6 +92,7 @@ export default function AthleteScreen() {
             <Feather name="arrow-left" size={18} color={colors.ink2} />
           </Pressable>
           <Button title="Message" size="sm" variant="soft" onPress={() => router.setParams({ tab: 'messages' })} />
+          {wide ? <Button title="Edit program" size="sm" variant="soft" onPress={() => router.setParams({ tab: 'program', focus: undefined })} /> : null}
           <Pressable accessibilityRole="button" accessibilityLabel="More actions" onPress={() => setMenu(true)} style={styles.icon}>
             <Feather name="more-horizontal" size={18} color={colors.ink2} />
           </Pressable>
@@ -97,7 +104,7 @@ export default function AthleteScreen() {
           <AthleteHeader athlete={athlete.data} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabs}>
             {TABS.map(([t, label]) => (
-              <Pressable key={t} accessibilityRole="tab" accessibilityState={{ selected: tab === t }} onPress={() => router.setParams({ tab: t, focus: undefined })} style={[styles.tab, tab === t && styles.tabOn]}>
+              <Pressable key={t} accessibilityRole="tab" accessibilityState={{ selected: tab === t }} onPress={() => router.setParams({ tab: t, focus: undefined, edit: undefined })} style={[styles.tab, tab === t && styles.tabOn]}>
                 <Text style={[styles.tabText, tab === t && { color: colors.brand }]}>{label}</Text>
               </Pressable>
             ))}
@@ -108,7 +115,7 @@ export default function AthleteScreen() {
             </Text>
           ) : null}
           {tab === 'overview' ? <Overview id={id} unit={unit} /> : null}
-          {tab === 'program' ? <ProgramGlance id={id} name={first} /> : null}
+          {tab === 'program' ? wide || edit ? <ProgramBoard key={id} id={id} first={first} /> : <ProgramGlance id={id} /> : null}
           {tab === 'sessions' ? <Sessions key={`${id}-${focus ?? ''}`} id={id} first={first} focus={focus} range={range} /> : null}
           {tab === 'metrics' ? <Metrics id={id} first={first} unit={unit} maxUpdates={athlete.data.max_updates} focus={focus} /> : null}
           {tab === 'messages' ? <Messages id={id} first={first} /> : null}
