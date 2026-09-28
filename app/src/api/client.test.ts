@@ -132,6 +132,28 @@ test('the web app finds its session through the cookie and keeps nothing', async
   expect(store.saved).toEqual({ access: 'a2', refresh: null });
 });
 
+test('a web app that remembers its access token is signed in without asking the server', async () => {
+  // The free test run: the app and the API are on different sites, so the refresh cookie
+  // can't reach the API and the web app keeps the access token instead.
+  const fake = server();
+  const api = makeApi({ baseUrl: BASE, store: memory({ access: 'a1', refresh: null }), web: true, fetch: fake.fetch });
+  await api.restore();
+  expect(api.state).toBe('signedIn');
+  expect(fake.state.refreshes).toBe(0);
+  await ok(api.client.GET('/api/v1/me'));
+  expect(fake.state.seen[0].headers.get('Authorization')).toBe('Bearer a1');
+});
+
+test('a remembered access token the server refuses falls back to the cookie', async () => {
+  const fake = server();
+  const store = memory({ access: 'expired', refresh: null });
+  const api = makeApi({ baseUrl: BASE, store, web: true, fetch: fake.fetch });
+  await api.restore();
+  expect(await ok(api.client.GET('/api/v1/me'))).toMatchObject({ name: 'Dana' });
+  expect(fake.state.refreshes).toBe(1);
+  expect(store.saved).toEqual({ access: 'a2', refresh: null });
+});
+
 test('signing in keeps the tokens; signing out forgets them even offline', async () => {
   const { api, store, fake } = await phone(null);
   expect(api.state).toBe('signedOut');

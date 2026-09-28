@@ -131,12 +131,13 @@ export function makeApi({ baseUrl, store, web, fetch = (r) => globalThis.fetch(r
 
     /**
      * At start-up. A phone is signed in if it has tokens, even offline (the athlete trains
-     * offline); the web app asks the server through its cookie. Offline with no answer, the
-     * web app shows sign-in.
+     * offline); so is a web app that remembered its access token (the free test run). Any
+     * other web app asks the server through its cookie; offline with no answer, it shows
+     * sign-in.
      */
     async restore() {
-      if (!web) {
-        const saved = await store.load().catch(() => null); // unreadable storage: sign in again
+      const saved = await store.load().catch(() => null); // unreadable storage: sign in again
+      if (!web || saved) {
         tokens = saved;
         setState(saved ? 'signedIn' : 'signedOut');
         return;
