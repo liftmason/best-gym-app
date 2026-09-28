@@ -207,6 +207,24 @@ The old HTML coach screens had all of these, and the rules and their wording sti
 - **Checked in a real browser** (Playwright, against a separate seeded database): the board at 1440 and 1100 px, list layout, the editor, a drag, and a phone at 420 px. Also editing, undo with Ctrl+Z, habits, saving a week, and applying with confirm.
 - **Moved to S7b:** the sidebar's Programming and Settings items, and "+ New" exercise in the rail. Both need S7b's screens.
 
+**As built (S7b):**
+- **Navigation:** the sidebar has Dashboard, Athletes, Messages, Programming, Settings, Account. On a phone the bar keeps its four tabs, and More opens Programming and Settings (decision B).
+- **Code:** in `app/src/coaching/library/`: `lists.tsx`, `editor.tsx`, `exercises.tsx`, `questions.tsx`, `settings.tsx`. Changes go through `useChange` (`src/coaching/change.ts`), the board's pattern made general.
+- **"Apply to athlete…"** from Programming opens the athlete's board with `?apply=<template>`, straight into the preview.
+- **The template editor reuses the board's pieces:** the dose fields, drag and drop, the save sheet and "Move to…".
+- **Each athlete's check-in questions** are on their Metrics tab, with the same editor as the defaults.
+- **Backend changes, each with a test:**
+  - `POST /starter-exercises` (decision H).
+  - A new tag slot goes where it's put (`index` was ignored).
+- **A bug found by the tests:** a change the API answers with 204 (no body) came back as `undefined`, the same as a refusal. So "Remove from day" left the exercise editor open, and deleting a template stayed on it. Success with no body is now `null`.
+- **Checked in a real browser** (Playwright, separate database):
+  - every screen at 1440 px;
+  - creating a template, adding slots and a tag slot, editing a slot, adding a heavier week and a habit;
+  - applying the template from Programming;
+  - creating, archiving and restoring an exercise;
+  - adding a question;
+  - saving settings.
+
 **S7a:**
 1. The lapsed-plan banner and the query hooks.
 2. The board: start a program, the week strip, the toolbar, the day columns, publish, notes, undo.
