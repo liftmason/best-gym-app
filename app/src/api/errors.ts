@@ -23,6 +23,11 @@ export class ApiError extends Error {
     return new ApiError(0, 'offline', `Can't reach ${APP_NAME}. Check your connection.`);
   }
 
+  /** Anything else that went wrong on the way: an answer the app couldn't read, say. */
+  static unexpected(): ApiError {
+    return new ApiError(-1, 'unexpected', 'Something went wrong. Try again.');
+  }
+
   /** From an error body, or a status alone when the body isn't the API's shape. */
   static from(status: number, body: unknown): ApiError {
     const error = (body as { error?: { code?: unknown; message?: unknown; fields?: unknown } } | null)?.error;
@@ -40,7 +45,9 @@ export async function ok<T>(call: Promise<{ data?: T; error?: unknown; response:
   try {
     result = await call;
   } catch (e) {
-    throw e instanceof ApiError ? e : ApiError.offline();
+    // The client's fetch turns a failed connection into ApiError.offline() itself, so any
+    // other error here isn't the connection and mustn't say so.
+    throw e instanceof ApiError ? e : ApiError.unexpected();
   }
   if (!result.response.ok) throw ApiError.from(result.response.status, result.error);
   return result.data as T;
