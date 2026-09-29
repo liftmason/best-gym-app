@@ -52,6 +52,16 @@ The owner chose to start on Render's own addresses, before buying the domain. Wi
 
 Worry Wednesday's approach (invite-only Google sign-in) was considered and deferred. The web app runs cross-origin isolated for its local database, which breaks Google's usual pop-up and embedded sign-in button, so it would need a redirect flow built and tested on Safari.
 
+### Fixed after the first deploy (28–29 September 2026)
+
+Found by the owner's first sign-ins on the live test run, each fixed test-first:
+
+- **Every empty answer failed in the browser.** Render's edge (Cloudflare) Brotli-compressed an empty `202` into one byte and sent `Content-Length: 1`; openapi-fetch trusted the length and failed to parse nothing as JSON. `Cache-Control: no-transform` was tried first and is ignored by the edge. Empty JSON answers now carry `null` (`apps/api/middleware.py`); a `204` stays empty.
+- **"Can't reach" for every error.** `ok()` labelled any unexpected error as no connection, which made the bug above look like a network problem. Only a failed connection says so now.
+- **The wake-up.** Requests while the free API wakes failed. On the web a request that can't connect is now tried again for up to 90 seconds, with a "Starting up" notice (`src/api/client.ts`, `waking-notice.tsx`). It doesn't retry when the browser knows it's offline, or on phones.
+- **Rate limits were shared by everyone** (audit M24, confirmed with `LOG_CLIENT_IP`): behind Render the last `X-Forwarded-For` entry is Render's own address. `CLIENT_IP_HEADER=Cf-Connecting-Ip` on Render.
+- **The admin's account couldn't coach.** `ensure_admin` creates `ADMIN_EMAIL`'s account, and coach sign-up only takes new emails. **Start coaching** (`POST /me/coach`, from "No coach yet" and the athlete's Profile) gives any account without a coach profile a gym of its own, set up with the same form as sign-up.
+
 ## 2. What changes in the repository
 
 **`render.yaml`, on free plans:**

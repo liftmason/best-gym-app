@@ -163,6 +163,11 @@ Counts live in the `ratelimit_counter` table, one row per key, shared by all wor
 hourly cron deletes expired rows. Over a limit the API answers 429 with the usual error
 shape.
 
+"Per address" is the visitor's address from `CLIENT_IP_HEADER`, the header the host's edge
+sets and overwrites (`Cf-Connecting-Ip` on Render, in `render.yaml`). Without it, the last
+`X-Forwarded-For` entry is used; behind Render that's Render's own address, the same for
+everyone (audit M24, checked live). Only set it on a host that overwrites the header.
+
 | What | Limit |
 | --- | --- |
 | Sign-in codes | 5 per 15 minutes per email; 30 per address |

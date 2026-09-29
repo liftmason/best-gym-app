@@ -124,7 +124,7 @@ The API's address (`EXPO_PUBLIC_API_URL`) is written in `render.yaml`, not typed
 
 ## 3. Try it yourself
 
-1. Open the web app. Enter your email, then `TEST_SIGNIN_CODE`. A new email is offered coach sign-up: give your name and your gym's name.
+1. Open the web app. Enter your email, then `TEST_SIGNIN_CODE`. A new email is offered coach sign-up: give your name and your gym's name. **An email that already has an account** (your `ADMIN_EMAIL`: the API creates that account at start-up) lands on "No coach yet" instead: press **Start coaching** and set up the gym there.
 2. **Train as your own athlete** (optional): roster → **Invite athlete** → leave the email blank → **Copy**. Open the link in the same browser tab: you join as your own athlete. Switch roles with **More → Switch to Training** and **Profile → Switch to Coaching**.
 3. Program a week on the board, publish it, and log a session in training mode. The coach's Today screen shows it.
 4. Try `/privacy`, `/terms` and `/delete-account` on the web app's address.
@@ -163,7 +163,7 @@ A red run means a step failed. The log names it, and Sentry has the error if it'
 **Athletes:** their coach invites each one. Roster → **Invite athlete**, **leave the email blank** (no email is sent during the test run), then **Copy** or **Share** the link and send it by text. Each link works once, for 14 days. The athlete opens it, enters their email and `TEST_SIGNIN_CODE`, then their name, and they're joined to that coach.
 
 **Tell every tester:**
-- **The first visit after a quiet spell takes about a minute.** The free server sleeps after 15 minutes with no visitors. The sync pill waits, and nothing is lost.
+- **The first visit after a quiet spell takes about a minute.** The free server sleeps after 15 minutes with no visitors. The app says "Starting up. This can take a minute…" and carries on by itself; nothing is lost.
 - **They stay signed in for a week**, then sign in again with the same code.
 - **No notifications.** Nobody gets a push when a coach publishes a week or sends a message; they see it next time they open the app.
 - **Offline works only while the page is open.** Training data is kept on the phone, and a whole session logs and saves with no signal. But the page itself isn't stored for offline use, so opening the app for the first time that day with no signal doesn't work. **Open it before going somewhere with no signal.**
@@ -187,10 +187,7 @@ The privacy policy and terms are drafts in `app/src/legal/texts.ts`, shown at `/
 
 ## 7. After the first deploy
 
-- **The rate-limit check:** with `LOG_CLIENT_IP=1` set:
-  1. Sign in once from a phone on mobile data.
-  2. In Render → `gymtrainer` → **Logs**, find the `client-ip check:` line and send it to Steven. It shows whether sign-in limits count each visitor separately behind Render's proxy.
-  3. Then remove `LOG_CLIENT_IP`.
+- **The rate-limit check** (done 28 September): the first sign-in's `client-ip check:` line showed that behind Render every visitor looked the same, and the blueprint now sets `CLIENT_IP_HEADER`. After the next sign-in, the log's `client-ip check: Cf-Connecting-Ip=…` line should show your own address; then **remove `LOG_CLIENT_IP`** from the API.
 - **Watch Sentry** for the first week, if it's set up.
 - **Put a reminder in the diary for day 25 after step 2.** Decide then whether to upgrade: the free database is deleted on day 30.
 - The free database has **no backups**. The restore drill waits for the upgrade.
