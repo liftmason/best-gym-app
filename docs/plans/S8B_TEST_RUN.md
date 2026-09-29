@@ -62,6 +62,13 @@ Found by the owner's first sign-ins on the live test run, each fixed test-first:
 - **Rate limits were shared by everyone** (audit M24, confirmed with `LOG_CLIENT_IP`): behind Render the last `X-Forwarded-For` entry is Render's own address. `CLIENT_IP_HEADER=Cf-Connecting-Ip` on Render.
 - **The admin's account couldn't coach.** `ensure_admin` creates `ADMIN_EMAIL`'s account, and coach sign-up only takes new emails. **Start coaching** (`POST /me/coach`, from "No coach yet" and the athlete's Profile) gives any account without a coach profile a gym of its own, set up with the same form as sign-up.
 
+Then, from testing on 29 September:
+
+- **Copy:** a pass against Wikipedia's "Signs of AI writing": about 100 em dashes in sentences, the sign-in tagline's list of three, Title Case labels, curly apostrophes; the mockup follows where it had the same sentence. The report-a-bug button shows a bug; "Switch to training/coaching" use the brand colour.
+- **A second invite** said "That can't be done right now." An athlete has one coach at a time (decision D, kept for the test run); the refusal now names the coach and gym and says to be archived first.
+- **Messages:** on a desktop browser Enter sends and Shift+Enter starts a new line (`src/ui/enter-sends.ts`); phones keep Enter as a new line.
+- **Height in feet and inches** for athletes and gyms using pounds, from the first bug report. Still stored in centimetres (`src/domain/height.ts`).
+
 ## 2. What changes in the repository
 
 **`render.yaml`, on free plans:**
