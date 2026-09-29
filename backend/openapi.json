@@ -4427,6 +4427,39 @@
         "title": "Source",
         "type": "object"
       },
+      "StartCoachingIn": {
+        "properties": {
+          "gym_name": {
+            "title": "Gym Name",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "starter": {
+            "default": "weightlifting",
+            "title": "Starter",
+            "type": "string"
+          },
+          "timezone": {
+            "default": "",
+            "title": "Timezone",
+            "type": "string"
+          },
+          "units": {
+            "default": "kg",
+            "title": "Units",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "gym_name"
+        ],
+        "title": "StartCoachingIn",
+        "type": "object"
+      },
       "StarterAdded": {
         "properties": {
           "added": {
@@ -10019,6 +10052,37 @@
         "summary": "Update Profile",
         "tags": [
           "Account"
+        ]
+      }
+    },
+    "/api/v1/me/coach": {
+      "post": {
+        "description": "Start coaching with a new gym of one's own, as coach sign-up does for a new email.",
+        "operationId": "apps_accounts_me_api_start_coaching",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartCoachingIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Start Coaching",
+        "tags": [
+          "My account"
         ]
       }
     },

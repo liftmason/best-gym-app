@@ -1,6 +1,7 @@
-"""The signed-in person's own account (/api/v1/me/...): name and time zone, and for an
-athlete their units, whether a new coach sees earlier history, and filling in the numbers
-their coach asked for. Training data itself reaches the phone through sync (S3)."""
+"""The signed-in person's own account (/api/v1/me/...): name and time zone, starting to coach
+from an account that exists already, and for an athlete their units, whether a new coach
+sees earlier history, and filling in the numbers their coach asked for. Training data itself
+reaches the phone through sync (S3)."""
 
 from ninja import Router, Schema, Status
 
@@ -9,6 +10,28 @@ from apps.api.main import athlete_of
 from . import metrics, services, units
 
 router = Router(tags=["My account"])
+
+
+class StartCoachingIn(Schema):
+    name: str
+    gym_name: str
+    units: str = "kg"
+    starter: str = "weightlifting"
+    timezone: str = ""
+
+
+@router.post("/me/coach", response={201: None})
+def start_coaching(request, data: StartCoachingIn):
+    """Start coaching with a new gym of one's own, as coach sign-up does for a new email."""
+    services.start_coaching(
+        request.user,
+        name=data.name,
+        gym_name=data.gym_name,
+        units=data.units,
+        starter=data.starter,
+        timezone=data.timezone,
+    )
+    return Status(201, None)
 
 
 class UnitsIn(Schema):

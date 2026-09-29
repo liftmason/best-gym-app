@@ -52,28 +52,57 @@ def email_taken(email):
     return User.objects.filter(email__iexact=User.objects.normalize_email(email)).exists()
 
 
-@transaction.atomic
-def sign_up_coach(*, name, email, gym_name, units, starter, timezone, password=None):
-    """A new coach with their own gym: the chosen starter pack, the default check-in
-    questions, and the gym's zone from the coach's device (UTC if it isn't a real zone)."""
+class AlreadyCoaching(errors.Conflict):
+    """The account already has a coach profile."""
+
+
+def _gym_fields(gym_name, units, starter):
+    """The tidied gym name, after checking the gym's settings (InvalidAccount otherwise)."""
     if units not in Units.values:
         raise InvalidAccount(f"Unknown units: {units!r}")
-    name = check_new_account(name, email, password)
     gym_name = " ".join((gym_name or "").split())
     if not gym_name or len(gym_name) > MAX_GYM_NAME:
         raise InvalidAccount(f"Enter a gym name of up to {MAX_GYM_NAME} characters.")
     if starter not in PACKS:
         raise InvalidAccount(f"Unknown starter pack: {starter!r}")
-    if email_taken(email):
-        raise AccountExists(email)
-    tz = valid_timezone(timezone, "UTC")
+    return gym_name
+
+
+def _open_gym(user, *, gym_name, units, starter, tz):
+    """A new gym with the starter pack and default questions, owned by a new coach profile."""
     gym = Gym.objects.create(name=gym_name, units=units, timezone=tz)
     install_pack(gym, starter)
     install_default_questions(gym)
-    user = User.objects.create_user(email, password, name=name, timezone=tz)
     coach = Coach.objects.create(user=user)
     coaching.join_gym(coach, gym, GymRole.OWNER)
     return coach
+
+
+@transaction.atomic
+def sign_up_coach(*, name, email, gym_name, units, starter, timezone, password=None):
+    """A new coach with their own gym: the chosen starter pack, the default check-in
+    questions, and the gym's zone from the coach's device (UTC if it isn't a real zone)."""
+    gym_name = _gym_fields(gym_name, units, starter)
+    name = check_new_account(name, email, password)
+    if email_taken(email):
+        raise AccountExists(email)
+    tz = valid_timezone(timezone, "UTC")
+    user = User.objects.create_user(email, password, name=name, timezone=tz)
+    return _open_gym(user, gym_name=gym_name, units=units, starter=starter, tz=tz)
+
+
+@transaction.atomic
+def start_coaching(user, *, name, gym_name, units, starter, timezone):
+    """An existing account starts coaching, with a gym of its own set up as at sign-up: an
+    athlete who takes on athletes, or the site admin's account. Coach sign-up only takes new
+    emails. Their name is updated too (the admin's account starts as "Admin")."""
+    if user.coach_profile is not None:
+        raise AlreadyCoaching(f"You already coach at {user.coach_profile.gym}.")
+    gym_name = _gym_fields(gym_name, units, starter)
+    user.name = check_new_account(name, user.email)
+    user.save(update_fields=["name"])
+    tz = valid_timezone(timezone, user.timezone or "UTC")
+    return _open_gym(user, gym_name=gym_name, units=units, starter=starter, tz=tz)
 
 
 def set_units(athlete, value):
