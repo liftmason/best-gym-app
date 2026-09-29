@@ -17,9 +17,16 @@ from django.utils import timezone
 
 
 def client_ip(request):
-    """Render's proxy appends the address it saw to X-Forwarded-For; the last entry is the
-    one a client can't fake. To be confirmed on the live site: with LOG_CLIENT_IP=1 each
-    rate-limited request writes its address headers to the log (docs/OPERATIONS.md)."""
+    """The visitor's address. On a host whose edge names the visitor in a header it controls
+    (CLIENT_IP_HEADER; Render's Cloudflare edge sets Cf-Connecting-Ip), that header. Otherwise
+    the last X-Forwarded-For entry, the one a client can't fake. Checked live with
+    LOG_CLIENT_IP=1 (audit M24): behind Render that last entry is Render's own 10.x address,
+    the same for every visitor. Only trust the header where the host overwrites it, or anyone
+    could choose their own rate-limit key."""
+    if settings.CLIENT_IP_HEADER and (named := request.headers.get(settings.CLIENT_IP_HEADER, "").strip()):
+        if settings.LOG_CLIENT_IP:
+            print(f"client-ip check: {settings.CLIENT_IP_HEADER}={named}", flush=True)
+        return named
     forwarded = request.headers.get("X-Forwarded-For", "")
     if settings.LOG_CLIENT_IP:
         headers = ("X-Forwarded-For", "True-Client-Ip", "Cf-Connecting-Ip", "X-Real-Ip")

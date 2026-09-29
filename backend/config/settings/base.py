@@ -137,6 +137,9 @@ ADMIN_PATH = os.environ.get("ADMIN_PATH", "admin/")
 # Temporary: log the address headers of rate-limited requests, to confirm which one
 # Render's proxy guarantees (apps/ratelimit.client_ip). Turn it off again afterwards.
 LOG_CLIENT_IP = os.environ.get("LOG_CLIENT_IP") == "1"
+# The header the host's edge sets to the visitor's address, overwriting any a client sent
+# (Render: Cf-Connecting-Ip). Blank: the last X-Forwarded-For entry (apps/ratelimit).
+CLIENT_IP_HEADER = os.environ.get("CLIENT_IP_HEADER", "").strip()
 
 # seed_demo: the password its new demo users get, and whether the demo coach is an admin.
 DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD", "demo-password-123")

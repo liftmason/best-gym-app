@@ -84,6 +84,25 @@ def test_the_client_address_is_the_one_the_proxy_appended():
     assert ratelimit.client_ip(RequestFactory().get("/", REMOTE_ADDR="10.0.0.1")) == "10.0.0.1"
 
 
+def test_on_render_the_visitor_is_the_address_its_edge_names(settings):
+    # M24, checked live with LOG_CLIENT_IP: behind Render the last X-Forwarded-For entry is
+    # Render's own (10.x), the same for everyone, so every visitor shared one limit. Render's
+    # edge (Cloudflare) names the visitor in Cf-Connecting-Ip, overwriting anything sent.
+    settings.CLIENT_IP_HEADER = "Cf-Connecting-Ip"
+    seen = {"HTTP_X_FORWARDED_FOR": "71.184.230.155, 104.23.211.11, 10.24.32.58", "REMOTE_ADDR": "127.0.0.1"}
+    request = RequestFactory().get("/", HTTP_CF_CONNECTING_IP="71.184.230.155", **seen)
+    assert ratelimit.client_ip(request) == "71.184.230.155"
+    # Without the header (a request that didn't come through the edge), the old rule applies.
+    assert ratelimit.client_ip(RequestFactory().get("/", **seen)) == "10.24.32.58"
+
+
+def test_the_named_header_is_ignored_unless_the_host_is_set_to_trust_it(settings):
+    # Elsewhere anyone can send Cf-Connecting-Ip and pick their own rate-limit key.
+    settings.CLIENT_IP_HEADER = ""
+    request = RequestFactory().get("/", HTTP_CF_CONNECTING_IP="9.9.9.9", REMOTE_ADDR="10.0.0.1")
+    assert ratelimit.client_ip(request) == "10.0.0.1"
+
+
 def test_metrics_reminders_are_limited_per_athlete(athlete, mailoutbox):
     # M25: a coach could send any number of reminder emails.
     assert metrics.remind(athlete, "https://example.com")

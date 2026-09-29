@@ -89,6 +89,10 @@ services:
       # proxy sets (docs/LAUNCH.md, "After the first deploy"); then remove it.
       - key: LOG_CLIENT_IP
         sync: false
+      # Render's edge (Cloudflare) names the visitor here and overwrites any value a client
+      # sends; X-Forwarded-For's last entry is Render's own address (audit M24, checked live).
+      - key: CLIENT_IP_HEADER
+        value: Cf-Connecting-Ip
       # The free test run's hourly jobs: a long random value, the same as the GitHub
       # repository secret CRON_TOKEN (.github/workflows/cron.yml). Blank once the cron job runs.
       - key: CRON_TOKEN
