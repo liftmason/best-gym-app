@@ -39,8 +39,8 @@ beforeEach(() => {
 });
 afterEach(() => jest.useRealTimers());
 
-async function show(Screen: () => React.ReactElement | null) {
-  const session = await paritySession();
+async function show(Screen: () => React.ReactElement | null, profile: { units?: 'kg' | 'lb' } = {}) {
+  const session = await paritySession(profile);
   // No retries, and no garbage-collection timer to keep Jest waiting after the test.
   const queries = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   await render(
@@ -89,4 +89,15 @@ test('onboarding after an invite: some numbers, some skipped', async () => {
   expect(engine.status.pending).toBe(1);
   await fireEvent.press(screen.getByRole('button', { name: 'Show me my week →' }));
   await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith('/home'));
+});
+
+test('onboarding in pounds takes height in feet and inches, and stores centimetres', async () => {
+  const { engine } = await show(Welcome, { units: 'lb' });
+  const queued = jest.spyOn(engine, 'enqueue');
+  expect(await screen.findByText('Your training numbers')).toBeTruthy();
+  await fireEvent.changeText(screen.getByLabelText('Feet'), '5');
+  await fireEvent.changeText(screen.getByLabelText('Inches'), '10');
+  await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
+  expect(await screen.findByText("You're all set")).toBeTruthy();
+  expect(queued).toHaveBeenCalledWith(expect.anything(), { values: { height_cm: '177.8' } });
 });

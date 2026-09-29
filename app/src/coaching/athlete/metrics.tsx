@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { api, ApiError, ok, type components } from '@/api';
-import { YEARS } from '@/domain/metrics';
+import { heightFromFeet, showHeight } from '@/domain/height';
+import { InvalidMetric, YEARS } from '@/domain/metrics';
+import type { Unit } from '@/domain/units';
 import { dayMonth } from '@/training/format';
-import { Button, Card, Chip, colors, Field, fonts, radius, Sheet, space, Text } from '@/ui';
+import { Button, Card, Chip, colors, Field, fonts, HeightField, radius, Sheet, space, Text } from '@/ui';
 
 import { Loading } from '../layout';
 import { QuestionsEditor } from '../library/questions';
@@ -18,8 +20,20 @@ const failed = (error: unknown) => (error instanceof ApiError ? error.message : 
 
 function MetricSheet({ id, metric, unit, first, onClose, onSaved }: { id: string; metric: Metric | null; unit: string; first: string; onClose: () => void; onSaved: () => void }) {
   const [value, setValue] = useState('');
+  const [feet, setFeet] = useState('');
+  const [inches, setInches] = useState('');
   const [problem, setProblem] = useState<string | null>(null);
   if (!metric) return null;
+  // A gym using pounds gives height in feet and inches; it's stored in centimetres.
+  const imperial = metric.kind === 'height' && unit === 'lb';
+  function saveFeet() {
+    try {
+      const cm = heightFromFeet(feet, inches);
+      if (cm) save(cm);
+    } catch (error) {
+      setProblem(error instanceof InvalidMetric ? error.message : "Couldn't save that. Try again.");
+    }
+  }
   async function save(raw: string) {
     setProblem(null);
     try {
@@ -33,7 +47,13 @@ function MetricSheet({ id, metric, unit, first, onClose, onSaved }: { id: string
   }
   const label = metric.kind === 'weight' ? `${metric.label} (${unit})` : metric.kind === 'height' ? `${metric.label} (cm)` : metric.label;
   return (
-    <Sheet open onClose={onClose} title={`Update ${metric.label.toLowerCase()}`} footer={metric.kind === 'years' ? undefined : <Button title="Save" block disabled={!value.trim()} onPress={() => save(value)} />}>
+    <Sheet open onClose={onClose} title={`Update ${metric.label.toLowerCase()}`} footer={
+        metric.kind === 'years' ? undefined : imperial ? (
+          <Button title="Save" block disabled={!feet.trim() && !inches.trim()} onPress={saveFeet} />
+        ) : (
+          <Button title="Save" block disabled={!value.trim()} onPress={() => save(value)} />
+        )
+      }>
       <View style={{ gap: space.m }}>
         {metric.kind === 'years' ? (
           <View style={styles.choices}>
@@ -44,7 +64,11 @@ function MetricSheet({ id, metric, unit, first, onClose, onSaved }: { id: string
             ))}
           </View>
         ) : (
-          <Field label={label} value={value} onChangeText={setValue} keyboardType="decimal-pad" placeholder={metric.value ?? ''} error={problem} autoFocus />
+          imperial ? (
+            <HeightField feet={feet} inches={inches} onFeet={setFeet} onInches={setInches} error={problem} autoFocus />
+          ) : (
+            <Field label={label} value={value} onChangeText={setValue} keyboardType="decimal-pad" placeholder={metric.value ?? ''} error={problem} autoFocus />
+          )
         )}
         <Text variant="tiny" tone="muted">
           Logged as coach-entered. {first} sees the update.
@@ -170,7 +194,7 @@ export function Metrics({ id, first, unit, maxUpdates, focus }: { id: string; fi
                 <Chip tone="warn" label="not provided" />
               ) : (
                 <>
-                  <Text style={styles.value}>{m.value}</Text>
+                  <Text style={styles.value}>{m.kind === 'height' ? showHeight(m.value, unit as Unit) : m.value}</Text>
                   <Text variant="tiny" tone="faint">
                     {[m.source, m.date && dayMonth(m.date)].filter(Boolean).join(' · ')}
                   </Text>

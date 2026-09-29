@@ -3,12 +3,13 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
-import { metricSpecs, YEARS } from '@/domain/metrics';
+import { heightFromFeet } from '@/domain/height';
+import { InvalidMetric, metricSpecs, YEARS } from '@/domain/metrics';
 import { metricsUpdate, Refused } from '@/sync/actions';
 import { useSync } from '@/sync/provider';
 import { Loading, SessionScreen } from '@/training/session/screen';
 import { useTraining } from '@/training/use-training';
-import { Button, Card, colors, Field, fonts, radius, space, Text } from '@/ui';
+import { Button, Card, colors, Field, fonts, HeightField, radius, space, Text } from '@/ui';
 
 /** After joining through an invite (the mockup's #m-onboard): the training numbers, then what's next. */
 export default function Welcome() {
@@ -17,6 +18,9 @@ export default function Welcome() {
   const [step, setStep] = useState<'numbers' | 'done'>('numbers');
   const [values, setValues] = useState<Record<string, string>>({});
   const [skipped, setSkipped] = useState<Set<string>>(new Set());
+  // Athletes using pounds give height in feet and inches; it's stored in centimetres.
+  const [feet, setFeet] = useState('');
+  const [inches, setInches] = useState('');
   const [gap, setGap] = useState('');
   const [problem, setProblem] = useState<string | null>(null);
   if (!world) return <Loading />;
@@ -25,7 +29,16 @@ export default function Welcome() {
 
   async function save(all: boolean) {
     setProblem(null);
-    const filled = all ? {} : Object.fromEntries(Object.entries(values).filter(([k, v]) => v.trim() && !skipped.has(k)));
+    const entered = { ...values };
+    if (profile.units === 'lb' && !all && !skipped.has('height_cm')) {
+      try {
+        entered.height_cm = heightFromFeet(feet, inches) ?? '';
+      } catch (error) {
+        setProblem(error instanceof InvalidMetric ? error.message : "Couldn't save that. Try again.");
+        return;
+      }
+    }
+    const filled = all ? {} : Object.fromEntries(Object.entries(entered).filter(([k, v]) => v.trim() && !skipped.has(k)));
     try {
       if (Object.keys(filled).length) await engine.enqueue(metricsUpdate, { values: filled });
     } catch (error) {
@@ -116,7 +129,11 @@ export default function Welcome() {
       {specs.map((spec) => {
         const off = skipped.has(spec.key);
         const label =
-          spec.kind === 'weight' ? `${spec.label} (${profile.units})` : spec.kind === 'height' ? `${spec.label} (cm)` : spec.label;
+          spec.kind === 'weight'
+            ? `${spec.label} (${profile.units})`
+            : spec.kind === 'height' && profile.units !== 'lb'
+              ? `${spec.label} (cm)`
+              : spec.label;
         return (
           <View key={spec.key} style={styles.metric}>
             <View style={styles.metricHead}>
@@ -150,6 +167,8 @@ export default function Welcome() {
                   </Pressable>
                 ))}
               </View>
+            ) : spec.kind === 'height' && profile.units === 'lb' ? (
+              <HeightField feet={off ? '' : feet} inches={off ? '' : inches} onFeet={setFeet} onInches={setInches} editable={!off} />
             ) : (
               <Field
                 label={label}
