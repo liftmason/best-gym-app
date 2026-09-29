@@ -10,6 +10,7 @@ export { Segmented, Select, type Option } from './select';
 export { Sheet } from './sheet';
 export { Sparkline } from './sparkline';
 export { Text } from './text';
+export { enterSends } from './enter-sends';
 export { ToastProvider, useToast } from './toast';
 export { colors, fonts, radius, shadows, space, type, weekTypeColours } from './theme';
 export { WeekStrip, type StripDay } from './week-strip';

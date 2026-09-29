@@ -11,7 +11,7 @@ import { SyncNotices } from '@/sync/status';
 import { sentAgo } from '@/training/format-time';
 import { TrainingHeader } from '@/training/header';
 import { useTraining } from '@/training/use-training';
-import { colors, fonts, radius, space, Text } from '@/ui';
+import { colors, enterSends, fonts, radius, space, Text } from '@/ui';
 
 /** Messages with the coach (the mockup's #m-messages, the "Coach" tab), offline too. */
 export default function Messages() {
@@ -103,6 +103,7 @@ export default function Messages() {
               value={draft}
               onChangeText={setDraft}
               onSubmitEditing={send}
+              onKeyPress={(event) => enterSends(send)(event)}
               returnKeyType="send"
               multiline
               style={styles.input}

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { api, ApiError, ok } from '@/api';
-import { Button, colors, fonts, radius, space, Text } from '@/ui';
+import { Button, colors, enterSends, fonts, radius, space, Text } from '@/ui';
 
 import { Loading } from '../layout';
 import { keys } from '../queries';
@@ -74,6 +74,7 @@ export function Messages({ id, first }: { id: string; first: string }) {
           value={draft}
           onChangeText={setDraft}
           onSubmitEditing={send}
+          onKeyPress={(event) => enterSends(send)(event)}
           returnKeyType="send"
           multiline
           style={styles.input}
