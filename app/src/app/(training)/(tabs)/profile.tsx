@@ -80,15 +80,14 @@ export default function Profile() {
               <Text variant="small" style={styles.grow}>
                 {m.label}
               </Text>
-              {m.value === null ? <Chip tone="warn" label="missing — tap to add" /> : <Text style={styles.value}>{shown(m, profile.units)}</Text>}
+              {m.value === null ? <Chip tone="warn" label="missing, tap to add" /> : <Text style={styles.value}>{shown(m, profile.units)}</Text>}
             </Pressable>
           ))}
         </Card>
         <Settings units={profile.units} hideHistory={Boolean(me.data?.athlete?.hide_history_before_link)} coachName={profile.coachName} />
         {me.data?.coach ? (
           <Button
-            title="Switch to Coaching"
-            variant="soft"
+            title="Switch to coaching"
             block
             onPress={async () => {
               await rememberMode('coaching');
@@ -96,7 +95,7 @@ export default function Profile() {
             }}
           />
         ) : me.data ? (
-          <Button title="Start coaching" variant="soft" block onPress={() => router.push('/start-coaching')} />
+          <Button title="Start coaching" block onPress={() => router.push('/start-coaching')} />
         ) : null}
         <Button title="Sign out" variant="ghost" block onPress={signOut} />
         <DeleteAccount />

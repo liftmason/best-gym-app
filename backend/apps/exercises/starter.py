@@ -63,11 +63,11 @@ WEIGHTLIFTING = Pack(
         "recovery",
     ),
     week_types=(
-        ("Accumulation", "Volume build — higher reps, moderate loads", "#2E9E5B"),
+        ("Accumulation", "Volume build: higher reps, moderate loads", "#2E9E5B"),
         ("Intensification", "Load climbs, volume drops", "#E07C24"),
         ("Comp Prep", "Openers & heavy singles, taper volume", "#D8412F"),
-        ("Deload", "Recovery — 60-70% loads, low volume", "#8A63D2"),
-        ("Cutting", "Weight-make week — reduced volume, keep intensity", "#2B7DE0"),
+        ("Deload", "Recovery: 60-70% loads, low volume", "#8A63D2"),
+        ("Cutting", "Weight-make week: reduced volume, keep intensity", "#2B7DE0"),
         ("Technique", "Positions, tempo & complexes at light loads", "#0F9BA8"),
     ),
     exercises=(
@@ -162,7 +162,7 @@ WEIGHTLIFTING = Pack(
             "Squat",
             ("strength", "technique", "hypertrophy"),
             "bsq",
-            cue="Own the bottom — no bounce.",
+            cue="Own the bottom, no bounce.",
         ),
         Ex(
             "ohs",
@@ -239,7 +239,7 @@ WEIGHTLIFTING = Pack(
             "Pull",
             ("technique", "low-impact", "posterior-chain"),
             "sn",
-            cue="Five full seconds — positions over load.",
+            cue="Five full seconds. Positions over load.",
         ),
     ),
     tracked=("sn", "cj", "bsq"),
@@ -266,10 +266,10 @@ GENERAL = Pack(
         "recovery",
     ),
     week_types=(
-        ("Hypertrophy", "Higher reps, moderate loads — build muscle", "#2E9E5B"),
+        ("Hypertrophy", "Higher reps, moderate loads to build muscle", "#2E9E5B"),
         ("Strength", "Heavier loads, lower reps", "#E07C24"),
         ("Power", "Fast, explosive work at moderate loads", "#D8412F"),
-        ("Deload", "Recovery — lighter loads, less volume", "#8A63D2"),
+        ("Deload", "Recovery: lighter loads, less volume", "#8A63D2"),
         ("Testing", "Work up to new maxes", "#2B7DE0"),
     ),
     exercises=(
@@ -498,13 +498,13 @@ GENERAL = Pack(
 EMPTY = Pack(
     key="empty",
     label="Start empty",
-    description="No exercises yet — just a few categories and week types to build from.",
+    description="No exercises yet, just a few categories and week types to build from.",
     categories=("Strength", "Accessory", "Conditioning", "Mobility"),
     tags=(),
     week_types=(
         ("Build", "Steady progression", "#2E9E5B"),
-        ("Push", "Harder than usual — heavier or more volume", "#E07C24"),
-        ("Deload", "Recovery — lighter and less", "#8A63D2"),
+        ("Push", "Harder than usual: heavier or more volume", "#E07C24"),
+        ("Deload", "Recovery: lighter and less", "#8A63D2"),
     ),
 )
 

@@ -98,7 +98,7 @@ async function show() {
 
 test('the header and the overview', async () => {
   await show();
-  expect(screen.getByText('64 kg · next comp: Nationals — Sat 17 Oct')).toBeTruthy();
+  expect(screen.getByText('64 kg · next comp: Nationals, Sat 17 Oct')).toBeTruthy();
   expect(screen.getByText('9-session streak')).toBeTruthy();
   expect(screen.getByText('82 kg')).toBeTruthy();
   expect(screen.getByText('92%')).toBeTruthy();

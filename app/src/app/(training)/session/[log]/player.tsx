@@ -43,7 +43,7 @@ export default function Player() {
     else router.back();
   }
   function exit() {
-    if (!finished) flash.set('Session paused — pick it up any time');
+    if (!finished) flash.set('Session paused. Pick it up any time');
     router.back();
   }
 
@@ -83,7 +83,7 @@ export default function Player() {
           <Text variant="tiny">
             {open
               ? `Logged on ${dayMonth(log.date)}. You can change it until ${until(log.finished_at!, profile.timezone)}.`
-              : `Logged on ${dayMonth(log.date)} — read only now.`}
+              : `Logged on ${dayMonth(log.date)}. Read only now.`}
           </Text>
         </View>
       ) : null}
@@ -109,7 +109,7 @@ export default function Player() {
           ) : null}
           {superset ? (
             <Text variant="tiny" tone="muted">
-              Superset — alternate between these: a set of {labels[0]}, then a set of {labels[1]}
+              Superset. Alternate between these: a set of {labels[0]}, then a set of {labels[1]}
               {labels.length > 2 ? ', and so on' : ''}.
             </Text>
           ) : null}

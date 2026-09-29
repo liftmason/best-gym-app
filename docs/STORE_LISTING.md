@@ -103,7 +103,7 @@ What's collected, all **required** for the app to work (not optional), for **app
 
 > **Sign in:** enter `[REVIEW_ACCOUNT_EMAIL]`, tap "Email me a code", then enter the code `[REVIEW_ACCOUNT_CODE]`. No email needs to be received.
 >
-> This account is both a coach and an athlete in a demonstration gym ("Liftmason Review Gym"). It opens in Coaching; for the athlete's side, go to More → Switch to Training.
+> This account is both a coach and an athlete in a demonstration gym ("Liftmason Review Gym"). It opens in Coaching; for the athlete's side, go to More → Switch to training.
 >
 > Programming (building weekly programs) is designed for a computer and is also available at https://app.liftmason.com with the same sign-in.
 >

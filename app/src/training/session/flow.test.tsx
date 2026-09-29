@@ -127,7 +127,7 @@ test('check-in, lifts, finish, done', async () => {
   await view.unmount();
 
   view = await show(Finish);
-  expect(await screen.findByText('Session complete — two quick questions')).toBeTruthy();
+  expect(await screen.findByText('Session complete. Two quick questions')).toBeTruthy();
   expect(screen.getByRole('button', { name: 'Finish & save' }).props.accessibilityState.disabled).toBe(true);
   await fireEvent.press(screen.getByRole('button', { name: 'Report an issue or pain' }));
   await fireEvent.changeText(await screen.findByLabelText('Where / what?'), 'Left wrist');
@@ -168,6 +168,6 @@ test('a session finished long ago opens read only', async () => {
       <Player />
     </SyncTestProvider>,
   );
-  expect(await screen.findByText('Logged on Mon 14 Sep — read only now.')).toBeTruthy();
+  expect(await screen.findByText('Logged on Mon 14 Sep. Read only now.')).toBeTruthy();
   expect(screen.getByLabelText('Set 1 load in kg').props.editable).toBe(false);
 });

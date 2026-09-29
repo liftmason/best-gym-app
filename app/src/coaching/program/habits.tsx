@@ -76,7 +76,7 @@ export function HabitsCard({ athleteId, readOnly, commands }: { athleteId: strin
         ))
       ) : habits.data ? (
         <Text variant="small" tone="muted">
-          No habits prescribed yet — add one below, or apply a template that carries habits.
+          No habits prescribed yet. Add one below, or apply a template that carries habits.
         </Text>
       ) : null}
       {!readOnly ? (

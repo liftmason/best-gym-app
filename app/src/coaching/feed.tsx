@@ -81,7 +81,7 @@ export function AttentionFeed() {
         })
       ) : (
         <Text variant="small" tone="muted">
-          All caught up — nothing needs your attention.
+          All caught up. Nothing needs your attention.
         </Text>
       )}
       {feed.hasNextPage ? <Button title="Show more" variant="ghost" size="sm" busy={feed.isFetchingNextPage} onPress={() => feed.fetchNextPage()} /> : null}

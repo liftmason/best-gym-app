@@ -26,7 +26,7 @@ export default function Programming() {
   return (
     <CoachScreen
       title="Programming"
-      subtitle="Build the system once — sessions → weeks → templates, plus the exercise library and default check-in questions — then apply it to an athlete and review the result on their board before it goes live."
+      subtitle="Build the system once (sessions → weeks → templates, plus the exercise library and default check-in questions), then apply it to an athlete and review the result on their board before it goes live."
     >
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabs}>
         {TABS.map(([t, label]) => (

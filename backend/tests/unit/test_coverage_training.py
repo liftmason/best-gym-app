@@ -285,7 +285,7 @@ def test_the_coachs_video_alert(program, athlete, coach, gym, storage):
     form_videos.confirm(video)
     form_videos.set_note(video, "Is my dip vertical?")
     row = alerts.feed(coach).get(kind="video")
-    assert row.text == "Uploaded a form video: Snatch — “Is my dip vertical?”"
+    assert row.text == "Uploaded a form video: Snatch (“Is my dip vertical?”)"
     assert alerts.link_for(row).endswith(f"focus=video-{video.pk}")
     form_videos.remove(video)
     assert not alerts.feed(coach).filter(kind="video").exists()

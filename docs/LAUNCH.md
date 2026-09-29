@@ -125,7 +125,7 @@ The API's address (`EXPO_PUBLIC_API_URL`) is written in `render.yaml`, not typed
 ## 3. Try it yourself
 
 1. Open the web app. Enter your email, then `TEST_SIGNIN_CODE`. A new email is offered coach sign-up: give your name and your gym's name. **An email that already has an account** (your `ADMIN_EMAIL`: the API creates that account at start-up) lands on "No coach yet" instead: press **Start coaching** and set up the gym there.
-2. **Train as your own athlete** (optional): roster → **Invite athlete** → leave the email blank → **Copy**. Open the link in the same browser tab: you join as your own athlete. Switch roles with **More → Switch to Training** and **Profile → Switch to Coaching**.
+2. **Train as your own athlete** (optional): roster → **Invite athlete** → leave the email blank → **Copy**. Open the link in the same browser tab: you join as your own athlete. Switch roles with **More → Switch to training** and **Profile → Switch to coaching**.
 3. Program a week on the board, publish it, and log a session in training mode. The coach's Today screen shows it.
 4. Try `/privacy`, `/terms` and `/delete-account` on the web app's address.
 

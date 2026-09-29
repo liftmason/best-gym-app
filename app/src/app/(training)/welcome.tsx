@@ -35,9 +35,9 @@ export default function Welcome() {
     const blank = specs.length - Object.keys(filled).length;
     setGap(
       all || blank === specs.length
-        ? ` (all metrics skipped — ${coach} will fill them at your first session)`
+        ? ` (all metrics skipped, so ${coach} will fill them at your first session)`
         : blank
-          ? ` (${blank} field${blank === 1 ? '' : 's'} left blank — your coach can fill ${blank === 1 ? 'it' : 'them'} in)`
+          ? ` (${blank} field${blank === 1 ? '' : 's'} left blank, so your coach can fill ${blank === 1 ? 'it' : 'them'} in)`
           : '',
     );
     setStep('done');
@@ -57,7 +57,7 @@ export default function Welcome() {
       </Text>
       <Text style={styles.inviteName}>
         {profile.coachName ?? 'your coach'}
-        {profile.gymName ? ` — ${profile.gymName}` : ''}
+        {profile.gymName ? ` at ${profile.gymName}` : ''}
       </Text>
     </View>
   );
@@ -110,7 +110,7 @@ export default function Welcome() {
       {bars}
       <Text variant="h3">Your training numbers</Text>
       <Text variant="small" tone="muted">
-        {coach} programs off these. <Text variant="small" style={{ fontFamily: fonts.bold }}>Skip anything you don&apos;t know</Text> — your
+        {coach} programs off these. <Text variant="small" style={{ fontFamily: fonts.bold }}>Skip anything you don&apos;t know</Text>. Your
         coach can fill it in later.
       </Text>
       {specs.map((spec) => {
@@ -157,7 +157,7 @@ export default function Welcome() {
                 onChangeText={(text) => setValues({ ...values, [spec.key]: text })}
                 keyboardType="decimal-pad"
                 editable={!off}
-                placeholder={off ? 'skipped — coach can fill in' : spec.exerciseId ? 'best single' : spec.key === 'bodyweight' ? 'e.g. 64' : 'e.g. 168'}
+                placeholder={off ? 'skipped, coach can fill in' : spec.exerciseId ? 'best single' : spec.key === 'bodyweight' ? 'e.g. 64' : 'e.g. 168'}
               />
             )}
           </View>

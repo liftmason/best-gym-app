@@ -83,7 +83,7 @@ def test_tag_slots_default_to_the_first_matching_exercise(template, gym):
     with pytest.raises(services.InvalidTemplate, match="Tick at least one tag"):
         services.add_tag_slot(session(template), [])
     lonely = Tag.objects.create(gym=gym, name="nobody-has-it")
-    with pytest.raises(services.InvalidTemplate, match="loosen the filter"):
+    with pytest.raises(services.InvalidTemplate, match="Loosen the filter"):
         services.add_tag_slot(session(template), [lonely])
 
 
@@ -120,7 +120,7 @@ def test_saved_weeks_and_sessions(template, coach, gym):
     with pytest.raises(services.InvalidTemplate):
         services.use_saved(template, "session", saved_session.pk)  # needs a week
     services.use_saved(template, "session", saved_session.pk, template.weeks.first())
-    assert services.suggested_name(template, "week", template.weeks.first()).endswith("— week 1")
+    assert services.suggested_name(template, "week", template.weeks.first()).endswith(" - week 1")
     with pytest.raises(services.InvalidTemplate):
         services.check_save_names("x" * 81)
 

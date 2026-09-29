@@ -49,11 +49,11 @@ export default function Finish() {
         onBack={() =>
           count ? router.replace({ pathname: '/session/[log]/player', params: { log: logId, n: String(count) } }) : router.back()
         }
-        step={log.finished_at ? 'Edit how the session went' : 'Session complete — two quick questions'}
+        step={log.finished_at ? 'Edit how the session went' : 'Session complete. Two quick questions'}
       />
       <Text variant="h3">How hard was this session?</Text>
       <Text variant="tiny" tone="muted">
-        Session RPE — 1 is very easy, 10 is maximal effort.
+        Session RPE: 1 is very easy, 10 is maximal effort.
       </Text>
       <Scale value={chosen} onPick={setRpe} spoken={(i) => `RPE ${i}`} />
       <View style={styles.label}>

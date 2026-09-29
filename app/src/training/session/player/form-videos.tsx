@@ -100,7 +100,7 @@ export function FormVideos({ world, se, coach, editable }: { world: World; se: S
               ? 'Removed after 90 days'
               : v.reviewed_at
                 ? `${coach}'s feedback is in your messages`
-                : `Sent ${ago(localDate(v.uploaded_at!, profile.timezone), today)} — ${coach} will review it`
+                : `Sent ${ago(localDate(v.uploaded_at!, profile.timezone), today)}. ${coach} will review it`
           }
           onRemove={!v.reviewed_at && !v.deleted_at && editable ? () => removeSent(v.id) : undefined}
         >
@@ -124,7 +124,7 @@ export function FormVideos({ world, se, coach, editable }: { world: World; se: S
           key={u.id}
           title="Form video"
           tone={u.state === 'refused' ? 'bad' : undefined}
-          detail={u.state === 'refused' ? (u.error ?? "It couldn't be sent.") : u.state === 'uploading' ? 'Uploading…' : "Waiting to upload — it goes when you're online"}
+          detail={u.state === 'refused' ? (u.error ?? "It couldn't be sent.") : u.state === 'uploading' ? 'Uploading…' : "Waiting to upload. It goes when you're online"}
           onRemove={() => videos.remove(u.id)}
         >
           {u.state !== 'refused' ? (
@@ -150,7 +150,7 @@ export function FormVideos({ world, se, coach, editable }: { world: World; se: S
               Add a form video for {coach}
             </Text>
             <Text variant="tiny" tone="muted">
-              Record or upload — reviewed between sessions
+              Record or upload, for review between sessions
             </Text>
           </View>
           <Text tone="muted">+</Text>

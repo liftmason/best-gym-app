@@ -101,7 +101,7 @@ test('archiving a tracked lift warns what it changes', async () => {
   });
   await fireEvent.press(await screen.findByRole('button', { name: 'Archive' }));
   expect(mockConfirm.mock.calls[0][1]).toContain("It's also a tracked lift");
-  expect(await screen.findByText('“Snatch” archived and removed from tracked lifts — 3 exercises still take percentages from it')).toBeTruthy();
+  expect(await screen.findByText('“Snatch” archived and removed from tracked lifts. 3 exercises still take percentages from it')).toBeTruthy();
 });
 
 test('default questions: add one, and push them to every athlete', async () => {

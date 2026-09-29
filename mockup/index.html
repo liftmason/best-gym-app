@@ -720,8 +720,8 @@ kbd{font-family:var(--font-b);font-size:.68rem;border:1px solid var(--line);bord
     <div class="login-card">
       <div class="login-left">
         <div class="logo"><span class="logo-mark"><span class="svgi svgi--barbell"></span></span> Liftmason</div>
-        <h1 style="margin-top:26px">Every athlete's training history, right where you program.</h1>
-        <p style="opacity:.75;font-size:.9rem;max-width:38ch">Build weekly programs, deliver sessions to your athletes' phones, and review results as they come in — with each athlete's complete lift history beside the editor.</p>
+        <h1 style="margin-top:26px">See each athlete's lift history while you program.</h1>
+        <p style="opacity:.75;font-size:.9rem;max-width:38ch">Write each week here and it goes to your athletes' phones. Their results come back as they train.</p>
         <div class="demo-note">Demo build · data resets on refresh · no real accounts</div>
       </div>
       <div class="login-right">
@@ -970,7 +970,7 @@ kbd{font-family:var(--font-b);font-size:.68rem;border:1px solid var(--line);bord
           <div class="row" style="margin-top:12px">
             <button class="btn btn--soft btn--sm" id="addScaleQ">+ 1–10 scale question</button>
             <button class="btn btn--soft btn--sm" id="addMCQ">+ multiple-choice question</button>
-            <span class="tiny muted">This athlete's own copy — changes are live from their next session. The defaults live under Programming › Check-in questions.</span>
+            <span class="tiny muted">This athlete's own copy. Changes are live from their next session. The defaults live under Programming › Check-in questions.</span>
           </div>
         </div>
       </div>
@@ -988,7 +988,7 @@ kbd{font-family:var(--font-b);font-size:.68rem;border:1px solid var(--line);bord
     <!-- ============ PANEL: EXERCISE LIBRARY (CRUD) ============ -->
     <!-- ============ PANEL: PROGRAMMING — build the system, then apply it to athletes ============ -->
     <section class="cpanel" id="panel-programming">
-      <div class="coach-topbar"><h2>Programming</h2><span class="crumb">Build the system once — sessions → weeks → templates, plus the exercise library and default check-in questions — then apply it to an athlete and review the result on their board before it goes live.</span></div>
+      <div class="coach-topbar"><h2>Programming</h2><span class="crumb">Build the system once (sessions → weeks → templates, plus the exercise library and default check-in questions), then apply it to an athlete and review the result on their board before it goes live.</span></div>
       <div class="tabs" id="progTabs">
         <button class="active" data-ptab="templates">Templates</button>
         <button data-ptab="weeks">Weeks</button>
@@ -998,17 +998,17 @@ kbd{font-family:var(--font-b);font-size:.68rem;border:1px solid var(--line);bord
       </div>
 
       <div class="tabpanel active" id="ptab-templates">
-        <div class="spread" style="margin-bottom:12px;gap:16px"><span class="tiny muted">A template is a whole program — any number of weeks, each with its own sessions. Apply it to an athlete at whatever weekly frequency suits them.</span><button class="btn btn--brand btn--sm" id="newTplBtn" style="flex-shrink:0">+ New template</button></div>
+        <div class="spread" style="margin-bottom:12px;gap:16px"><span class="tiny muted">A template is a whole program: any number of weeks, each with its own sessions. Apply it to an athlete at whatever weekly frequency suits them.</span><button class="btn btn--brand btn--sm" id="newTplBtn" style="flex-shrink:0">+ New template</button></div>
         <div class="kpi-row" style="grid-template-columns:repeat(3,1fr)" id="tplCards"><!-- js --></div>
       </div>
 
       <div class="tabpanel" id="ptab-weeks">
-        <div class="spread" style="margin-bottom:12px;gap:16px"><span class="tiny muted">Reusable single weeks — build them from saved sessions, save one out of a template or an athlete's board, then drop it into any template or program.</span><button class="btn btn--brand btn--sm" id="newWeekBtn" style="flex-shrink:0">+ New week</button></div>
+        <div class="spread" style="margin-bottom:12px;gap:16px"><span class="tiny muted">Reusable single weeks. Build them from saved sessions, save one out of a template or an athlete's board, then drop it into any template or program.</span><button class="btn btn--brand btn--sm" id="newWeekBtn" style="flex-shrink:0">+ New week</button></div>
         <div class="kpi-row" style="grid-template-columns:repeat(3,1fr)" id="weekCards"><!-- js --></div>
       </div>
 
       <div class="tabpanel" id="ptab-sessions">
-        <div class="spread" style="margin-bottom:12px;gap:16px"><span class="tiny muted">Reusable sessions — the building blocks of weeks. Build one here, or save one out of any week or template with the bookmark control on its card.</span><button class="btn btn--brand btn--sm" id="newSessBtn" style="flex-shrink:0">+ New session</button></div>
+        <div class="spread" style="margin-bottom:12px;gap:16px"><span class="tiny muted">Reusable sessions, the building blocks of weeks. Build one here, or save one out of any week or template with the bookmark control on its card.</span><button class="btn btn--brand btn--sm" id="newSessBtn" style="flex-shrink:0">+ New session</button></div>
         <div class="kpi-row" style="grid-template-columns:repeat(3,1fr)" id="sessCards"><!-- js --></div>
       </div>
 
@@ -1072,7 +1072,7 @@ kbd{font-family:var(--font-b);font-size:.68rem;border:1px solid var(--line);bord
               <button class="btn btn--brand btn--sm" id="tplHabitAdd">+ Prescribe habit</button>
             </div>
           </div>
-          <p class="tiny muted" style="margin-top:10px">Select a session, then add exercises from the library. Use a <b>tag slot</b> when the exact exercise should be chosen per athlete — it fills with the default (or the athlete's most recent matching lift) and can be swapped on their board.</p>
+          <p class="tiny muted" style="margin-top:10px">Select a session, then add exercises from the library. Use a <b>tag slot</b> when the exact exercise should be chosen per athlete. It fills with the default (or the athlete's most recent matching lift) and can be swapped on their board.</p>
         </div>
         <aside class="lib-rail">
           <div class="card">
@@ -1176,10 +1176,10 @@ kbd{font-family:var(--font-b);font-size:.68rem;border:1px solid var(--line);bord
         <!-- ===== SCREEN: POST-SESSION ===== -->
         <div class="mscreen" id="m-post">
           <div class="flow-head">
-            <span class="step-lbl">Session complete — two quick questions</span>
+            <span class="step-lbl">Session complete. Two quick questions</span>
           </div>
           <h3 style="font-size:1.2rem">How hard was this session?</h3>
-          <p class="tiny muted">Session RPE — 1 is very easy, 10 is maximal effort.</p>
+          <p class="tiny muted">Session RPE: 1 is very easy, 10 is maximal effort.</p>
           <div class="scale-row" id="postScale"><!-- js --></div>
           <div class="field" style="margin:8px 0 12px">
             <label for="postComment">Notes for Dana <span class="skip" id="postSkip">skip</span></label>
@@ -1243,7 +1243,7 @@ kbd{font-family:var(--font-b);font-size:.68rem;border:1px solid var(--line);bord
           <div class="ob-wrap">
             <div class="invite-card">
               <small>You've been invited by</small><br>
-              <b>Dana Whitfield — Iron Ridge Weightlifting</b>
+              <b>Dana Whitfield at Iron Ridge Weightlifting</b>
               <div class="tiny" style="opacity:.65;margin-top:4px">invite link: platform.app/join/IRW-MAYA-7K2F</div>
             </div>
             <div class="ob-progress" id="obProgress"><i class="on"></i><i></i><i></i></div>
@@ -1261,7 +1261,7 @@ kbd{font-family:var(--font-b);font-size:.68rem;border:1px solid var(--line);bord
 
             <div class="ob-step" id="ob-2">
               <h3>Your training numbers</h3>
-              <p class="tiny muted">Dana programs off these. <b>Skip anything you don't know</b> — your coach can fill it in later.</p>
+              <p class="tiny muted">Dana programs off these. <b>Skip anything you don't know</b>. Your coach can fill it in later.</p>
               <div class="stack" style="margin-top:14px">
                 <div class="field"><label>Bodyweight (kg) <span class="skip" data-skip="obBw">skip</span></label><input class="input" type="number" id="obBw" placeholder="e.g. 64"></div>
                 <div class="field"><label>Height (cm) <span class="skip" data-skip="obHt">skip</span></label><input class="input" type="number" id="obHt" placeholder="e.g. 168"></div>
@@ -1276,7 +1276,7 @@ kbd{font-family:var(--font-b);font-size:.68rem;border:1px solid var(--line);bord
             </div>
 
             <div class="ob-step" id="ob-3">
-              <div class="done-hero"><span class="done-ic"><span class="svgi svgi--checkcircle"></span></span><h3 style="margin-top:12px">You're all set</h3><p class="tiny muted">Dana has your details<span id="obGapNote"> (2 fields left blank — your coach can fill them in)</span>.</p></div>
+              <div class="done-hero"><span class="done-ic"><span class="svgi svgi--checkcircle"></span></span><h3 style="margin-top:12px">You're all set</h3><p class="tiny muted">Dana has your details<span id="obGapNote"> (2 fields left blank, so your coach can fill them in)</span>.</p></div>
               <div class="mcard"><h4>What happens next</h4>
                 <div class="stack tiny" style="gap:8px;color:var(--ink-2)">
                   <span class="row" style="gap:8px;flex-wrap:nowrap"><span class="svgi svgi--cal muted"></span> Your first programmed week appears on the home screen</span>
@@ -1321,7 +1321,7 @@ kbd{font-family:var(--font-b);font-size:.68rem;border:1px solid var(--line);bord
       <select class="input" id="rxBasis"><option>% of 1RM</option><option>RPE target</option><option>Fixed kg</option><option>Bodyweight</option></select>
     </div>
     <div class="field"><label>Note to athlete (optional)</label><textarea class="input" id="rxNote" rows="2" placeholder="e.g. pause 2s in the catch, no misses"></textarea></div>
-    <div class="field"><label>Custom fields <span class="tiny muted" style="font-weight:400">anything else — tempo, rest, bar, cue</span></label>
+    <div class="field"><label>Custom fields <span class="tiny muted" style="font-weight:400">anything else: tempo, rest, bar, cue</span></label>
       <div class="stack" id="cfList" style="gap:8px"></div>
       <button class="btn btn--soft btn--sm" id="cfAdd" style="align-self:flex-start">+ add field</button>
     </div>
@@ -1344,7 +1344,7 @@ kbd{font-family:var(--font-b);font-size:.68rem;border:1px solid var(--line);bord
       </div>
       <div class="field" style="flex:1"><label>YouTube demo link</label><input class="input" id="exYt" placeholder="https://youtube.com/…"></div>
     </div>
-    <div class="field"><label>Tags <span class="tiny muted" style="font-weight:400">click to toggle — used for filtering when you program</span></label>
+    <div class="field"><label>Tags <span class="tiny muted" style="font-weight:400">click to toggle. Used for filtering when you program</span></label>
       <div class="tag-filter" id="exModalTags" style="margin:0"></div>
     </div>
     <div class="field"><label>Coaching cue shown to athlete</label><textarea class="input" id="exCue" rows="2" placeholder="e.g. Push the floor away, bar stays close"></textarea></div>
@@ -1362,7 +1362,7 @@ kbd{font-family:var(--font-b);font-size:.68rem;border:1px solid var(--line);bord
       <div class="row" style="flex-wrap:nowrap"><input class="input mono" id="invLink" readonly value="platform.app/join/IRW-9Q4T"><button class="btn btn--ghost" id="invCopy">Copy</button></div>
     </div>
     <div class="field"><label>Starting program template</label>
-      <select class="input"><option>Technique Reset (3 wk)</option><option>Accumulation Block (4 wk)</option><option>12-Week Competition Cycle</option><option>None — build from scratch</option></select>
+      <select class="input"><option>Technique Reset (3 wk)</option><option>Accumulation Block (4 wk)</option><option>12-Week Competition Cycle</option><option>None (build from scratch)</option></select>
     </div>
   </div>
   <div class="modal-foot"><button class="btn btn--ghost" data-close>Close</button><button class="btn btn--brand" id="invSend">Send invite</button></div>
@@ -1419,9 +1419,9 @@ kbd{font-family:var(--font-b);font-size:.68rem;border:1px solid var(--line);bord
   <div class="modal-head"><h3 id="wsTitle">Save week to library</h3><button class="close-x" data-close>✕</button></div>
   <div class="modal-body">
     <div class="row" id="wsSummary" style="font-size:.8rem;gap:8px"></div>
-    <div class="field"><label id="wsNameLbl">Week name</label><input class="input" id="wsName" placeholder="e.g. Accumulation — 3 day"></div>
+    <div class="field"><label id="wsNameLbl">Week name</label><input class="input" id="wsName" placeholder="e.g. Accumulation - 3 day"></div>
     <div class="field"><label>Description (optional)</label><input class="input" id="wsDesc" placeholder="What this is for"></div>
-    <p class="tiny muted" style="margin:0">Library items are copies — editing one later does not change templates or programs that already use it.</p>
+    <p class="tiny muted" style="margin:0">Library items are copies. Editing one later does not change templates or programs that already use it.</p>
   </div>
   <div class="modal-foot"><button class="btn btn--ghost" data-close>Cancel</button><button class="btn btn--brand" id="wsSave">Save</button></div>
 </div>
@@ -1438,7 +1438,7 @@ kbd{font-family:var(--font-b);font-size:.68rem;border:1px solid var(--line);bord
   <div class="modal-body">
     <div class="field"><label>Template or saved week</label><select class="input" id="applyTplSel"></select></div>
     <div class="field"><label>Athlete</label><select class="input" id="applyWho"></select></div>
-    <p class="tiny muted" style="margin:0">Next you'll see it laid onto their board — pick training days and where it starts, review every week, then confirm. Nothing is applied until then.</p>
+    <p class="tiny muted" style="margin:0">Next you'll see it laid onto their board. Pick training days and where it starts, review every week, then confirm. Nothing is applied until then.</p>
   </div>
   <div class="modal-foot"><button class="btn btn--ghost" data-close>Cancel</button><button class="btn btn--brand" id="applyGo">Preview on their board →</button></div>
 </div>
@@ -1460,11 +1460,11 @@ const ago = d => { const days = Math.round((TODAY - d)/DAY); return days<=0?"tod
    DATA MODEL — shared between coach and athlete views
    ============================================================ */
 const WEEK_TYPES = {
-  accum : {label:"Accumulation",  cls:"wk-accum",  desc:"Volume build — higher reps, moderate loads"},
+  accum : {label:"Accumulation",  cls:"wk-accum",  desc:"Volume build: higher reps, moderate loads"},
   intens: {label:"Intensification",cls:"wk-intens", desc:"Load climbs, volume drops"},
   peak  : {label:"Comp Prep",     cls:"wk-peak",   desc:"Openers & heavy singles, taper volume"},
-  deload: {label:"Deload",        cls:"wk-deload", desc:"Recovery — 60-70% loads, low volume"},
-  cut   : {label:"Cutting",       cls:"wk-cut",    desc:"Weight-make week — reduced volume, keep intensity"},
+  deload: {label:"Deload",        cls:"wk-deload", desc:"Recovery: 60-70% loads, low volume"},
+  cut   : {label:"Cutting",       cls:"wk-cut",    desc:"Weight-make week: reduced volume, keep intensity"},
   tech  : {label:"Technique",     cls:"wk-tech",   desc:"Positions, tempo & complexes at light loads"}
 };
 const ALL_TAGS = ["high-impact","low-impact","competition-lift","technique","speed","strength","hypertrophy","overhead","posterior-chain","unilateral","no-equipment","high-CNS","recovery"];
@@ -1482,7 +1482,7 @@ const EXERCISES = [
   {id:"cp",  name:"Clean Pull",             cat:"Pull",         tags:["strength","posterior-chain","high-impact"],          yt:"https://youtube.com/watch?v=dpl02", cue:"Sweep the bar in, shrug at the top."},
   {id:"bsq", name:"Back Squat",             cat:"Squat",        tags:["strength","high-impact","posterior-chain"],          yt:"https://youtube.com/watch?v=dsq01", cue:"Big air, drive the floor apart."},
   {id:"fsq", name:"Front Squat",            cat:"Squat",        tags:["strength","high-impact"],                            yt:"https://youtube.com/watch?v=dsq02", cue:"Elbows up out of the hole."},
-  {id:"psq", name:"Pause Squat (3s)",       cat:"Squat",        tags:["strength","technique","hypertrophy"],                yt:"https://youtube.com/watch?v=dsq03", cue:"Own the bottom — no bounce."},
+  {id:"psq", name:"Pause Squat (3s)",       cat:"Squat",        tags:["strength","technique","hypertrophy"],                yt:"https://youtube.com/watch?v=dsq03", cue:"Own the bottom, no bounce."},
   {id:"ohs", name:"Overhead Squat",         cat:"Squat",        tags:["overhead","technique","low-impact"],                 yt:"https://youtube.com/watch?v=dsq04", cue:"Armpits forward, bar over mid-foot."},
   {id:"pp",  name:"Push Press",             cat:"Press",        tags:["overhead","strength"],                               yt:"https://youtube.com/watch?v=dpr01", cue:"Legs start it, arms finish it."},
   {id:"sp",  name:"Strict Press",           cat:"Press",        tags:["overhead","strength","hypertrophy","low-impact"],    yt:"https://youtube.com/watch?v=dpr02", cue:"Squeeze the glutes, head through."},
@@ -1494,7 +1494,7 @@ const EXERCISES = [
   {id:"bike",name:"Bike Erg intervals",     cat:"Conditioning", tags:["low-impact","no-equipment","recovery"],              yt:"https://youtube.com/watch?v=dcn01", cue:"Nose-breathing pace unless told otherwise."},
   {id:"mob", name:"T-spine + Ankle Mobility",cat:"Mobility",    tags:["recovery","no-equipment","low-impact"],              yt:"https://youtube.com/watch?v=dmb01", cue:"Two minutes per position, breathe."},
   {id:"hips",name:"Hip Flow (banded)",      cat:"Mobility",     tags:["recovery","low-impact"],                             yt:"https://youtube.com/watch?v=dmb02", cue:"Move slow; this is not a workout."},
-  {id:"tsn", name:"Tempo Snatch DL (5s up)",cat:"Pull",         tags:["technique","low-impact","posterior-chain"],          yt:"https://youtube.com/watch?v=dpl03", cue:"Five full seconds — positions over load."}
+  {id:"tsn", name:"Tempo Snatch DL (5s up)",cat:"Pull",         tags:["technique","low-impact","posterior-chain"],          yt:"https://youtube.com/watch?v=dpl03", cue:"Five full seconds. Positions over load."}
 ];
 const exById = id => EXERCISES.find(e=>e.id===id);
 
@@ -1512,7 +1512,7 @@ const CLIENTS = [
      {id:"h3",name:"10-min ankle mobility",emoji:"🧘",cadence:"training",note:"Before every session",streak:7,week:[1,1,1,1,0,1,0],doneToday:false,source:"12-Week Competition Cycle"}
    ],
    videos:[],
-   checkins:[{d:2,scale:7,mc:"Nothing — all good",note:"",rpe:8,comment:"Jerks felt snappy."},{d:4,scale:5,mc:"Legs are sore",note:"",rpe:9,comment:"Squats were a grind."},{d:6,scale:8,mc:"Nothing — all good",note:"",rpe:7,comment:""}],
+   checkins:[{d:2,scale:7,mc:"Nothing, all good",note:"",rpe:8,comment:"Jerks felt snappy."},{d:4,scale:5,mc:"Legs are sore",note:"",rpe:9,comment:"Squats were a grind."},{d:6,scale:8,mc:"Nothing, all good",note:"",rpe:7,comment:""}],
    prs:[{lift:"Snatch",v:82,d:12},{lift:"Clean & Jerk",v:104,d:26},{lift:"Back Squat",v:135,d:40}],
    hist:mkHist([
      {ex:"sn", log:[{d:2,top:"78kg ×1",e1:81,bw:63.8},{d:5,top:"75kg ×2",e1:80,bw:63.9},{d:9,top:"76kg ×1",e1:79,bw:64.1},{d:12,top:"82kg ×1 PR",e1:82,bw:64.2},{d:16,top:"74kg ×2",e1:79,bw:64.6},{d:23,top:"72kg ×2",e1:77,bw:64.9},{d:33,top:"74kg ×3",e1:80,bw:65.3},{d:44,top:"70kg ×3",e1:76,bw:65.6},{d:55,top:"68kg ×3",e1:74,bw:65.8}]},
@@ -1549,7 +1549,7 @@ const CLIENTS = [
   {id:"priya", name:"Priya Nair", av:"PN", cls:"55 kg", comp:"—", compliance:96, streak:14,
    metrics:{bw:54.6, ht:158, snatch:55, cj:70, bsq:92, years:"1–3"}, missing:[],
    weekType:"accum", weekNum:1, blockName:"Accumulation Block",
-   checkins:[{d:1,scale:9,mc:"Nothing — all good",note:"",rpe:6,comment:"Could've done more!"}],
+   checkins:[{d:1,scale:9,mc:"Nothing, all good",note:"",rpe:6,comment:"Could've done more!"}],
    prs:[{lift:"Snatch",v:55,d:9},{lift:"Clean & Jerk",v:70,d:9},{lift:"Back Squat",v:92,d:20}],
    hist:mkHist([
      {ex:"sn",log:[{d:1,top:"48kg ×3",e1:52},{d:8,top:"50kg ×2",e1:53}]},
@@ -1571,7 +1571,7 @@ const CLIENTS = [
   {id:"lena", name:"Lena Okafor", av:"LO", cls:"71 kg", comp:"—", compliance:88, streak:6,
    metrics:{bw:70.4, ht:172, snatch:68, cj:85, bsq:110, years:"1–3"}, missing:["years"],
    weekType:"deload", weekNum:4, blockName:"Recovery Week",
-   checkins:[{d:2,scale:6,mc:"Nothing — all good",note:"",rpe:5,comment:""}],
+   checkins:[{d:2,scale:6,mc:"Nothing, all good",note:"",rpe:5,comment:""}],
    prs:[{lift:"Snatch",v:68,d:31},{lift:"Clean & Jerk",v:85,d:31},{lift:"Back Squat",v:110,d:45}],
    hist:mkHist([{ex:"sn",log:[{d:2,top:"55kg ×2",e1:58},{d:9,top:"60kg ×2",e1:63}]}]),
    alerts:[],
@@ -1579,7 +1579,7 @@ const CLIENTS = [
   {id:"theo", name:"Theo Lindqvist", av:"TL", cls:"109+ kg", comp:"Nationals — Oct 17", compliance:82, streak:4,
    metrics:{bw:118.5, ht:193, snatch:130, cj:162, bsq:230, years:"5+"}, missing:[],
    weekType:"tech", weekNum:1, blockName:"Technique Reset",
-   checkins:[{d:1,scale:7,mc:"Nothing — all good",note:"",rpe:6,comment:"Tempo work is humbling."}],
+   checkins:[{d:1,scale:7,mc:"Nothing, all good",note:"",rpe:6,comment:"Tempo work is humbling."}],
    prs:[{lift:"Snatch",v:130,d:75},{lift:"Clean & Jerk",v:162,d:75},{lift:"Back Squat",v:230,d:50}],
    hist:mkHist([
      {ex:"sn",log:[{d:1,top:"105kg ×2",e1:112},{d:6,top:"110kg ×2",e1:117}]},
@@ -1724,7 +1724,7 @@ PROGRAMS.theo.weeks[0].days[0].rx[0].custom=[{k:"Tempo",v:"5-0-X"}];
 /* attention feed (dashboard) */
 const ATTN = [
   {kind:"issue", client:"jonas",  txt:"Shoulder pinch at jerk lockout — reported post-session", t:"Yesterday 6:41 pm"},
-  {kind:"video", client:"jonas",  txt:"Uploaded a form video: Jerk from Blocks — “is my dip vertical?”", t:"Yesterday 7:02 pm"},
+  {kind:"video", client:"jonas",  txt:"Uploaded a form video: Jerk from Blocks (“is my dip vertical?”)", t:"Yesterday 7:02 pm"},
   {kind:"msg",   client:"maya",   txt:"“…are we going 78 or 80 for the second snatch opener?”", t:"Today 8:12 am"},
   {kind:"prog",  client:"marcus", txt:"Program runs out Thursday — cut week needs its follow-up", t:"Now"},
   {kind:"msg",   client:"marcus", txt:"“What's the sauna protocol this week?”", t:"Today 5:03 am"},
@@ -1736,7 +1736,7 @@ const ATTN = [
 let Q_SEQ = 3, HAB_SEQ = 10;
 const CHECKIN = { questions:[
   {id:1, type:"scale", q:"How recovered do you feel today?", lo:"not recovered", hi:"fully recovered"},
-  {id:2, type:"mc",    q:"Anything affecting today's session?", opts:["Nothing — all good","Legs are sore","Poor sleep","Shoulder discomfort","Low energy / cutting"]}
+  {id:2, type:"mc",    q:"Anything affecting today's session?", opts:["Nothing, all good","Legs are sore","Poor sleep","Shoulder discomfort","Low energy / cutting"]}
 ]};
 const PHASE_HEX = {accum:"#2E9E5B", intens:"#E07C24", peak:"#D8412F", deload:"#8A63D2", cut:"#2B7DE0", tech:"#0F9BA8"};
 const deepClone = o => JSON.parse(JSON.stringify(o));
@@ -1849,7 +1849,7 @@ function renderAttn(){
   $("#attnFeed").innerHTML = ATTN.filter(a=>!a.read).map((a,i)=>{
     const c=clientById(a.client);
     return '<button class="attn attn--'+a.kind+'" data-i="'+i+'" data-client="'+a.client+'"><span class="ic">'+icons[a.kind]+'</span><span style="min-width:0"><b>'+esc(c.name)+'</b><p>'+esc(a.txt)+'</p></span><time>'+a.t+'</time></button>';
-  }).join("") || '<p class="empty-note">All caught up — nothing needs your attention.</p>';
+  }).join("") || '<p class="empty-note">All caught up. Nothing needs your attention.</p>';
   $$("#attnFeed .attn").forEach(b=> b.addEventListener("click",()=>{
     const a = ATTN[Number(b.dataset.i)];
     openClient(b.dataset.client, a.kind==="msg" ? "messages" : a.kind==="prog" ? "program" : a.kind==="video" ? "sessions" : "overview");
@@ -2094,7 +2094,7 @@ function renderMonthStrip(){
   $("#monthStrip").innerHTML=html;
   if(!ghosting){
     $("#addFromTpl").addEventListener("click",()=> startApply("t:0", CUR.id));
-    $("#addSavedWeek").addEventListener("click",()=>{ if(!WEEKS.length){ toast("No saved weeks yet — save one from this board or from a template","err"); return; } startApply("w:0", CUR.id); });
+    $("#addSavedWeek").addEventListener("click",()=>{ if(!WEEKS.length){ toast("No saved weeks yet. Save one from this board or from a template","err"); return; } startApply("w:0", CUR.id); });
     $("#addBlankWeek").addEventListener("click",()=>{
       snap("Add empty week");
       prog.weeks.push({type:prog.weeks[prog.cur].type,label:"Wk "+(prog.weeks.length+1),range:"scheduled",days:[]});
@@ -2159,7 +2159,7 @@ function selectDay(i){
   if(APPLY){ toast("Finish or cancel the apply preview first"); return; }
   selDay = selDay===i ? null : i;
   $$("#weekBoard .day-col").forEach(c=> c.classList.toggle("selected", Number(c.dataset.day)===selDay));
-  if(selDay!=null) toast(DOW[selDay]+" selected — click + on a library exercise", "");
+  if(selDay!=null) toast(DOW[selDay]+" selected. Click + on a library exercise", "");
 }
 
 /* rx edit modal */
@@ -2175,7 +2175,7 @@ function openRxModal(dayI,j){
   const wk=PROGRAMS[CUR.id].weeks[PROGRAMS[CUR.id].cur];
   const r=wk.days[dayI].rx[j], ex=exById(r.ex);
   rxCtx={dayI,j};
-  $("#rxModalT").textContent = ex.name+" — "+DOW[dayI];
+  $("#rxModalT").textContent = ex.name+" · "+DOW[dayI];
   $("#rxSets").value=r.sets; $("#rxReps").value=r.reps; $("#rxLoad").value=r.load; $("#rxNote").value=r.note||"";
   $("#rxRir").value=r.rir||""; $("#swapWrap").style.display="none";
   cfRows=(r.custom||[]).map(c=>({k:c.k,v:c.v}));
@@ -2220,7 +2220,7 @@ $("#rxSwap").addEventListener("click",()=>{
     snap("Swap "+ex.name+" → "+exById(b.dataset.swap).name);
     PROGRAMS[CUR.id].weeks[PROGRAMS[CUR.id].cur].days[rxCtx.dayI].rx[rxCtx.j].ex=b.dataset.swap;
     closeModals(); renderBoard();
-    toast("Swapped to "+exById(b.dataset.swap).name+" — kept "+r.sets+"×"+r.reps+" @ "+r.load,"good");
+    toast("Swapped to "+exById(b.dataset.swap).name+", kept "+r.sets+"×"+r.reps+" @ "+r.load,"good");
   }));
 });
 
@@ -2314,7 +2314,7 @@ function renderLib(){
       e.stopPropagation();
       const ex=exById(el.dataset.hist), log=CUR.hist[ex.id]||[];
       const pop=$("#histPop");
-      pop.innerHTML='<h5>'+esc(ex.name)+' — '+esc(CUR.name.split(" ")[0])+"'s log</h5>"+log.map(l=>'<div class="hrow"><span>'+fmtD(new Date(TODAY-l.d*DAY))+'</span><b class="mono">'+l.top+'</b></div>').join("");
+      pop.innerHTML='<h5>'+esc(ex.name)+' · '+esc(CUR.name.split(" ")[0])+"'s log</h5>"+log.map(l=>'<div class="hrow"><span>'+fmtD(new Date(TODAY-l.d*DAY))+'</span><b class="mono">'+l.top+'</b></div>').join("");
       const r=el.getBoundingClientRect();
       pop.style.left=Math.max(10,r.left-310)+"px";
       pop.style.top=Math.min(window.innerHeight-220,r.top-20)+"px";
@@ -2349,7 +2349,7 @@ function renderHistory(){
         '<br><span class="tiny muted"><span class="wk-pill '+wt.cls+'" style="padding:1px 8px;font-size:.62rem">'+wt.label+'</span> '+s.exercises.length+' exercise'+(s.exercises.length===1?"":"s")+(s.skippedCheckin?' · check-in skipped':'')+'</span></span>'+
       '<span class="fb">'+(rpe!=null?'<span class="rpe-pill '+(rpe>=9?"hi":rpe>=7?"mid":"lo")+'">RPE '+rpe+'</span>':'')+(sc?'<span>readiness '+sc.val+'/10</span>':'')+'</span></summary>'+
       '<div class="detail">'+
-        (s.pre.length?'<div class="sess-sec"><span class="sess-lbl">Pre-workout check-in</span>'+s.pre.map(a=>'<div class="exline"><span class="muted">'+esc(a.q)+'</span><span><b>'+(a.type==="scale"?a.val+' / 10':esc(a.val))+'</b>'+(a.other?' — <i>'+esc(a.other)+'</i>':'')+'</span></div>').join("")+'</div>':'<div class="sess-sec"><span class="sess-lbl">Pre-workout check-in</span><div class="exline"><span class="muted">Skipped</span></div></div>')+
+        (s.pre.length?'<div class="sess-sec"><span class="sess-lbl">Pre-workout check-in</span>'+s.pre.map(a=>'<div class="exline"><span class="muted">'+esc(a.q)+'</span><span><b>'+(a.type==="scale"?a.val+' / 10':esc(a.val))+'</b>'+(a.other?': <i>'+esc(a.other)+'</i>':'')+'</span></div>').join("")+'</div>':'<div class="sess-sec"><span class="sess-lbl">Pre-workout check-in</span><div class="exline"><span class="muted">Skipped</span></div></div>')+
         '<div class="sess-sec"><span class="sess-lbl">Work logged</span>'+s.exercises.map(e=>'<div class="exline"><span>'+esc(exById(e.ex).name)+'</span><span class="rx mono">'+(e.sets&&e.sets.length>1?e.sets.map(x=>x.load+'×'+x.reps).join(' · ')+' → ':'')+(e.top||'no sets logged')+(e.e1?' · e1RM '+e.e1+'kg':'')+'</span></div>').join("")+'</div>'+
         '<div class="sess-sec"><span class="sess-lbl">Post-workout</span><div class="exline"><span class="muted">Session RPE</span><span>'+(rpe!=null?'<b>'+rpe+' / 10</b>':'—')+'</span></div>'+(s.post.comment?'<div class="note">“'+esc(s.post.comment)+'”</div>':'')+'</div>'+
         (s.issue?'<div class="note" style="background:var(--bad-lt)"><b>Issue reported:</b> '+esc(s.issue.kind)+(s.issue.text?' — '+esc(s.issue.text):'')+'</div>':'')+
@@ -2386,7 +2386,7 @@ function renderQList(list, rootSel, after){
     if(q.type==="mc") extra='<div class="row" style="gap:5px">'+q.opts.map((o,oi)=>'<span class="chip">'+esc(o)+' <b style="cursor:pointer" data-rmopt="'+i+':'+oi+'">✕</b></span>').join("")+'<button class="btn btn--sm btn--soft" data-addopt="'+i+'">+ option</button></div>';
     else extra='<div class="row tiny muted" style="gap:8px"><span>1 = '+esc(q.lo||"low")+'</span><span>·</span><span>10 = '+esc(q.hi||"high")+'</span></div>';
     return '<div class="q-row"><div class="qhead"><span class="chip '+(q.type==="scale"?"chip--brand":"chip--good")+'">'+(q.type==="scale"?"1–10 scale":"multiple choice")+'</span><input class="input" value="'+esc(q.q)+'" data-qtext="'+i+'"><button class="iconbtn tip" data-tip="Delete question" data-delq="'+i+'"><span class="svgi svgi--trash"></span></button></div>'+extra+'</div>';
-  }).join("") || '<p class="empty-note">No questions — athletes go straight into the session.</p>';
+  }).join("") || '<p class="empty-note">No questions. Athletes go straight into the session.</p>';
   const rerender=()=>{ renderQList(list, rootSel, after); if(after) after(); };
   $$(rootSel+" [data-qtext]").forEach(inp=> inp.addEventListener("change",()=>{ list[Number(inp.dataset.qtext)].q=inp.value; if(after) after(); }));
   $$(rootSel+" [data-delq]").forEach(b=> b.addEventListener("click",()=>{ list.splice(Number(b.dataset.delq),1); rerender(); }));
@@ -2395,9 +2395,9 @@ function renderQList(list, rootSel, after){
 }
 function renderQBuilder(){
   $("#qBuilderTitle").textContent="Check-in questions for "+CUR.name.split(" ")[0];
-  renderQList(CUR.questions, "#qBuilder", ()=> toast("Updated — live from "+CUR.name.split(" ")[0]+"'s next session"));
+  renderQList(CUR.questions, "#qBuilder", ()=> toast("Updated. Live from "+CUR.name.split(" ")[0]+"'s next session"));
 }
-function renderDefQBuilder(){ renderQList(CHECKIN.questions, "#defQBuilder", ()=> toast("Defaults updated — new athletes get these; push them to update existing athletes")); }
+function renderDefQBuilder(){ renderQList(CHECKIN.questions, "#defQBuilder", ()=> toast("Defaults updated. New athletes get these; push them to update existing athletes")); }
 $("#addScaleQ").addEventListener("click",()=>{ CUR.questions.push({id:Q_SEQ++,type:"scale",q:"New 1–10 question",lo:"low",hi:"high"}); renderQBuilder(); });
 $("#addMCQ").addEventListener("click",()=>{ CUR.questions.push({id:Q_SEQ++,type:"mc",q:"New multiple-choice question",opts:["Option A","Option B"]}); renderQBuilder(); });
 $("#resetQBtn").addEventListener("click",()=>{ CUR.questions=deepClone(CHECKIN.questions); renderQBuilder(); toast("Reset to the default questions"); });
@@ -2607,7 +2607,7 @@ function renderTemplates(){
       '<b style="display:block;margin-top:8px;font-size:.98rem">'+esc(w.name||"Untitled week")+'</b><div class="tiny muted">'+esc(w.desc||"")+'</div>'+
       '<div class="stat">'+plural(st.sessions,"session")+' · '+plural(st.slots,"exercise slot")+(st.tagN?' · '+st.tagN+' tag-based':'')+'</div>'+
       '<div class="row" style="margin-top:12px"><button class="btn btn--sm btn--brand" data-openweek="'+i+'">Open</button><button class="btn btn--sm btn--soft" data-applyweek="'+i+'">Add to athlete…</button></div></div>';
-  }).join("") || '<p class="empty-note" style="grid-column:1/-1">No saved weeks yet — build one here, or save a week out of a template or an athlete\'s board.</p>';
+  }).join("") || '<p class="empty-note" style="grid-column:1/-1">No saved weeks yet. Build one here, or save a week out of a template or an athlete\'s board.</p>';
   $$("#weekCards [data-openweek]").forEach(b=> b.addEventListener("click",()=> openWeekEditor(Number(b.dataset.openweek))));
   $$("#weekCards [data-applyweek]").forEach(b=> b.addEventListener("click",()=> openApplyModal("w:"+b.dataset.applyweek)));
   $("#sessCards").innerHTML = SESSLIB.map((x,i)=>{
@@ -2617,7 +2617,7 @@ function renderTemplates(){
       '<b style="display:block;margin-top:8px;font-size:.98rem">'+esc(x.name||"Untitled session")+'</b><div class="tiny muted">'+esc(x.desc||"")+'</div>'+
       '<div class="stat">'+plural(st.slots,"exercise slot")+(st.tagN?' · '+st.tagN+' tag-based':'')+'</div><div class="tiny muted" style="margin-top:4px">'+esc(names)+'</div>'+
       '<div class="row" style="margin-top:12px"><button class="btn btn--sm btn--brand" data-opensess="'+i+'">Open</button></div></div>';
-  }).join("") || '<p class="empty-note" style="grid-column:1/-1">No saved sessions yet — build one here, or save one out of a week or template.</p>';
+  }).join("") || '<p class="empty-note" style="grid-column:1/-1">No saved sessions yet. Build one here, or save one out of a week or template.</p>';
   $$("#sessCards [data-opensess]").forEach(b=> b.addEventListener("click",()=> openSessEditor(Number(b.dataset.opensess))));
   $("#wkTypeLegend").innerHTML = Object.keys(WEEK_TYPES).map(k=>'<div class="row" style="gap:10px"><span class="wk-pill '+WEEK_TYPES[k].cls+'">'+WEEK_TYPES[k].label+'</span><span class="tiny muted">'+WEEK_TYPES[k].desc+'</span></div>').join("");
 }
@@ -2673,7 +2673,7 @@ function renderTplEditor(){
   $("#tplApplyBtn").style.display = isSess ? "none" : "";
   $("#tplApplyBtn").textContent = isWeek ? "Add to athlete" : "Apply to athlete";
   $("#tplSaveBtn").textContent = isSess ? "Save session" : isWeek ? "Save week" : "Save template";
-  $("#tplEditName").placeholder = isSess ? "e.g. A — Snatch + Squat" : isWeek ? "e.g. Accumulation — 3 day" : "e.g. 12-Week Competition Cycle";
+  $("#tplEditName").placeholder = isSess ? "e.g. A - Snatch + Squat" : isWeek ? "e.g. Accumulation - 3 day" : "e.g. 12-Week Competition Cycle";
   $("#tplWeekList").className = isSess ? "mode-session" : "";
   $("#tplSummary").innerHTML = isSess
     ? '<span><b>'+st.slots+'</b> exercise slot'+(st.slots===1?"":"s")+'</span><span><b>'+st.tagN+'</b> tag-based</span><span>Saved sessions are dropped into weeks and templates with “+ From saved session”.</span>'
@@ -2694,13 +2694,13 @@ function renderTplEditor(){
           '<div class="sbody">'+s.slots.map((sl,k)=>slotHTML(sl,wt.cls,wi,si,k)).join("")+(s.slots.length?'':'<span class="tiny muted" style="text-align:center;padding:6px 0">No exercises yet</span>')+'</div>'+
           '<div class="sfoot"><button class="day-add" data-selsess="'+wi+':'+si+'">+ add exercise</button></div></div>';
       }).join("")+(w.sessions.length?'':'<p class="empty-note" style="grid-column:1/-1;padding:10px">No sessions in this week yet.</p>')+'</div></div>';
-  }).join("") || '<p class="empty-note">No weeks yet — add the first week below.</p>';
+  }).join("") || '<p class="empty-note">No weeks yet. Add the first week below.</p>';
 
   $$("#tplWeekList [data-wtype]").forEach(s=> s.addEventListener("change",()=>{ t.weeks[Number(s.dataset.wtype)].type=s.value; renderTplEditor(); }));
   $$("#tplWeekList [data-addsess]").forEach(b=> b.addEventListener("click",()=>{ const wi=Number(b.dataset.addsess), w=t.weeks[wi]; w.sessions.push(sess("Session "+String.fromCharCode(65+w.sessions.length),[])); tSel={w:wi,s:w.sessions.length-1}; renderTplEditor(); }));
   $$("#tplWeekList [data-dupw]").forEach(b=> b.addEventListener("click",()=>{ const i=Number(b.dataset.dupw); t.weeks.splice(i+1,0,deepClone(t.weeks[i])); tSel=null; renderTplEditor(); toast("Week "+(i+1)+" duplicated"); }));
   $$("#tplWeekList [data-rmw]").forEach(b=> b.addEventListener("click",()=>{ t.weeks.splice(Number(b.dataset.rmw),1); tSel=null; renderTplEditor(); toast("Week removed"); }));
-  $$("#tplWeekList [data-savew]").forEach(b=> b.addEventListener("click",()=>{ const wi=Number(b.dataset.savew), w=t.weeks[wi]; openWeekSaveModal(w.type, w.sessions, (t.name||"Template")+" — week "+(wi+1)); }));
+  $$("#tplWeekList [data-savew]").forEach(b=> b.addEventListener("click",()=>{ const wi=Number(b.dataset.savew), w=t.weeks[wi]; openWeekSaveModal(w.type, w.sessions, (t.name||"Template")+" - week "+(wi+1)); }));
   $$("#tplWeekList [data-savesess]").forEach(b=> b.addEventListener("click",e=>{ e.stopPropagation(); const p=b.dataset.savesess.split(":"); const sx=t.weeks[p[0]].sessions[p[1]]; openLibSaveModal("session", {slots:sx.slots}, sx.name); }));
   $$("#tplWeekList [data-addsavedsess]").forEach(b=> b.addEventListener("click",()=>{ const wi=Number(b.dataset.addsavedsess); openLibPick("session", x=>{ t.weeks[wi].sessions.push(sess(x.name, deepClone(x.slots))); x.uses=(x.uses||0)+1; tSel={w:wi,s:t.weeks[wi].sessions.length-1}; renderTplEditor(); toast("“"+x.name+"” added to week "+(wi+1),"good"); }); }));
   $$("#tplWeekList [data-sname]").forEach(inp=>{
@@ -2805,8 +2805,8 @@ function openLibPick(kind, cb){
   $("#wpTitle").textContent = kind==="week" ? "Add a saved week" : "Add a saved session";
   const items = kind==="week" ? WEEKS : SESSLIB;
   $("#weekPickList").innerHTML = items.map((x,i)=>{
-    if(kind==="week"){ const st=weekStats(x), wt=WEEK_TYPES[x.type]; return '<button class="swap-item" data-pick="'+i+'"><span class="wk-pill '+wt.cls+'" style="flex-shrink:0">'+wt.label+'</span><span style="min-width:0"><b>'+esc(x.name||"Untitled week")+'</b><small>'+plural(st.sessions,"session")+' · '+plural(st.slots,"slot")+(x.desc?' — '+esc(x.desc):'')+'</small></span><span class="go">Use</span></button>'; }
-    const st=sessStats(x); return '<button class="swap-item" data-pick="'+i+'"><span style="min-width:0"><b>'+esc(x.name||"Untitled session")+'</b><small>'+plural(st.slots,"slot")+(st.tagN?' · '+st.tagN+' tag-based':'')+(x.desc?' — '+esc(x.desc):'')+'</small></span><span class="go">Use</span></button>';
+    if(kind==="week"){ const st=weekStats(x), wt=WEEK_TYPES[x.type]; return '<button class="swap-item" data-pick="'+i+'"><span class="wk-pill '+wt.cls+'" style="flex-shrink:0">'+wt.label+'</span><span style="min-width:0"><b>'+esc(x.name||"Untitled week")+'</b><small>'+plural(st.sessions,"session")+' · '+plural(st.slots,"slot")+(x.desc?' · '+esc(x.desc):'')+'</small></span><span class="go">Use</span></button>'; }
+    const st=sessStats(x); return '<button class="swap-item" data-pick="'+i+'"><span style="min-width:0"><b>'+esc(x.name||"Untitled session")+'</b><small>'+plural(st.slots,"slot")+(st.tagN?' · '+st.tagN+' tag-based':'')+(x.desc?' · '+esc(x.desc):'')+'</small></span><span class="go">Use</span></button>';
   }).join("") || '<p class="empty-note">Nothing saved yet.</p>';
   $$("#weekPickList [data-pick]").forEach(b=> b.addEventListener("click",()=>{ closeModals(); libPickCb(items[Number(b.dataset.pick)]); }));
   openModal("#weekPickModal");
@@ -2818,7 +2818,7 @@ $("#saveWeekBtn").addEventListener("click",()=>{
   const prog=PROGRAMS[CUR.id], wk=prog.weeks[prog.cur];
   const sessions=wk.days.map((d,i)=> d.rx.length ? sess(d.sessName||DOW[i], d.rx.map(r=> r.tagSlot ? tslot(r.tagSlot,r.ex,r.sets,r.reps,r.load,r.note) : slot(r.ex,r.sets,r.reps,r.load,r.note))) : null).filter(Boolean);
   if(!sessions.length){ toast("This week has no sessions to save","err"); return; }
-  openWeekSaveModal(wk.type, sessions, WEEK_TYPES[wk.type].label+" — "+sessions.length+" day");
+  openWeekSaveModal(wk.type, sessions, WEEK_TYPES[wk.type].label+" - "+sessions.length+" day");
 });
 
 /* library rail inside the template editor (no athlete context here) */
@@ -2847,7 +2847,7 @@ $("#tlibAddTagSlot").addEventListener("click",()=>{
   if(!tSel){ toast("Select a session on the left first","err"); return; }
   const tags=[...tlibTags];
   const def=EXERCISES.find(ex=> tags.every(t=>ex.tags.includes(t)));
-  if(!def){ toast("No exercise carries all of those tags — loosen the filter","err"); return; }
+  if(!def){ toast("No exercise carries all of those tags. Loosen the filter","err"); return; }
   const s=TCUR.weeks[tSel.w].sessions[tSel.s];
   s.slots.push(tslot(tags,def.id,3,"8","—"));
   renderTplEditor();
@@ -2867,16 +2867,16 @@ function openSlotModal(wi,si,k){
 }
 function renderSlotForm(exId){
   $$("#slotKindSeg button").forEach(b=> b.setAttribute("aria-pressed", b.dataset.kind===slotKind ? "true":"false"));
-  $("#slotKindHint").textContent = slotKind==="ex" ? "The same exercise for every athlete this template is applied to." : "Resolved per athlete from the tags — the default below, or their most recent matching lift.";
+  $("#slotKindHint").textContent = slotKind==="ex" ? "The same exercise for every athlete this template is applied to." : "Resolved per athlete from the tags: the default below, or their most recent matching lift.";
   $("#slotExWrap").style.display = slotKind==="ex" ? "flex" : "none";
   $("#slotTagWrap").style.display = slotKind==="tag" ? "flex" : "none";
   const sorted=EXERCISES.slice().sort((a,b)=>a.name.localeCompare(b.name));
-  $("#slotEx").innerHTML = sorted.map(ex=>'<option value="'+ex.id+'"'+(ex.id===exId?" selected":"")+'>'+esc(ex.name)+' — '+ex.cat+'</option>').join("");
+  $("#slotEx").innerHTML = sorted.map(ex=>'<option value="'+ex.id+'"'+(ex.id===exId?" selected":"")+'>'+esc(ex.name)+' · '+ex.cat+'</option>').join("");
   $("#slotTags").innerHTML = ALL_TAGS.map(t=>'<button class="tagchip'+(slotTagSel.has(t)?" on":"")+'" data-t="'+t+'">'+t+'</button>').join("");
   $$("#slotTags .tagchip").forEach(b=> b.addEventListener("click",()=>{ const t=b.dataset.t; slotTagSel.has(t)?slotTagSel.delete(t):slotTagSel.add(t); renderSlotForm($("#slotDef").value||exId); }));
   const cands=sorted.filter(ex=> [...slotTagSel].every(t=>ex.tags.includes(t)));
   $("#slotDefCount").textContent = slotTagSel.size ? "— "+cands.length+" exercise"+(cands.length===1?"":"s")+" qualify" : "— pick tags to narrow the pool";
-  $("#slotDef").innerHTML = cands.map(ex=>'<option value="'+ex.id+'"'+(ex.id===exId?" selected":"")+'>'+esc(ex.name)+' — '+ex.cat+'</option>').join("") || '<option value="">No exercise matches</option>';
+  $("#slotDef").innerHTML = cands.map(ex=>'<option value="'+ex.id+'"'+(ex.id===exId?" selected":"")+'>'+esc(ex.name)+' · '+ex.cat+'</option>').join("") || '<option value="">No exercise matches</option>';
 }
 $$("#slotKindSeg button").forEach(b=> b.addEventListener("click",()=>{ slotKind=b.dataset.kind; renderSlotForm(slotKind==="ex"?$("#slotEx").value:$("#slotDef").value); }));
 $("#slotSave").addEventListener("click",()=>{
@@ -2941,7 +2941,7 @@ function startApply(key,cid){
   const t=applySourceOf(key), prog=PROGRAMS[cid];
   APPLY={key, days:new Set(DEFAULT_DAYS[t.freq]||[0,2,4]), mode:"recent", start:prog.weeks.length, plan:[], curGhost:0, viewing:"ghost"};
   openClient(cid,"program");
-  toast("Previewing on "+clientById(cid).name.split(" ")[0]+"'s board — nothing is applied until you confirm");
+  toast("Previewing on "+clientById(cid).name.split(" ")[0]+"'s board. Nothing is applied until you confirm");
 }
 window.startApply=startApply;
 function replan(){
@@ -2961,7 +2961,7 @@ function renderApplyBar(){
   $$("#abDays button").forEach(b=> b.addEventListener("click",()=>{ const i=Number(b.dataset.d); APPLY.days.has(i)?APPLY.days.delete(i):APPLY.days.add(i); APPLY.curGhost=0; renderProgram(); }));
   $("#abTagMode").value=APPLY.mode;
   let opts='<option value="'+prog.weeks.length+'">After '+(prog.weeks.length?prog.weeks[prog.weeks.length-1].label:"the start")+' (append)</option>';
-  prog.weeks.forEach((w,i)=>{ if(i<=live) return; opts+='<option value="'+i+'">'+(w.days.some(d=>d.rx.length)?'Insert before '+w.label+' (it moves later)':'Start at '+w.label+' (empty — replaced)')+'</option>'; });
+  prog.weeks.forEach((w,i)=>{ if(i<=live) return; opts+='<option value="'+i+'">'+(w.days.some(d=>d.rx.length)?'Insert before '+w.label+' (it moves later)':'Start at '+w.label+' (empty, so it\'s replaced)')+'</option>'; });
   $("#abStart").innerHTML=opts; $("#abStart").value=String(APPLY.start);
   const after=prog.weeks.slice(APPLY.start), replaced=after.filter(w=>!w.days.some(d=>d.rx.length)).length, moved=after.length-replaced;
   $("#abSummary").innerHTML = !f ? '<b style="color:var(--bad)">Pick at least one training day.</b>'
@@ -2969,12 +2969,12 @@ function renderApplyBar(){
       +(st.tagN?' · '+st.tagN+' tag slots '+(APPLY.mode==="recent"?"resolved from "+CUR.name.split(" ")[0]+"'s history":"filled with defaults"):'')
       +((t.habits||[]).length?' · '+plural(t.habits.length,"habit")+' prescribed':'')
       +(replaced?' · replaces '+plural(replaced,"empty week"):'')+(moved?' · '+plural(moved,"scheduled week")+' move'+(moved===1?"s":"")+' after':'')
-      +' <span class="muted">— click the dashed weeks to review each one.</span>';
+      +'<span class="muted">. Click the dashed weeks to review each one.</span>';
 }
 $("#abSource").addEventListener("change",()=>{ APPLY.key=$("#abSource").value; const t=applySourceOf(APPLY.key); APPLY.days=new Set(DEFAULT_DAYS[t.freq]||[0,2,4]); APPLY.curGhost=0; APPLY.viewing="ghost"; renderProgram(); });
 $("#abTagMode").addEventListener("change",()=>{ APPLY.mode=$("#abTagMode").value; renderProgram(); });
 $("#abStart").addEventListener("change",()=>{ APPLY.start=Number($("#abStart").value); APPLY.curGhost=0; APPLY.viewing="ghost"; renderProgram(); });
-$("#abCancel").addEventListener("click",()=>{ APPLY=null; renderProgram(); toast("Apply cancelled — nothing changed"); });
+$("#abCancel").addEventListener("click",()=>{ APPLY=null; renderProgram(); toast("Apply cancelled. Nothing changed"); });
 $("#abConfirm").addEventListener("click",()=>{
   if(!APPLY.days.size){ toast("Pick at least one training day","err"); return; }
   const t=applySourceOf(APPLY.key), prog=PROGRAMS[CUR.id], c=CUR;
@@ -3003,10 +3003,10 @@ $("#abConfirm").addEventListener("click",()=>{
 $("#saveCycleTpl").addEventListener("click",()=>{
   const prog=PROGRAMS[CUR.id];
   const weeks=prog.weeks.map(w=> week(w.type, w.days.map((d,i)=> d.rx.length ? sess(d.sessName||DOW[i], d.rx.map(r=> r.tagSlot ? tslot(r.tagSlot,r.ex,r.sets,r.reps,r.load,r.note) : slot(r.ex,r.sets,r.reps,r.load,r.note))) : null).filter(Boolean))).filter(w=>w.sessions.length);
-  if(!weeks.length){ toast("Nothing to save — this program has no sessions yet","err"); return; }
+  if(!weeks.length){ toast("Nothing to save. This program has no sessions yet","err"); return; }
   TPLS.push({id:"t"+(TPL_SEQ++), name:CUR.blockName+" (from "+CUR.name.split(" ")[0]+")", desc:"Saved from "+CUR.name+"'s program", freq:Math.max.apply(null,weeks.map(w=>w.sessions.length)), uses:0, weeks, habits:(CUR.habits||[]).map(h=>({name:h.name,emoji:h.emoji,cadence:h.cadence||"daily",note:h.note||""}))});
   renderTemplates();
-  toast("Saved as a program template — open it under Programming › Templates to refine","good");
+  toast("Saved as a program template. Open it under Programming › Templates to refine","good");
 });
 
 /* invites */
@@ -3104,7 +3104,7 @@ function renderDayDetail(){
   const dayName = isToday ? "Today" : DOW[mSelDay];
   const el=$("#mDayDetail");
   if(!day||!day.rx.length){
-    el.innerHTML = '<div class="today-card '+wt.cls+'" style="text-align:center"><h3>'+dayName+' — rest day</h3><p class="sub">No training scheduled. Recovery is part of the program.</p></div>';
+    el.innerHTML = '<div class="today-card '+wt.cls+'" style="text-align:center"><h3>'+dayName+': rest day</h3><p class="sub">No training scheduled. Recovery is part of the program.</p></div>';
     return;
   }
   const done = day.status==="done";
@@ -3150,8 +3150,8 @@ function renderCiStep(){
       +Array.from({length:10},(_,i)=>'<button class="scale-btn'+(prev&&prev.val===i+1?" sel":"")+'" data-v="'+(i+1)+'">'+(i+1)+'</button>').join("")
       +'</div><div class="scale-ends"><span>1 · '+esc(q.lo||"low")+'</span><span>10 · '+esc(q.hi||"high")+'</span></div>';
   } else {
-    const opts=q.opts.concat(["Other — add details"]);
-    html+='<p class="tiny muted">Pick one — or add your own details.</p><div style="margin:12px 0 4px">'
+    const opts=q.opts.concat(["Other (add details)"]);
+    html+='<p class="tiny muted">Pick one, or add your own details.</p><div style="margin:12px 0 4px">'
       +opts.map((o,i)=>'<button class="mc-opt'+(prev&&prev.val===o?" sel":"")+'" data-o="'+esc(o)+'"><span><b>'+esc(o)+'</b></span></button>').join("")
       +'</div><div class="field" id="ciOtherWrap" style="display:'+(prev&&/Other/.test(prev.val)?"flex":"none")+';margin-bottom:10px"><label>Details for Dana</label><textarea class="input" id="ciOtherText" rows="2">'+(prev?esc(prev.other||""):"")+'</textarea></div>';
   }
@@ -3233,7 +3233,7 @@ function renderPlayer(){
         '<button class="tick" data-tick="'+si+'" aria-label="Mark set '+(si+1)+' done">✓</button>'+
       '</div>').join("")+'</div>'+
     '<button class="yt-btn" id="vidBtn" style="margin-bottom:10px"><span class="play" style="background:var(--grape)"><span class="svgi svgi--video" style="width:13px;height:13px"></span></span><span><b>'+(player.videos[player.i]?"Form video attached":"Add a form video for Dana")+'</b><small>'+(player.videos[player.i]?"Sends when you finish the session":"Record or upload — reviewed between sessions")+'</small></span><span class="ext">'+(player.videos[player.i]?"✕":"+")+'</span></button>'+
-    (ex.cue?'<p class="tiny muted" style="text-align:center">Cue — '+esc(ex.cue)+'</p>':'');
+    (ex.cue?'<p class="tiny muted" style="text-align:center">Cue: '+esc(ex.cue)+'</p>':'');
   $$("#plBody .set-row .in").forEach(inp=> inp.addEventListener("change",()=>{
     doneArr[Number(inp.dataset.si)][inp.dataset.f]=inp.value;
   }));
@@ -3264,7 +3264,7 @@ $("#plNext").addEventListener("click",()=>{
   if(player.i<player.session.length-1){ player.i++; renderPlayer(); }
   else beginPost();
 });
-$("#plExit").addEventListener("click",()=>{ showScreen("m-home"); toast("Session paused — pick it up any time"); });
+$("#plExit").addEventListener("click",()=>{ showScreen("m-home"); toast("Session paused. Pick it up any time"); });
 
 /* --- post-session --- */
 function beginPost(){
@@ -3304,14 +3304,14 @@ $("#postDone").addEventListener("click",()=>{
   Object.keys(player.videos||{}).forEach(k=>{
     if(!player.videos[k]) return;
     const rv=player.session[Number(k)];
-    (me.videos=me.videos||[]).unshift({d:0,ex:rv.ex,note:"Form check — "+exById(rv.ex).name});
+    (me.videos=me.videos||[]).unshift({d:0,ex:rv.ex,note:"Form check on "+exById(rv.ex).name});
     ATTN.unshift({kind:"video",client:"maya",txt:"Uploaded a form video: "+exById(rv.ex).name,t:"Just now"});
   });
   $("#doneStats").innerHTML =
     '<div class="d"><b>'+player.session.length+'</b><small>exercises</small></div>'+
     '<div class="d"><b>'+doneSets+'/'+totalSets+'</b><small>sets done</small></div>'+
     '<div class="d"><b>'+post.rpe+'</b><small>session RPE</small></div>';
-  $("#doneStreak").innerHTML='<b style="font-family:var(--font-d)">'+me.streak+'-session streak</b><p class="tiny muted" style="margin:2px 0 0">Session saved with your check-in, '+logged+' top set'+(logged===1?"":"s")+' and your notes — Dana sees all of it in your history.</p>';
+  $("#doneStreak").innerHTML='<b style="font-family:var(--font-d)">'+me.streak+'-session streak</b><p class="tiny muted" style="margin:2px 0 0">Session saved with your check-in, '+logged+' top set'+(logged===1?"":"s")+' and your notes. Dana sees all of it in your history.</p>';
   pendingPre=[]; pendingSkipped=false; pendingIssue=null;
   showScreen("m-done", true);
 });
@@ -3364,7 +3364,7 @@ function renderClientProfile(){
   const defs=[["bw","Bodyweight","kg"],["ht","Height","cm"],["snatch","Snatch 1RM","kg"],["cj","Clean & Jerk 1RM","kg"],["bsq","Back Squat 1RM","kg"],["years","Years training",""]];
   $("#mMetricList").innerHTML = defs.map(m=>{
     const v=me.metrics[m[0]];
-    return '<div class="spread tiny" style="border-bottom:1px solid var(--line-2);padding-bottom:8px"><span class="muted">'+m[1]+'</span>'+(v!=null&&v!==""?'<b>'+v+' '+m[2]+'</b>':'<span class="chip chip--warn">missing — tap to add</span>')+'</div>';
+    return '<div class="spread tiny" style="border-bottom:1px solid var(--line-2);padding-bottom:8px"><span class="muted">'+m[1]+'</span>'+(v!=null&&v!==""?'<b>'+v+' '+m[2]+'</b>':'<span class="chip chip--warn">missing, tap to add</span>')+'</div>';
   }).join("");
 }
 
@@ -3382,17 +3382,17 @@ $("#ob1Next").addEventListener("click",()=>{
 });
 $$("#m-onboard .skip").forEach(s=> s.addEventListener("click",()=>{
   const inp=$("#"+s.dataset.skip);
-  inp.value=""; inp.disabled=true; inp.placeholder="skipped — coach can fill in";
+  inp.value=""; inp.disabled=true; inp.placeholder="skipped, coach can fill in";
   obSkipped++;
   s.textContent="skipped"; s.style.pointerEvents="none";
 }));
 $("#ob2Next").addEventListener("click",()=>{
-  $("#obGapNote").textContent = obSkipped ? " ("+obSkipped+" field"+(obSkipped>1?"s":"")+" left blank — your coach can fill "+(obSkipped>1?"them":"it")+" in)" : "";
+  $("#obGapNote").textContent = obSkipped ? " ("+obSkipped+" field"+(obSkipped>1?"s":"")+" left blank, so your coach can fill "+(obSkipped>1?"them":"it")+" in)" : "";
   obStep(3);
 });
 $("#ob2SkipAll").addEventListener("click",()=>{
   obSkipped=6;
-  $("#obGapNote").textContent=" (all metrics skipped — Dana will fill them at your first session)";
+  $("#obGapNote").textContent=" (all metrics skipped, so Dana will fill them at your first session)";
   obStep(3);
 });
 $("#ob3Go").addEventListener("click",()=>{

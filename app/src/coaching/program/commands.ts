@@ -65,19 +65,19 @@ export function useProgramCommands(id: string, first: string) {
       duplicateWeek: (week: WeekSummary) =>
         run(
           () => ok(api.client.POST('/api/v1/athletes/{athlete_id}/weeks/{week_id}/duplicate', { params: { path: { ...athlete, week_id: week.id } } })),
-          (copy) => `Duplicated into ${copy.label} — later weeks moved back a week. It isn't published yet.`,
+          (copy) => `Duplicated into ${copy.label}. Later weeks moved back a week. It isn't published yet.`,
         ),
 
       deleteWeek: (week: WeekSummary) =>
         run(
           () => ok(api.client.DELETE('/api/v1/athletes/{athlete_id}/weeks/{week_id}', { params: { path: { ...athlete, week_id: week.id } } })),
-          () => `Deleted ${week.label} — later weeks moved up a week`,
+          () => `Deleted ${week.label}. Later weeks moved up a week`,
         ),
 
       clearWeek: (week: WeekSummary) =>
         run(
           () => ok(api.client.POST('/api/v1/athletes/{athlete_id}/weeks/{week_id}/clear', { params: { path: { ...athlete, week_id: week.id } } })),
-          (cleared) => (cleared.kept ? `Week cleared — ${cleared.kept} completed day${cleared.kept === 1 ? '' : 's'} kept` : 'Week cleared'),
+          (cleared) => (cleared.kept ? `Week cleared. ${cleared.kept} completed day${cleared.kept === 1 ? '' : 's'} kept` : 'Week cleared'),
         ),
 
       setWeekType: (week: WeekSummary, type: WeekTypeRef) =>
@@ -97,14 +97,14 @@ export function useProgramCommands(id: string, first: string) {
           () => ok(api.client.PATCH('/api/v1/athletes/{athlete_id}/weeks/{week_id}', { params: { path: { ...athlete, week_id: week.id } }, body: { published } })),
           () =>
             published
-              ? `${week.label} published — ${first} sees it now, and later edits go live straight away`
-              : `${week.label} unpublished — ${first} no longer sees it`,
+              ? `${week.label} published. ${first} sees it now, and later edits go live straight away`
+              : `${week.label} unpublished. ${first} no longer sees it`,
         ),
 
       undo: (week: Week) =>
         run(
           () => ok(api.client.POST('/api/v1/athletes/{athlete_id}/weeks/{week_id}/undo', { params: { path: { ...athlete, week_id: week.id } } })),
-          (done) => (done.undone ? `Undone: ${done.undone}` : "Nothing to undo in this week — adding, duplicating or deleting weeks can't be undone"),
+          (done) => (done.undone ? `Undone: ${done.undone}` : "Nothing to undo in this week. Adding, duplicating or deleting weeks can't be undone"),
         ),
 
       addSession: (dayId: string) =>
@@ -160,25 +160,25 @@ export function useProgramCommands(id: string, first: string) {
       swap: (rx: { id: string; exercise: Exercise }, to: Exercise) =>
         run(
           () => ok(api.client.POST('/api/v1/athletes/{athlete_id}/prescriptions/{rx_id}/swap', { params: { path: { ...athlete, rx_id: rx.id } }, body: { exercise_id: to.id } })),
-          (swapped) => `Swapped ${rx.exercise.name} for ${to.name} — kept ${swapped.summary}`,
+          (swapped) => `Swapped ${rx.exercise.name} for ${to.name}, kept ${swapped.summary}`,
         ),
 
       saveWeek: (week: WeekSummary, name: string, description: string) =>
         run(
           () => ok(api.client.POST('/api/v1/athletes/{athlete_id}/weeks/{week_id}/save', { params: { path: { ...athlete, week_id: week.id } }, body: { name, description } })),
-          (card) => `“${card.name}” saved — find it under Programming › Weeks`,
+          (card) => `“${card.name}” saved. Find it under Programming › Weeks`,
         ),
 
       saveSession: (session: PlannedSession, name: string, description: string) =>
         run(
           () => ok(api.client.POST('/api/v1/athletes/{athlete_id}/planned-sessions/{session_id}/save', { params: { path: { ...athlete, session_id: session.id } }, body: { name, description } })),
-          (card) => `“${card.name}” saved — find it under Programming › Sessions`,
+          (card) => `“${card.name}” saved. Find it under Programming › Sessions`,
         ),
 
       saveProgram: (name: string, description: string) =>
         run(
           () => ok(api.client.POST('/api/v1/athletes/{athlete_id}/program/save', { params: { path: athlete }, body: { name, description } })),
-          (card) => `Saved as “${card.name}” — open it under Programming › Templates to refine`,
+          (card) => `Saved as “${card.name}”. Open it under Programming › Templates to refine`,
         ),
 
       /** Writes what the preview showed. */
@@ -186,14 +186,14 @@ export function useProgramCommands(id: string, first: string) {
         run(
           () => ok(api.client.POST('/api/v1/athletes/{athlete_id}/apply', { params: { path: athlete }, body: choices })),
           (applied) =>
-            `“${name}” applied — from ${firstLabel}, ${choices.publish ? 'published' : `unpublished — review, then publish to ${first}`}` +
+            `“${name}” applied from ${firstLabel}, ${choices.publish ? 'published' : `unpublished (review, then publish to ${first})`}` +
             (applied.habits_added ? ` · ${applied.habits_added} habit${applied.habits_added === 1 ? '' : 's'} prescribed` : ''),
         ),
 
       prescribeHabit: (habit: { name: string; emoji: string; cadence: string; note: string }) =>
         run(
           () => ok(api.client.POST('/api/v1/athletes/{athlete_id}/habits', { params: { path: athlete }, body: habit })),
-          () => `Habit prescribed — ${first} sees it in their app today`,
+          () => `Habit prescribed. ${first} sees it in their app today`,
         ),
 
       stopHabit: (habit: { id: string; name: string }) =>

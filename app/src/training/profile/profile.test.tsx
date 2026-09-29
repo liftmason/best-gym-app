@@ -78,14 +78,14 @@ test('the training numbers, edited offline', async () => {
 test('onboarding after an invite: some numbers, some skipped', async () => {
   const { engine } = await show(Welcome);
   expect(await screen.findByText('Your training numbers')).toBeTruthy();
-  expect(screen.getByText('Dana Whitfield — Iron Ridge Weightlifting')).toBeTruthy();
+  expect(screen.getByText('Dana Whitfield at Iron Ridge Weightlifting')).toBeTruthy();
   await fireEvent.changeText(screen.getByLabelText('Bodyweight (kg)'), '64');
   await fireEvent.press(screen.getByRole('button', { name: 'Skip Height' }));
   expect(screen.getByRole('button', { name: 'Height skipped' })).toBeTruthy();
   await fireEvent.press(screen.getByRole('radio', { name: '1–3' }));
   await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
   expect(await screen.findByText("You're all set")).toBeTruthy();
-  expect(screen.getByText('Dana has your details (4 fields left blank — your coach can fill them in).')).toBeTruthy();
+  expect(screen.getByText('Dana has your details (4 fields left blank, so your coach can fill them in).')).toBeTruthy();
   expect(engine.status.pending).toBe(1);
   await fireEvent.press(screen.getByRole('button', { name: 'Show me my week →' }));
   await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith('/home'));

@@ -92,14 +92,14 @@ export default function Checkin() {
       ) : question.type === 'text' ? (
         <>
           <Text variant="tiny" tone="muted">
-            A few words for {coach} — or leave it empty.
+            A few words for {coach}, or leave it empty.
           </Text>
           <Field label={question.text} value={chosen} onChangeText={setValue} multiline maxLength={200} />
         </>
       ) : (
         <>
           <Text variant="tiny" tone="muted">
-            Pick one — or add your own details.
+            Pick one, or add your own details.
           </Text>
           <View style={styles.options}>
             {[...question.options, OTHER_OPTION].map((option) => {
@@ -113,7 +113,7 @@ export default function Checkin() {
                   style={[styles.option, on && styles.optionOn]}
                 >
                   <Text style={[styles.optionText, on && { color: colors.brand }]}>
-                    {option === OTHER_OPTION ? 'Other — add details' : option}
+                    {option === OTHER_OPTION ? 'Other (add details)' : option}
                   </Text>
                 </Pressable>
               );

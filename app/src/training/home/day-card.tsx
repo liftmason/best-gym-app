@@ -61,7 +61,7 @@ export function DayCard({
         <>
           <Button title="Log this session" variant="ghost" block onPress={onOpen} />
           <Text variant="tiny" tone="muted" style={styles.centred}>
-            Did it but didn&apos;t log it? Add what you did — it&apos;s saved to {longDay(date)}.
+            Did it but didn&apos;t log it? Add what you did. It&apos;s saved to {longDay(date)}.
           </Text>
         </>
       ) : (
@@ -77,7 +77,7 @@ export function RestCard({ date, isToday, weekType }: { date: string; isToday: b
   return (
     <Tinted weekType={weekType}>
       <Text variant="h3" style={styles.centred}>
-        {isToday ? 'Today' : longDay(date)} — rest day
+        {isToday ? 'Today' : longDay(date)}: rest day
       </Text>
       <Text variant="small" tone="muted" style={styles.centred}>
         No training scheduled. Recovery is part of the program.

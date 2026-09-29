@@ -1,6 +1,6 @@
 Hi,
 
-{{ coach.user.name|default:coach.user.email }} has invited you to {{ gym.name }} on {% app_name %}, where your programming, sessions and progress live.
+{{ coach.user.name|default:coach.user.email }} has invited you to {{ gym.name }} on {% app_name %}, where you'll get your program and log your training.
 
 Create your account here (it takes a minute; you can skip any numbers you don't know):
 

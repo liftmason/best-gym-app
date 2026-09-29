@@ -60,7 +60,7 @@ export default function Done() {
         </Text>
         <Text variant="tiny" tone="muted" style={styles.centred}>
           Saved with {log.checkin_skipped ? '' : 'your check-in, '}
-          {tops} top set{tops === 1 ? '' : 's'} and your notes — {coach} sees all of it in your history.
+          {tops} top set{tops === 1 ? '' : 's'} and your notes. {coach} sees all of it in your history.
           {next ? ` Next session ${longDay(next)}.` : ''}
         </Text>
       </Card>

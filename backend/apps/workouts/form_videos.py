@@ -58,9 +58,7 @@ def start_upload(se, size, content_type):
     if not isinstance(size, int) or size < 1:
         raise VideoRefused("Videos can't be added to this session.")
     if size > max_bytes:
-        raise VideoRefused(
-            f"That video is over {max_bytes // (1024 * 1024)} MB — trim it to a minute or two."
-        )
+        raise VideoRefused(f"That video is over {max_bytes // (1024 * 1024)} MB. Trim it to a minute or two.")
     if not content_type.startswith("video/") or len(content_type) > 60:
         raise VideoRefused("That file isn't a video.")
     if _taken(se) >= MAX_PER_EXERCISE:
@@ -83,7 +81,7 @@ def confirm(video):
     if video.uploaded_at is not None:
         return video
     if videos.stored_size(video.key) != video.size:
-        raise VideoRefused("The upload didn't finish — try again.")
+        raise VideoRefused("The upload didn't finish. Try again.")
     video.uploaded_at = timezone.now()
     video.save(update_fields=["uploaded_at"])
     alerts.video_uploaded(video)
@@ -117,7 +115,7 @@ def review(video, coach_user, feedback=""):
         raise VideoRefused(f"Keep feedback to {MAX_FEEDBACK} characters.")
     if feedback:
         athlete = video.session_log.athlete
-        body = f"Form check — {video.exercise_name} ({video.session_log.date:%a %-d %b}): {feedback}"
+        body = f"Form check on {video.exercise_name} ({video.session_log.date:%a %-d %b}): {feedback}"
         messaging.send(messaging.thread_for(athlete), coach_user, body[: messaging.MAX_BODY])
     video.feedback, video.reviewed_at, video.reviewed_by = feedback, timezone.now(), coach_user
     video.save(update_fields=["feedback", "reviewed_at", "reviewed_by"])

@@ -167,7 +167,7 @@ export function ExerciseBlock({
       <FormVideos world={world} se={se} coach={coach} editable={editable} />
       {exercise?.cue ? (
         <Text variant="tiny" tone="muted" style={styles.cue}>
-          Cue — {exercise.cue}
+          Cue: {exercise.cue}
         </Text>
       ) : null}
     </View>

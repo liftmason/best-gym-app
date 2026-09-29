@@ -1,4 +1,4 @@
-/** A one-off line for the next screen ("Session paused — pick it up any time"). */
+/** A one-off line for the next screen ("Session paused. Pick it up any time"). */
 let pending: string | null = null;
 
 export const flash = {

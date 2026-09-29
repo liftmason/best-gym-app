@@ -83,7 +83,7 @@ export function InviteSheet({ open, onClose }: { open: boolean; onClose: () => v
             {created.email && created.email_sent
               ? `We emailed ${created.email} a link. You can also share it yourself:`
               : created.email
-                ? `The email to ${created.email} didn't go — share the link yourself, or resend it later.`
+                ? `The email to ${created.email} didn't go. Share the link yourself, or resend it later.`
                 : `Share this link with your athlete. It works once and expires ${dayMonth(created.expires_at.slice(0, 10))}.`}
           </Text>
           <Text selectable style={styles.link}>
@@ -113,7 +113,7 @@ export function InviteSheet({ open, onClose }: { open: boolean; onClose: () => v
           <Text variant="label" tone="muted">
             Starting program
           </Text>
-          {[{ id: null, name: 'None — build from scratch' }, ...(templates.data ?? [])].map((t) => (
+          {[{ id: null, name: 'None (build from scratch)' }, ...(templates.data ?? [])].map((t) => (
             <Pressable
               key={t.id ?? 'none'}
               accessibilityRole="radio"

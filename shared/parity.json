@@ -5803,7 +5803,7 @@
     {
      "archived": false,
      "category_id": "00000000-0000-7000-8000-000000000004",
-     "cue": "Own the bottom \u2014 no bounce.",
+     "cue": "Own the bottom, no bounce.",
      "gym_id": "00000000-0000-7000-8000-000000000001",
      "id": "00000000-0000-7000-8000-000000000071",
      "key": "psq",
@@ -5943,7 +5943,7 @@
     {
      "archived": false,
      "category_id": "00000000-0000-7000-8000-000000000005",
-     "cue": "Five full seconds \u2014 positions over load.",
+     "cue": "Five full seconds. Positions over load.",
      "gym_id": "00000000-0000-7000-8000-000000000001",
      "id": "00000000-0000-7000-8000-000000000117",
      "key": "tsn",
@@ -7249,7 +7249,7 @@
     {
      "archived": false,
      "colour": "#2E9E5B",
-     "description": "Volume build \u2014 higher reps, moderate loads",
+     "description": "Volume build: higher reps, moderate loads",
      "gym_id": "00000000-0000-7000-8000-000000000001",
      "id": "00000000-0000-7000-8000-000000000023",
      "name": "Accumulation",
@@ -7276,7 +7276,7 @@
     {
      "archived": false,
      "colour": "#8A63D2",
-     "description": "Recovery \u2014 60-70% loads, low volume",
+     "description": "Recovery: 60-70% loads, low volume",
      "gym_id": "00000000-0000-7000-8000-000000000001",
      "id": "00000000-0000-7000-8000-000000000026",
      "name": "Deload",
@@ -7285,7 +7285,7 @@
     {
      "archived": false,
      "colour": "#2B7DE0",
-     "description": "Weight-make week \u2014 reduced volume, keep intensity",
+     "description": "Weight-make week: reduced volume, keep intensity",
      "gym_id": "00000000-0000-7000-8000-000000000001",
      "id": "00000000-0000-7000-8000-000000000027",
      "name": "Cutting",

@@ -114,13 +114,13 @@ export function ProgramBoard({ id, first, applyTemplate, onApplyDone }: { id: st
   function startApply(kind: 'program' | 'week') {
     const found = (sources.data ?? []).filter((s) => s.kind === kind);
     if (!found.length) {
-      toast(kind === 'program' ? 'No templates yet — build one under Programming' : 'No saved weeks yet — save one from this board or from a template', 'bad');
+      toast(kind === 'program' ? 'No templates yet. Build one under Programming' : 'No saved weeks yet. Save one from this board or from a template', 'bad');
       return;
     }
     setApplying({ template_id: found[0].id, days: null, mode: 'recent', start: '', publish: false });
     setGhost(0);
     setRestart(false);
-    toast(`Previewing on ${first}'s board — nothing is applied until you confirm`);
+    toast(`Previewing on ${first}'s board. Nothing is applied until you confirm`);
   }
 
   async function confirmApply() {
@@ -178,7 +178,7 @@ export function ProgramBoard({ id, first, applyTemplate, onApplyDone }: { id: st
             setApplying(null);
             setGhost(null);
             onApplyDone?.();
-            toast('Apply cancelled — nothing changed');
+            toast('Apply cancelled. Nothing changed');
           }}
           onConfirm={confirmApply}
         />
@@ -313,7 +313,7 @@ export function ProgramBoard({ id, first, applyTemplate, onApplyDone }: { id: st
                           onSelect={() => {
                             const next = d.id === selectedDay ? null : d.id;
                             setSelectedDay(next);
-                            if (next) toast(`${shortDay(d.date)} selected — click + on a library exercise`);
+                            if (next) toast(`${shortDay(d.date)} selected. Click + on a library exercise`);
                           }}
                           onOpen={(item) => setEditing({ item, date: d.date })}
                           onMenu={setMenu}
@@ -435,7 +435,7 @@ function ProgramNote({ note, first, readOnly, onSave }: { note: string; first: s
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} onPress={() => setOpen(!open)} style={styles.noteHead}>
         <Feather name={open ? 'chevron-down' : 'chevron-right'} size={14} color={colors.ink3} />
         <Text variant="label" tone="ink2">
-          Program note{note ? '' : ` — goal, rest, nutrition; shown to ${first} with the program`}
+          Program note{note ? '' : ` (goal, rest, nutrition; shown to ${first} with the program)`}
         </Text>
       </Pressable>
       {open ? (

@@ -52,7 +52,7 @@ export function QuestionsEditor({ athlete, first, readOnly = false }: { athlete:
   const calls = useQuestionCalls(athlete);
   const change = useChange();
   const refresh = [libraryKeys.questions(athlete)];
-  const updated = athlete ? `Updated — live from ${first}'s next session` : 'Defaults updated — new athletes get these; push them to update existing athletes';
+  const updated = athlete ? `Updated. Live from ${first}'s next session` : 'Defaults updated. New athletes get these; push them to update existing athletes';
 
   async function push() {
     if (!(await confirm('Replace the check-in questions of all your athletes with these defaults?', 'Their past answers are kept.', 'Push defaults'))) return;
@@ -75,8 +75,8 @@ export function QuestionsEditor({ athlete, first, readOnly = false }: { athlete:
           <Text variant="h4">{athlete ? `Check-in questions for ${first}` : 'Default check-in questions'}</Text>
           <Text variant="small" tone="muted">
             {athlete
-              ? 'This athlete’s own copy — changes are live from their next session. The defaults live under Programming › Check-in questions.'
-              : 'The default pre-session check-in. Every athlete gets their own copy of these when they join, which you can adjust from their Metrics tab. Changing the defaults here doesn’t touch existing athletes unless you push them.'}
+              ? "This athlete's own copy. Changes are live from their next session. The defaults live under Programming › Check-in questions."
+              : "The default pre-session check-in. Every athlete gets their own copy of these when they join, which you can adjust from their Metrics tab. Changing the defaults here doesn't touch existing athletes unless you push them."}
           </Text>
         </View>
         {athlete ? (
@@ -87,7 +87,7 @@ export function QuestionsEditor({ athlete, first, readOnly = false }: { athlete:
       </View>
       {questions.data && !list.length ? (
         <Text variant="small" tone="muted">
-          No questions — athletes go straight into the session.
+          No questions. Athletes go straight into the session.
         </Text>
       ) : null}
       {list.map((q, i) => (
@@ -109,7 +109,7 @@ export function QuestionsEditor({ athlete, first, readOnly = false }: { athlete:
       {!readOnly ? (
         <View style={styles.adds}>
           {Object.entries(TYPES).map(([type, label]) => (
-            <Button key={type} size="sm" variant="soft" title={`+ ${label === '1–10 scale' ? '1–10 scale' : label} question`} onPress={() => change(() => calls.add(type), { said: 'Question added — edit its wording below', refresh })} />
+            <Button key={type} size="sm" variant="soft" title={`+ ${label === '1–10 scale' ? '1–10 scale' : label} question`} onPress={() => change(() => calls.add(type), { said: 'Question added. Edit its wording below', refresh })} />
           ))}
         </View>
       ) : null}

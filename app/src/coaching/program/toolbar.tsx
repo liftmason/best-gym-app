@@ -41,7 +41,7 @@ export function WeekToolbar({ week, weekTypes, first, commands, onSave, readOnly
           <Text variant="h4">
             {week.label} · {dayMonth(week.start_date)}–{dayMonth(addDays(week.start_date, 6))}
           </Text>
-          <Chip tone={week.published ? 'good' : 'warn'} label={week.published ? `Live — ${first} sees edits immediately` : `Draft — not visible to ${first}`} />
+          <Chip tone={week.published ? 'good' : 'warn'} label={week.published ? `Live: ${first} sees edits immediately` : `Draft: not visible to ${first}`} />
         </View>
         <View style={styles.actions}>
           <Pressable
@@ -93,7 +93,7 @@ function FocusNote({ saved, first, readOnly, onSave }: { saved: string; first: s
   return (
     <View style={{ gap: 6 }}>
       <Text variant="label" tone="ink2">
-        Coach&apos;s focus this week — shown on {first}&apos;s home screen
+        Coach&apos;s focus this week, shown on {first}&apos;s home screen
       </Text>
       <TextInput
         accessibilityLabel="Focus this week"

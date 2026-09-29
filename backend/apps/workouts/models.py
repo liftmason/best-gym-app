@@ -98,7 +98,7 @@ DEFAULT_QUESTIONS = [
         "type": QuestionType.CHOICE,
         "text": "Anything affecting today's session?",
         "options": [
-            "Nothing — all good",
+            "Nothing, all good",
             "Legs are sore",
             "Poor sleep",
             "Shoulder discomfort",

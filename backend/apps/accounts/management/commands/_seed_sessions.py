@@ -67,17 +67,17 @@ HISTORY = {
 # email: [(days ago, readiness, affecting, details, session RPE, comment), ...]
 CHECKINS = {
     "maya@ironridge.example": [
-        (2, 7, "Nothing — all good", "", 8, "Jerks felt snappy."),
+        (2, 7, "Nothing, all good", "", 8, "Jerks felt snappy."),
         (4, 5, "Legs are sore", "", 9, "Squats were a grind."),
-        (6, 8, "Nothing — all good", "", 7, ""),
+        (6, 8, "Nothing, all good", "", 7, ""),
     ],
     "jonas@ironridge.example": [
         (1, 4, "Shoulder discomfort", "Right shoulder pinches at jerk lockout", 8, "Cut jerks early."),
     ],
-    "priya@ironridge.example": [(1, 9, "Nothing — all good", "", 6, "Could've done more!")],
+    "priya@ironridge.example": [(1, 9, "Nothing, all good", "", 6, "Could've done more!")],
     "marcus@ironridge.example": [(3, 3, "Poor sleep", "", 9, "The cut is wearing on me.")],
-    "lena@ironridge.example": [(2, 6, "Nothing — all good", "", 5, "")],
-    "theo@ironridge.example": [(1, 7, "Nothing — all good", "", 6, "Tempo work is humbling.")],
+    "lena@ironridge.example": [(2, 6, "Nothing, all good", "", 5, "")],
+    "theo@ironridge.example": [(1, 7, "Nothing, all good", "", 6, "Tempo work is humbling.")],
 }
 
 # email: [(hours ago, from the athlete?, text, read?)] — the mockup's message threads.

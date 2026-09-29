@@ -127,7 +127,7 @@ export function ApplyBar({ choices, onChange, preview, sources, first, current, 
         </Text>
       ) : preview ? (
         <Text variant="small" tone="ink2">
-          {summaryLine(preview, first, current)} — click the dashed weeks to review each one.
+          {summaryLine(preview, first, current)}. Click the dashed weeks to review each one.
         </Text>
       ) : null}
       <View style={styles.row}>
@@ -146,7 +146,7 @@ export function GhostWeek({ week, sourceName, weekStart }: { week: Preview['week
   return (
     <View style={{ gap: 10 }}>
       <Text variant="h4">
-        {week.label} · {dayMonth(week.start)} — preview of “{sourceName}”
+        {week.label} · {dayMonth(week.start)} · preview of “{sourceName}”
       </Text>
       <View style={styles.ghostDays}>
         {names.map((name, offset) => {

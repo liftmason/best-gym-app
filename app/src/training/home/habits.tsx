@@ -16,7 +16,7 @@ function line(item: HabitItem): string {
   const cadence = item.met_for_week
     ? `Done for this week (${item.week_count}/${target})`
     : `${CADENCE[h.cadence] ?? h.cadence}${target ? ` · ${item.week_count}/${target} this week` : ''}`;
-  return `${cadence} · ${item.streak}-${target ? 'week' : 'day'} streak${h.note ? ` — ${h.note}` : ''}`;
+  return `${cadence} · ${item.streak}-${target ? 'week' : 'day'} streak${h.note ? ` · ${h.note}` : ''}`;
 }
 
 export function Habits({ world }: { world: World }) {

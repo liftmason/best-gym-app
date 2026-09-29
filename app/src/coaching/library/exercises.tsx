@@ -42,7 +42,7 @@ export function ExerciseLibrary({ readOnly }: { readOnly: boolean }) {
     if (!(await confirm(`Archive “${e.name}”?`, `It disappears from the library but past sessions keep it. You can restore it later.${tracked}`, 'Archive'))) return;
     await change(() => ok(api.client.POST('/api/v1/exercises/{exercise_id}/archive', { params: { path: { exercise_id: e.id } } })), {
       said: (r) =>
-        `“${e.name}” archived${r.was_tracked ? ' and removed from tracked lifts' : ''}${r.percent_users ? ` — ${r.percent_users} exercise${r.percent_users === 1 ? '' : 's'} still take percentages from it` : ''}`,
+        `“${e.name}” archived${r.was_tracked ? ' and removed from tracked lifts' : ''}${r.percent_users ? `. ${r.percent_users} exercise${r.percent_users === 1 ? '' : 's'} still take percentages from it` : ''}`,
     });
   }
 
@@ -237,7 +237,7 @@ function ExerciseForm({ exercise, onClose, onSaved }: { exercise: Exercise | 'ne
       </View>
       <View style={{ gap: 6 }}>
         <Text variant="label" tone="ink2">
-          Tags <Text variant="tiny" tone="muted">click to toggle — used for filtering when you program, and for tag-based slots in templates</Text>
+          Tags <Text variant="tiny" tone="muted">click to toggle. Used for filtering when you program, and for tag-based slots in templates</Text>
         </Text>
         <View style={styles.chips}>
           {(tags.data ?? []).map((t) => {
@@ -255,7 +255,7 @@ function ExerciseForm({ exercise, onClose, onSaved }: { exercise: Exercise | 'ne
       <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: warmup }} onPress={() => setWarmup(!warmup)} style={styles.check}>
         <View style={[styles.box, warmup && styles.boxOn]}>{warmup ? <Feather name="check" size={12} color={colors.white} /> : null}</View>
         <Text variant="small" style={{ flex: 1 }}>
-          Warm-up drill — added to sessions as part of the warm-up checklist: the athlete taps its name for the demo and ticks it off, no sets to log.
+          Warm-up drill: added to sessions as part of the warm-up checklist. The athlete taps its name for the demo and ticks it off, with no sets to log.
         </Text>
       </Pressable>
       {errors[''] ? (
@@ -439,7 +439,7 @@ function StarterSheet({ open, onClose }: { open: boolean; onClose: () => void })
   return (
     <Sheet open={open} onClose={onClose} title="Add starter exercises">
       <Text variant="small" tone="muted">
-        Adds only what your library doesn&apos;t have yet — nothing you&apos;ve edited, renamed or deleted comes back changed. Everything it adds is yours to edit.
+        Adds only what your library doesn&apos;t have yet. Nothing you&apos;ve edited, renamed or deleted comes back changed. Everything it adds is yours to edit.
       </Text>
       {(packs.data ?? [])
         .filter((p) => p.key !== 'empty')

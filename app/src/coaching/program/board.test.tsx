@@ -90,12 +90,12 @@ test('the week: its state, publishing, and the focus note', async () => {
   const calls = await show({
     'PATCH /api/v1/athletes/{athlete_id}/weeks/{week_id}': () => body('/api/v1/athletes/{athlete_id}/weeks/{week_id}', 'patch', week({ published: true })),
   });
-  expect(await screen.findByText('Draft — not visible to Maya')).toBeTruthy();
+  expect(await screen.findByText('Draft: not visible to Maya')).toBeTruthy();
   expect(screen.getByText('6×2 @ 78%')).toBeTruthy();
   expect(screen.getByRole('tab', { name: /^Wk 3, Comp Prep/ })).toBeTruthy();
   await fireEvent.press(screen.getByRole('button', { name: 'Publish to Maya' }));
   await waitFor(() => expect(sent(calls, 'PATCH /api/v1/athletes/{athlete_id}/weeks/{week_id}')).toEqual([{ published: true }]));
-  expect(await screen.findByText('Wk 3 published — Maya sees it now, and later edits go live straight away')).toBeTruthy();
+  expect(await screen.findByText('Wk 3 published. Maya sees it now, and later edits go live straight away')).toBeTruthy();
   await fireEvent.changeText(screen.getByLabelText('Focus this week'), 'Openers Saturday');
   await fireEvent(screen.getByLabelText('Focus this week'), 'blur');
   await waitFor(() => expect(sent(calls, 'PATCH /api/v1/athletes/{athlete_id}/weeks/{week_id}')).toContainEqual({ focus_note: 'Openers Saturday' }));
@@ -179,7 +179,7 @@ test('applying a template: preview, then confirm', async () => {
   expect(sent(calls, 'POST /api/v1/athletes/{athlete_id}/apply')).toEqual([]); // nothing written yet
   await fireEvent.press(screen.getByRole('button', { name: 'Confirm apply' }));
   await waitFor(() => expect(sent(calls, 'POST /api/v1/athletes/{athlete_id}/apply')).toEqual([{ template_id: 'tpl-1', days: [0, 2, 4], mode: 'recent', start: 'append', publish: false }]));
-  expect(await screen.findByText('“12-Week Competition Cycle” applied — from Wk 4, unpublished — review, then publish to Maya')).toBeTruthy();
+  expect(await screen.findByText('“12-Week Competition Cycle” applied from Wk 4, unpublished (review, then publish to Maya)')).toBeTruthy();
 });
 
 test("opened from Programming's “Apply to athlete…”, the board starts in that template's preview", async () => {

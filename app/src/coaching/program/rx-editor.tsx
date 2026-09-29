@@ -59,7 +59,7 @@ function RxSheet({ item, date, unit, readOnly, commands, onClose, loaded }: Prop
     <Sheet
       open={Boolean(item)}
       onClose={onClose}
-      title={item ? `${name} — ${date ? dayMonth(date) : ''}` : ''}
+      title={item ? `${name} · ${date ? dayMonth(date) : ''}` : ''}
       footer={
         swapping ? (
           <Button size="sm" variant="ghost" title="← Back" onPress={() => setSwapping(false)} />

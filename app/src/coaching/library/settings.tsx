@@ -109,7 +109,7 @@ function GymCard({ saved }: { saved: SettingsData }) {
           Used for new programs. Existing programs keep their dates.
         </Text>
       </View>
-      <Check on={form.digest} label="Email me a morning digest — at 7am (gym time), only when something new needs your attention." onPress={() => set({ digest: !form.digest })} />
+      <Check on={form.digest} label="Email me a morning digest at 7am (gym time), only when something new needs your attention." onPress={() => set({ digest: !form.digest })} />
       {errors[''] ? (
         <Text variant="small" tone="bad">
           {errors['']}
@@ -173,7 +173,7 @@ function TrackedLifts() {
             disabled={!adding}
             onPress={async () => {
               const name = available.find((e) => e.id === adding)?.name;
-              if (await change(() => ok(api.client.POST('/api/v1/tracked-lifts', { body: { exercise_id: adding! } })), { refresh, said: `Now tracking ${name} — athletes are asked for it at onboarding` })) setAdding(null);
+              if (await change(() => ok(api.client.POST('/api/v1/tracked-lifts', { body: { exercise_id: adding! } })), { refresh, said: `Now tracking ${name}. Athletes are asked for it at onboarding` })) setAdding(null);
             }}
           />
         </View>
@@ -208,7 +208,7 @@ function WeekTypes() {
           onSave={(body) => change(() => ok(api.client.PUT('/api/v1/week-types/{week_type_id}', { params: { path: { week_type_id: t.id } }, body })), { refresh })}
           onMove={(direction) => change(() => ok(api.client.POST('/api/v1/week-types/{week_type_id}/move', { params: { path: { week_type_id: t.id } }, body: { direction } })), { refresh })}
           onRemove={async () => {
-            const message = t.uses ? `“${t.name}” is used by ${t.uses} week${t.uses === 1 ? '' : 's'}, so it will be archived: it leaves the pickers and those weeks keep it.` : 'It isn’t used by any week.';
+            const message = t.uses ? `“${t.name}” is used by ${t.uses} week${t.uses === 1 ? '' : 's'}, so it will be archived: it leaves the pickers and those weeks keep it.` : "It isn't used by any week.";
             if (await confirm(t.uses ? `Archive “${t.name}”?` : `Delete the week type “${t.name}”?`, message, t.uses ? 'Archive' : 'Delete'))
               change(() => ok(api.client.POST('/api/v1/week-types/{week_type_id}/remove', { params: { path: { week_type_id: t.id } } })), { refresh });
           }}
@@ -235,7 +235,7 @@ function WeekTypes() {
       {archived.length ? (
         <View style={{ gap: 6 }}>
           <Text variant="label" tone="ink2">
-            Archived — kept on the weeks that use them:
+            Archived, but kept on the weeks that use them:
           </Text>
           {archived.map((t) => (
             <View key={t.id} style={styles.line}>

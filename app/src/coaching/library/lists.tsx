@@ -14,14 +14,14 @@ import { useRoster } from '../queries';
 import { libraryKeys, useTemplates, type Kind, type TemplateCard } from './queries';
 
 const INTRO: Record<Kind, string> = {
-  program: 'A template is a whole program — any number of weeks, each with its own sessions. Apply it to an athlete at whatever weekly frequency suits them.',
-  week: 'Reusable single weeks — build them from saved sessions, save one out of a template or an athlete’s board, then drop it into any template or program.',
-  session: 'Reusable sessions — the building blocks of weeks. Build one here, or save one out of any week or template with the bookmark control on its card.',
+  program: 'A template is a whole program: any number of weeks, each with its own sessions. Apply it to an athlete at whatever weekly frequency suits them.',
+  week: "Reusable single weeks. Build them from saved sessions, save one out of a template or an athlete's board, then drop it into any template or program.",
+  session: 'Reusable sessions, the building blocks of weeks. Build one here, or save one out of any week or template with the bookmark control on its card.',
 };
 const EMPTY: Record<Kind, string> = {
-  program: 'No templates yet — build one here, or save an athlete’s program as a template from their board.',
-  week: 'No saved weeks yet — build one here, or save a week out of a template or an athlete’s board.',
-  session: 'No saved sessions yet — build one here, or save one out of a week or template.',
+  program: "No templates yet. Build one here, or save an athlete's program as a template from their board.",
+  week: "No saved weeks yet. Build one here, or save a week out of a template or an athlete's board.",
+  session: 'No saved sessions yet. Build one here, or save one out of a week or template.',
 };
 const NEW: Record<Kind, string> = { program: '+ New template', week: '+ New week', session: '+ New session' };
 
@@ -103,7 +103,7 @@ export function ApplyToAthlete({ card, onClose }: { card: { id: string; name: st
   return (
     <Sheet open={Boolean(card)} onClose={onClose} title="Apply to an athlete">
       <Text variant="small" tone="muted">
-        Next you&apos;ll see “{card?.name}” laid onto their board — pick training days and where it starts, review every week, then confirm. Nothing is applied until then.
+        Next you&apos;ll see “{card?.name}” laid onto their board. Pick training days and where it starts, review every week, then confirm. Nothing is applied until then.
       </Text>
       {(roster.data ?? []).map(({ athlete: a }) => (
         <Pressable

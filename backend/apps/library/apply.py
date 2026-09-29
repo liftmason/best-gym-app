@@ -158,7 +158,7 @@ def placements(athlete):
             label = (
                 f"Insert before {week.label} (it moves later)"
                 if week.pk in worked
-                else f"Start at {week.label} (empty — replaced)"
+                else f"Start at {week.label} (empty, so it's replaced)"
             )
             options.append(
                 Placement(f"at:{week.pk}", label, program, week.order, week.start_date, empty, work)

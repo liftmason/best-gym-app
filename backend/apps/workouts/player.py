@@ -98,7 +98,7 @@ def banner(p, unit):
             if p.overrides:
                 hint = f"loads vary by set · {p.max_exercise} max {units.display(p.max_kg, unit)}"
         else:
-            hint = "no max on file — go by feel"
+            hint = "no max on file, go by feel"
     rir = rir_text(p.rir, p.rir_max)
     return {"sets": len(p.overrides) or p.sets, "reps": reps, "load": load, "rir": rir, "hint": hint}
 

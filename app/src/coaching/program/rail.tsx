@@ -133,7 +133,7 @@ export function Rail({ athleteId, first, dayLabel, readOnly, onAdd }: Props) {
         />
       </View>
       <ExerciseSheet exercise={creating ? 'new' : null} onClose={() => setCreating(false)} />
-      <Sheet open={Boolean(log)} onClose={() => setLog(null)} title={log ? `${log.name} — ${first}'s log` : ''}>
+      <Sheet open={Boolean(log)} onClose={() => setLog(null)} title={log ? `${log.name} · ${first}'s log` : ''}>
         {log?.history?.log.map((entry, i) => (
           <View key={i} style={styles.logRow}>
             <Text variant="small" tone="muted" style={{ width: 110 }}>

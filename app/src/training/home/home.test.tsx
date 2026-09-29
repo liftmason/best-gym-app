@@ -50,7 +50,7 @@ test('other days: done, still ahead, a rest day, and last week', async () => {
   await fireEvent.press(screen.getByRole('button', { name: /Sat 2026-09-26/ }));
   expect(await screen.findByText('This session unlocks on Saturday.')).toBeTruthy();
   await fireEvent.press(screen.getByRole('button', { name: /Tue 2026-09-22/ }));
-  expect(await screen.findByText('Tuesday — rest day')).toBeTruthy();
+  expect(await screen.findByText('Tuesday: rest day')).toBeTruthy();
   await fireEvent.press(screen.getByRole('button', { name: /Wed 2026-09-23/ }));
   expect(await screen.findByRole('button', { name: 'Review or edit what you logged' })).toBeTruthy();
   await fireEvent.press(screen.getByRole('button', { name: 'Previous week' }));

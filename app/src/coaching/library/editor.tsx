@@ -98,10 +98,10 @@ export function TemplateEditor({ id, readOnly }: { id: string; readOnly: boolean
         </Text>
         <Text variant="tiny" tone="muted">
           {kind === 'week'
-            ? 'A saved week can be dropped into any template, or straight onto an athlete’s program.'
+            ? "A saved week can be dropped into any template, or straight onto an athlete's program."
             : kind === 'session'
               ? 'Saved sessions are dropped into weeks and templates with “+ From saved session”.'
-              : 'Select a session, then add exercises from the library. Use a tag slot when the exact exercise should be chosen per athlete — it fills with their most recent matching lift (or the default) and can be swapped on their board.'}{' '}
+              : 'Select a session, then add exercises from the library. Use a tag slot when the exact exercise should be chosen per athlete. It fills with their most recent matching lift (or the default) and can be swapped on their board.'}{' '}
           Changes save as you make them; templates have no undo.
         </Text>
       </View>
@@ -128,7 +128,7 @@ export function TemplateEditor({ id, readOnly }: { id: string; readOnly: boolean
             ))}
             {!t.weeks.length ? (
               <Text variant="small" tone="muted">
-                No weeks yet — add the first week below.
+                No weeks yet. Add the first week below.
               </Text>
             ) : null}
             {kind === 'program' && !readOnly ? (
@@ -136,7 +136,7 @@ export function TemplateEditor({ id, readOnly }: { id: string; readOnly: boolean
                 <Button
                   size="sm"
                   variant="ghost"
-                  title={t.weeks.length ? '+ Add week — copy of the last week' : '+ Add week'}
+                  title={t.weeks.length ? '+ Add week (copy of the last week)' : '+ Add week'}
                   onPress={() =>
                     run(
                       () => ok(api.client.POST('/api/v1/templates/{template_id}/weeks', { params: { path: p }, body: { points } })),
@@ -212,7 +212,7 @@ function Meta({ editor: t, readOnly, onSave }: { editor: Editor; readOnly: boole
   const [description, setDescription] = useState(t.description);
   const [note, setNote] = useState(t.program_note);
   const kind = t.kind;
-  const placeholder = kind === 'program' ? 'e.g. 12-Week Competition Cycle' : kind === 'week' ? 'e.g. Accumulation — 3 day' : 'e.g. A — Snatch + Squat';
+  const placeholder = kind === 'program' ? 'e.g. 12-Week Competition Cycle' : kind === 'week' ? 'e.g. Accumulation - 3 day' : 'e.g. A - Snatch + Squat';
   return (
     <Card style={{ gap: 12 }}>
       <View style={styles.row}>
@@ -237,7 +237,7 @@ function Meta({ editor: t, readOnly, onSave }: { editor: Editor; readOnly: boole
       <Field label="Description" value={description} editable={!readOnly} onChangeText={setDescription} onBlur={() => description.trim() !== t.description && onSave({ description: description.trim() })} placeholder="Who this is for and what it emphasises" maxLength={300} />
       {kind === 'program' ? (
         <Field
-          label="Program note — goal, rest, nutrition; becomes the athlete's program note when applied as a new program"
+          label="Program note (goal, rest, nutrition), which becomes the athlete's program note when applied as a new program"
           value={note}
           editable={!readOnly}
           multiline
@@ -306,7 +306,7 @@ function WeekBlock({
               <Button size="sm" variant="ghost" title="+ Session" onPress={() => run(() => ok(api.client.POST('/api/v1/templates/{template_id}/weeks/{template_week_id}/sessions', { params: { path: p }, body: {} })))} />
               {kind === 'program' ? (
                 <>
-                  <Button size="sm" variant="ghost" title="Save week" onPress={() => onSave({ kind: 'week', save: (name, description) => run(() => ok(api.client.POST('/api/v1/templates/{template_id}/weeks/{template_week_id}/save', { params: { path: p }, body: { name, description } })), (c) => `“${c.name}” saved — find it under Programming › Weeks`) })} />
+                  <Button size="sm" variant="ghost" title="Save week" onPress={() => onSave({ kind: 'week', save: (name, description) => run(() => ok(api.client.POST('/api/v1/templates/{template_id}/weeks/{template_week_id}/save', { params: { path: p }, body: { name, description } })), (c) => `“${c.name}” saved. Find it under Programming › Weeks`) })} />
                   <Pressable accessibilityRole="button" accessibilityLabel={`Duplicate ${week.label}`} onPress={() => run(() => ok(api.client.POST('/api/v1/templates/{template_id}/weeks/{template_week_id}/duplicate', { params: { path: p } })), `Week ${index + 1} duplicated`)}>
                     <Feather name="copy" size={16} color={colors.ink3} />
                   </Pressable>
@@ -385,7 +385,7 @@ function SessionCard({
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`Save ${session.name || 'session'} to the session library`}
-                onPress={() => onSave({ kind: 'session', save: (n, d) => run(() => ok(api.client.POST('/api/v1/templates/{template_id}/template-sessions/{template_session_id}/save', { params: { path: p }, body: { name: n, description: d } })), (c) => `“${c.name}” saved — find it under Programming › Sessions`) })}
+                onPress={() => onSave({ kind: 'session', save: (n, d) => run(() => ok(api.client.POST('/api/v1/templates/{template_id}/template-sessions/{template_session_id}/save', { params: { path: p }, body: { name: n, description: d } })), (c) => `“${c.name}” saved. Find it under Programming › Sessions`) })}
               >
                 <Feather name="bookmark" size={15} color={colors.ink3} />
               </Pressable>
@@ -412,7 +412,7 @@ function SessionCard({
         ) : null}
         {!readOnly ? (
           <Pressable accessibilityRole="button" accessibilityLabel={`Add an exercise to ${session.name || 'this session'}`} onPress={onSelect} style={styles.addEx}>
-            <Text style={styles.addText}>{selected ? 'Adding here — pick from the library' : '+ add exercise'}</Text>
+            <Text style={styles.addText}>{selected ? 'Adding here. Pick from the library' : '+ add exercise'}</Text>
           </Pressable>
         ) : null}
       </View>
@@ -563,7 +563,7 @@ function SlotForm({ templateId, detail, readOnly, onClose }: { templateId: strin
           ))}
         </View>
         <Text variant="tiny" tone="muted">
-          {kind === 'exercise' ? 'The same exercise for every athlete this template is applied to.' : 'Resolved per athlete from the tags — their most recent matching lift, or the default below.'}
+          {kind === 'exercise' ? 'The same exercise for every athlete this template is applied to.' : 'Resolved per athlete from the tags: their most recent matching lift, or the default below.'}
         </Text>
       </View>
       {kind === 'tag' ? (
@@ -585,9 +585,9 @@ function SlotForm({ templateId, detail, readOnly, onClose }: { templateId: strin
       ) : null}
       <View style={{ gap: 6 }}>
         <Text variant="label" tone="ink2">
-          {kind === 'tag' ? `Default exercise — ${tagIds.length ? `${qualifying.length} qualify` : 'pick tags to narrow the pool'}` : 'Exercise'}
+          {kind === 'tag' ? `Default exercise (${tagIds.length ? `${qualifying.length} qualify` : 'pick tags to narrow the pool'})` : 'Exercise'}
         </Text>
-        <Select label={kind === 'tag' ? 'Default exercise' : 'Exercise'} value={exercise} onChange={setExercise} options={(kind === 'tag' ? qualifying : all).map((e) => ({ value: e.id, label: `${e.name} — ${e.category.name}` }))} placeholder="Pick an exercise" />
+        <Select label={kind === 'tag' ? 'Default exercise' : 'Exercise'} value={exercise} onChange={setExercise} options={(kind === 'tag' ? qualifying : all).map((e) => ({ value: e.id, label: `${e.name} · ${e.category.name}` }))} placeholder="Pick an exercise" />
         {errors.exercise_id || errors.default_id || errors.tag_ids ? (
           <Text variant="tiny" tone="bad">
             {errors.exercise_id ?? errors.default_id ?? errors.tag_ids}
@@ -605,7 +605,7 @@ function PickSaved({ templateId, picking, onClose, run }: { templateId: string; 
     <Sheet open={Boolean(picking)} onClose={onClose} title={picking?.kind === 'week' ? 'Add a saved week' : 'Add a saved session'}>
       {saved.data && !saved.data.length ? (
         <Text variant="small" tone="muted">
-          Nothing saved yet — save a {picking?.kind} from a template or an athlete&apos;s board first.
+          Nothing saved yet. Save a {picking?.kind} from a template or an athlete&apos;s board first.
         </Text>
       ) : null}
       {(saved.data ?? []).map((card) => (
@@ -625,7 +625,7 @@ function PickSaved({ templateId, picking, onClose, run }: { templateId: string; 
           <View style={{ flex: 1 }}>
             <Text style={{ fontFamily: fonts.semibold }}>{card.name}</Text>
             <Text variant="tiny" tone="muted">
-              {card.stats.sessions} sessions · {card.stats.slots} slots{card.description ? ` — ${card.description}` : ''}
+              {card.stats.sessions} sessions · {card.stats.slots} slots{card.description ? ` · ${card.description}` : ''}
             </Text>
           </View>
           <Text variant="small" tone="brand" style={{ fontFamily: fonts.semibold }}>
@@ -671,7 +671,7 @@ function TemplateHabits({ editor: t, readOnly, run }: { editor: Editor; readOnly
         ))
       ) : (
         <Text variant="small" tone="muted">
-          No habits yet — anything added here is prescribed to the athlete when this template is applied.
+          No habits yet. Anything added here is prescribed to the athlete when this template is applied.
         </Text>
       )}
       {!readOnly ? (

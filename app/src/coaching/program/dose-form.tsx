@@ -49,7 +49,7 @@ export function DoseFields({ dose, onChange, errors, unit }: { dose: Dose; onCha
   if (dose.warmup) {
     return (
       <View style={styles.gap}>
-        <Check on label="Warm-up drill — ticked off in the warm-up checklist at the start of the session, nothing to log" onPress={() => set({ warmup: false })} />
+        <Check on label="Warm-up drill: ticked off in the warm-up checklist at the start of the session, nothing to log" onPress={() => set({ warmup: false })} />
         <Field label="Dose" value={dose.rep_scheme} onChangeText={(rep_scheme) => set({ rep_scheme })} placeholder="e.g. x 5 breaths + 5 shifts, 5 min" maxLength={60} error={errors.rep_scheme} />
         <Field label="Note to athlete" value={dose.note} onChangeText={(note) => set({ note })} placeholder="e.g. pause 2s in the catch" maxLength={500} multiline error={errors.note} />
       </View>
@@ -58,7 +58,7 @@ export function DoseFields({ dose, onChange, errors, unit }: { dose: Dose; onCha
 
   return (
     <View style={styles.gap}>
-      <Check on={false} label="Warm-up drill — ticked off in the warm-up checklist at the start of the session, nothing to log" onPress={() => set({ warmup: true, superset: false, section: '', section_note: '' })} />
+      <Check on={false} label="Warm-up drill: ticked off in the warm-up checklist at the start of the session, nothing to log" onPress={() => set({ warmup: true, superset: false, section: '', section_note: '' })} />
       <View style={styles.row}>
         <View style={{ width: 90 }}>
           <Field
@@ -97,7 +97,7 @@ export function DoseFields({ dose, onChange, errors, unit }: { dose: Dose; onCha
       ) : null}
       <Field label="Note to athlete" value={dose.note} onChangeText={(note) => set({ note })} placeholder="e.g. pause 2s in the catch" maxLength={500} multiline error={errors.note} />
 
-      <Check on={dose.vary} label="Vary by set — e.g. 70 / 75 / 80%, or 5-3-1 reps" onPress={() => set({ vary: !dose.vary, set_rows: !dose.vary ? fitRows({ ...dose, set_rows: [] }, dose.sets) : dose.set_rows })} />
+      <Check on={dose.vary} label="Vary by set (e.g. 70 / 75 / 80%, or 5-3-1 reps)" onPress={() => set({ vary: !dose.vary, set_rows: !dose.vary ? fitRows({ ...dose, set_rows: [] }, dose.sets) : dose.set_rows })} />
       {dose.vary ? (
         <View style={styles.gapS}>
           {fitRows(dose, dose.sets).map((row, i) => (
@@ -135,11 +135,11 @@ export function DoseFields({ dose, onChange, errors, unit }: { dose: Dose; onCha
           <Field label="Section note" value={dose.section_note} onChangeText={(section_note) => set({ section_note })} placeholder="e.g. Superset non-competing exercises when available" maxLength={200} error={errors.section_note} />
         </View>
       </View>
-      <Check on={dose.superset} label="Superset with the exercise above — shown as A1 / A2; the athlete logs them on one screen" onPress={() => set({ superset: !dose.superset })} />
+      <Check on={dose.superset} label="Superset with the exercise above (shown as A1 / A2; the athlete logs them on one screen)" onPress={() => set({ superset: !dose.superset })} />
 
       <View style={styles.gapS}>
         <Text variant="label" tone="ink2">
-          Custom fields <Text variant="tiny" tone="muted">anything else — tempo, rest, bar, cue</Text>
+          Custom fields <Text variant="tiny" tone="muted">anything else: tempo, rest, bar, cue</Text>
         </Text>
         {dose.custom_fields.map((f, i) => (
           <View key={i} style={styles.setRow}>

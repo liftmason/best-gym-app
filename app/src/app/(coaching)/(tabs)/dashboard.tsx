@@ -93,7 +93,7 @@ export default function Today() {
           ))
         ) : (
           <Text variant="small" tone="muted">
-            No athletes yet — invite your first one.
+            No athletes yet. Invite your first one.
           </Text>
         )}
       </Card>

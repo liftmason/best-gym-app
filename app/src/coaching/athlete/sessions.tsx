@@ -88,7 +88,7 @@ function SessionCard({
                 </Text>
                 <Text variant="tiny" style={[styles.bold, styles.right]}>
                   {a.type === 'scale' ? `${a.value} / 10` : a.value || '—'}
-                  {a.other ? ` — ${a.other}` : ''}
+                  {a.other ? `: ${a.other}` : ''}
                 </Text>
               </View>
             ))
@@ -156,7 +156,7 @@ function SessionCard({
                   Form video: {v.exercise}
                 </Text>
                 <Text variant="tiny" tone="muted">
-                  {!v.available ? 'Removed after 90 days' : v.reviewed ? `Reviewed${v.feedback ? ` — ${v.feedback}` : ''}` : v.note ? `“${v.note}”` : 'Waiting for your review'}
+                  {!v.available ? 'Removed after 90 days' : v.reviewed ? `Reviewed${v.feedback ? `: ${v.feedback}` : ''}` : v.note ? `“${v.note}”` : 'Waiting for your review'}
                 </Text>
               </View>
               {!v.reviewed ? <Text variant="tiny" style={[styles.bold, { color: GRAPE }]}>Review</Text> : null}

@@ -29,7 +29,7 @@ export default function More() {
       <Card style={{ gap: space.s }}>
         <Text variant="h4">Programming and settings</Text>
         <Text variant="small" tone="muted">
-          Templates, the exercise library, check-in questions and your gym&apos;s settings. They&apos;re laid out for a computer — open {APP_NAME} on the web — but work here too.
+          Templates, the exercise library, check-in questions and your gym&apos;s settings. They&apos;re laid out for a computer (open {APP_NAME} on the web), but work here too.
         </Text>
         <View style={{ flexDirection: 'row', gap: space.s }}>
           <Button title="Programming" size="sm" variant="soft" onPress={() => router.push('/programming')} />
@@ -38,8 +38,7 @@ export default function More() {
       </Card>
       {me.data?.athlete ? (
         <Button
-          title="Switch to Training"
-          variant="soft"
+          title="Switch to training"
           block
           onPress={async () => {
             await rememberMode('training');

@@ -152,9 +152,8 @@ def test_starting_at_a_future_week_replaces_empties_and_moves_the_rest(
     program_services.add_prescription(later.days.first(), ex(gym, "cj"), athlete)
     empty = program.weeks.get(order=1)
     options = {p.value: p for p in apply.placements(athlete)}
-    assert (
-        f"at:{empty.pk}" in options and "Start at Wk 2 (empty — replaced)" == options[f"at:{empty.pk}"].label
-    )
+    label = "Start at Wk 2 (empty, so it's replaced)"
+    assert f"at:{empty.pk}" in options and label == options[f"at:{empty.pk}"].label
     apply.confirm(athlete, template, [0, 2, 4], apply.DEFAULTS, f"at:{empty.pk}", False, coach.user)
     assert not ProgramWeek.objects.filter(pk=empty.pk).exists()
     later.refresh_from_db()

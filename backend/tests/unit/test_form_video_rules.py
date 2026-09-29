@@ -53,7 +53,7 @@ def test_an_upload_is_signed_confirmed_and_alerts_the_coach(se, coach):
 @pytest.mark.parametrize(
     "size, content_type, message",
     [
-        (201 * MB, "video/mp4", "That video is over 200 MB — trim it to a minute or two."),
+        (201 * MB, "video/mp4", "That video is over 200 MB. Trim it to a minute or two."),
         (5 * MB, "image/png", "That file isn't a video."),
         (0, "video/mp4", "Videos can't be added to this session."),
     ],
@@ -110,7 +110,7 @@ def test_review_feedback_goes_to_the_athletes_messages(se, coach):
         and video.feedback == "Stay over the bar longer."
     )
     message = Message.objects.get()
-    assert message.sender == coach.user and message.body.startswith("Form check — Snatch (")
+    assert message.sender == coach.user and message.body.startswith("Form check on Snatch (")
     assert message.body.endswith("Stay over the bar longer.")
     assert not alerts.feed(coach).filter(kind="video", cleared_at__isnull=True).exists()
 

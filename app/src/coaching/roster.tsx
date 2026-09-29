@@ -32,7 +32,7 @@ function Compliance({ value, band }: { value: number | null; band: string }) {
 }
 
 function RosterRowView({ row }: { row: Row }) {
-  const who = [row.weight_class, row.competition_name ? `${row.competition_name}${row.competition_date ? ` — ${dayMonth(row.competition_date)}` : ''}` : 'no comp scheduled']
+  const who = [row.weight_class, row.competition_name ? `${row.competition_name}${row.competition_date ? `, ${dayMonth(row.competition_date)}` : ''}` : 'no comp scheduled']
     .filter(Boolean)
     .join(' · ');
   return (
@@ -112,7 +112,7 @@ export function Roster({ title = true }: { title?: boolean }) {
           roster.data.map((row) => <RosterRowView key={row.athlete.id} row={row} />)
         ) : (
           <Text variant="small" tone="muted">
-            {q.trim() ? 'No athlete matches that.' : 'No athletes yet — invite your first one.'}
+            {q.trim() ? 'No athlete matches that.' : 'No athletes yet. Invite your first one.'}
           </Text>
         )
       ) : (

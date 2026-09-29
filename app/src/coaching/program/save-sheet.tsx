@@ -40,7 +40,7 @@ export function SaveSheet({ what, onClose }: { what: SaveWhat | null; onClose: (
       <Field label="Name" value={name} onChangeText={setName} placeholder="Leave empty for a suggested name" maxLength={80} onSubmitEditing={save} />
       <Field label="Description (optional)" value={description} onChangeText={setDescription} placeholder="What this is for" maxLength={300} />
       <Text variant="tiny" tone="muted">
-        Library items are copies — editing one later does not change templates or programs that already use it.
+        Library items are copies. Editing one later does not change templates or programs that already use it.
       </Text>
     </Sheet>
   );

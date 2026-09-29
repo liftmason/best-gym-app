@@ -301,7 +301,7 @@ def board_sessions(program_week):
 
 
 def suggested_week_name(program_week):
-    return f"{program_week.week_type.name} — {len(board_sessions(program_week))} day"
+    return f"{program_week.week_type.name} - {len(board_sessions(program_week))} day"
 
 
 def suggested_program_names(program):
@@ -370,7 +370,7 @@ def save_template_week(gym, by, template_week, name, description=""):
 def save_program(gym, by, program, name, description=""):
     """An athlete's program as a template: every week with work, its sessions in day order."""
     if not any(board_sessions(w) for w in program.weeks.all()):
-        raise InvalidTemplate("Nothing to save — this program has no sessions yet")
+        raise InvalidTemplate("Nothing to save. This program has no sessions yet")
     name, description = check_save_names(name, description)
     template = Template.objects.create(
         gym=gym,
@@ -537,7 +537,7 @@ def add_tag_slot(session, tags, index=None):
         raise InvalidTemplate("Pick from your own tags.")
     default = default_for_tags(gym, tags)
     if default is None:
-        raise InvalidTemplate("No exercise carries all of those tags — loosen the filter")
+        raise InvalidTemplate("No exercise carries all of those tags. Loosen the filter")
     return add_slot(session, default, index=index, tags=tags)
 
 
@@ -605,7 +605,7 @@ def use_saved(template, kind, source_id, week=None):
 def suggested_name(template, what, part):
     """The name offered when saving a template's week or session to the library."""
     if what == "week":
-        return f"{template.display_name} — week {part.order + 1}"
+        return f"{template.display_name} - week {part.order + 1}"
     return part.name or template.display_name
 
 

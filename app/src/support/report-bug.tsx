@@ -3,7 +3,7 @@
  * where it happened, the screen size, and the device and app version. Reports land in the
  * admin under Dashboard → Bug reports (docs/OPERATIONS.md). It needs a connection.
  */
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { usePathname } from 'expo-router';
 import { useState } from 'react';
@@ -71,7 +71,7 @@ export function ReportBugSheet({ open, onClose, side }: { open: boolean; onClose
       }
     >
       {sent ? (
-        <Text>Thanks — it&apos;s been sent. We read every report.</Text>
+        <Text>Thanks, it&apos;s been sent. We read every report.</Text>
       ) : (
         <>
           <Field
@@ -105,7 +105,7 @@ export function ReportBugIcon({ side }: { side: Side }) {
         hitSlop={8}
         style={{ width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface2 }}
       >
-        <Feather name="alert-circle" size={19} color={colors.ink2} />
+        <Ionicons name="bug-outline" size={19} color={colors.ink2} />
       </Pressable>
       {open ? <ReportBugSheet open onClose={() => setOpen(false)} side={side} /> : null}
     </>
@@ -121,7 +121,7 @@ export function ReportBugLink({ side, block }: { side: Side; block?: boolean }) 
         <Button title="Report a bug" variant="ghost" block onPress={() => setOpen(true)} />
       ) : (
         <Pressable accessibilityRole="button" onPress={() => setOpen(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8 }}>
-          <Feather name="alert-circle" size={16} color={colors.ink3} />
+          <Ionicons name="bug-outline" size={16} color={colors.ink3} />
           <Text variant="small" tone="muted">
             Report a bug
           </Text>

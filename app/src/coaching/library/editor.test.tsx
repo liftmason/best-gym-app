@@ -124,7 +124,7 @@ test('adding a heavier week, and deleting the template', async () => {
     'DELETE /api/v1/templates/{template_id}': () => ({ status: 204 }),
   });
   await fireEvent.changeText(screen.getByLabelText('Percentage points heavier'), '2.5');
-  await fireEvent.press(screen.getByRole('button', { name: '+ Add week — copy of the last week' }));
+  await fireEvent.press(screen.getByRole('button', { name: '+ Add week (copy of the last week)' }));
   expect(await screen.findByText('Week 2 added as a copy of the previous week, percentages +2.5')).toBeTruthy();
   expect(sent(calls, 'POST /api/v1/templates/{template_id}/weeks')[0].body).toEqual({ points: '2.5' });
   await fireEvent.press(screen.getByRole('button', { name: 'Delete' }));

@@ -82,7 +82,7 @@ test("a template's preview writes nothing until confirmed", async () => {
   await answered(/\/apply\/preview$/, 'POST', () => page.getByRole('button', { name: 'Add from template' }).click());
   await expect(page.getByText(/new weeks? \(Wk/)).toBeVisible();
   await page.getByRole('button', { name: 'Cancel', exact: true }).click();
-  await expect(page.getByText('Apply cancelled — nothing changed')).toBeVisible();
+  await expect(page.getByText('Apply cancelled. Nothing changed')).toBeVisible();
 });
 
 test('the library: a new exercise', async () => {

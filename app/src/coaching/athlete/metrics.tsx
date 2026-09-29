@@ -152,7 +152,7 @@ export function Metrics({ id, first, unit, maxUpdates, focus }: { id: string; fi
           {missing.length ? <Button title="Remind athlete" size="sm" variant="ghost" onPress={() => act(() => ok(api.client.POST('/api/v1/athletes/{athlete_id}/remind-metrics', { params: { path: { athlete_id: id } } })), `Reminder sent to ${first}`)} /> : null}
         </View>
         <Text variant="tiny" tone="muted">
-          Fields {first} skipped show as not provided — you can fill them in yourself.
+          Fields {first} skipped show as not provided. You can fill them in yourself.
         </Text>
         <View style={styles.grid}>
           {metrics.data.metrics.map((m) => (

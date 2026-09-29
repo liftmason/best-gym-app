@@ -72,7 +72,7 @@ async function athletes() {
 
 test('each athlete: class and competition, the week, last session, compliance and what needs looking at', async () => {
   await athletes();
-  expect(screen.getByText('64 kg · Nationals — Sat 17 Oct')).toBeTruthy();
+  expect(screen.getByText('64 kg · Nationals, Sat 17 Oct')).toBeTruthy();
   expect(screen.getByText('Comp Prep · wk 3')).toBeTruthy();
   expect(screen.getByText('Sat 26 Sep · readiness 8/10')).toBeTruthy();
   expect(screen.getByText('92%')).toBeTruthy();

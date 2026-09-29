@@ -107,7 +107,7 @@ def thread_read(thread):
 
 
 def issue_reported(issue):
-    text = issue.get_kind_display() + (f" — “{issue.text[:100]}”" if issue.text else "")
+    text = issue.get_kind_display() + (f": “{issue.text[:100]}”" if issue.text else "")
     notify(issue.athlete, NotificationKind.ISSUE, f"issue:{issue.pk}", text, _tab(issue.athlete, "sessions"))
     push.to_user(
         _coach_user(issue.athlete),
@@ -124,7 +124,7 @@ def issue_resolved(issue):
 def video_uploaded(video, reopen=True):
     athlete = video.session_log.athlete
     text = f"Uploaded a form video: {video.exercise_name}" + (
-        f" — “{video.note[:100]}”" if video.note else ""
+        f" (“{video.note[:100]}”)" if video.note else ""
     )
     notify(
         athlete, NotificationKind.VIDEO, f"video:{video.pk}", text, _tab(athlete, "sessions"), reopen=reopen
@@ -163,7 +163,7 @@ def sync_prs(athlete):
         key = f"pr:{c.exercise.pk}"
         keys.append(key)
         text = (
-            f"{c.exercise.name} {units.display(c.set_log.load_kg, unit)} × {c.set_log.reps} — above the "
+            f"{c.exercise.name} {units.display(c.set_log.load_kg, unit)} × {c.set_log.reps} is above the "
             f"{units.display(c.current.kg, unit)} working max. Use it, or keep the max?"
         )
         existing = Notification.objects.filter(
@@ -248,7 +248,7 @@ def _sync_program(athlete, today):
     kind = NotificationKind.PROGRAM_ENDING
     link = _tab(athlete, "program")
     if program is None:
-        key, text = "none", "No program yet — build one or apply a template"
+        key, text = "none", "No program yet. Build one or apply a template"
     elif last is None:
         drafts = _drafts(program)
         key = f"program:{program.pk}"
@@ -260,13 +260,13 @@ def _sync_program(athlete, today):
     elif last < today:
         key, text = (
             f"program:{program.pk}",
-            f"“{program.name}” ended {last:%a %-d %b} — nothing scheduled after{_drafts(program)}",
+            f"“{program.name}” ended {last:%a %-d %b}, with nothing scheduled after{_drafts(program)}",
         )
     elif (last - today).days < PROGRAM_WARNING_DAYS:
         days = (last - today).days
         when = "today" if days == 0 else "tomorrow" if days == 1 else f"{last:%A} ({days} days)"
         key = f"program:{program.pk}"
-        text = f"“{program.name}” runs out {when} — nothing scheduled after{_drafts(program)}"
+        text = f"“{program.name}” runs out {when}, with nothing scheduled after{_drafts(program)}"
     else:
         _remove(athlete, kind)
         return
@@ -312,7 +312,7 @@ def _sync_missed(athlete, today):
             continue
         names = [rx.exercise.name for s in sessions for rx in s.prescriptions.all()]
         what = " + ".join(names[:2]) + (f" + {len(names) - 2} more" if len(names) > 2 else "")
-        text = f"Missed {day.date:%a %-d %b}" + (f" — {what}" if what else "")
+        text = f"Missed {day.date:%a %-d %b}" + (f": {what}" if what else "")
         notify(athlete, kind, key, text, _tab(athlete, "program", week=day.week_id), reopen=False)
     # Days logged afterwards (or no longer in the program) leave the feed.
     for row in Notification.objects.filter(recipient=athlete.coach.user, athlete=athlete, kind=kind):

@@ -18,7 +18,7 @@ export function LegalPage({ title, sections }: { title: string; sections: Sectio
         {DRAFT ? (
           <Card style={styles.draft}>
             <Text variant="small" tone="warn">
-              Draft — not yet in force. The parts in [brackets] are still to be written.
+              Draft, not yet in force. The parts in [brackets] are still to be written.
             </Text>
           </Card>
         ) : null}

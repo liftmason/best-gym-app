@@ -111,7 +111,7 @@ export function banner(p: Prescribed | null, unit: Unit): Banner | null {
       hint = `≈ ${plateRound(kg, unit)} ${unit} from your ${p.max_exercise} max`;
       if (p.overrides.length) hint = `loads vary by set · ${p.max_exercise} max ${display(p.max_kg, unit)}`;
     } else {
-      hint = 'no max on file — go by feel';
+      hint = 'no max on file, go by feel';
     }
   }
   return { sets: p.overrides.length || p.sets, reps, load, rir: rirText(p.rir, p.rir_max), hint };

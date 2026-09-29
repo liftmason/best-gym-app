@@ -38,11 +38,11 @@ export function SignInFrame({ children }: { children: ReactNode }) {
               <View style={styles.left}>
                 <Logo onDark />
                 <Text variant="h1" tone="white" style={styles.pitch}>
-                  Every athlete&apos;s training history, right where you program.
+                  See each athlete&apos;s lift history while you program.
                 </Text>
                 <Text variant="small" style={styles.pitchBody}>
-                  Build weekly programs, deliver sessions to your athletes&apos; phones, and review results as
-                  they come in — with each athlete&apos;s complete lift history beside the editor.
+                  Write each week here and it goes to your athletes&apos; phones. Their results come back as
+                  they train.
                 </Text>
               </View>
             ) : null}

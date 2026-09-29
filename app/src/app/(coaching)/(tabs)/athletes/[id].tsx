@@ -81,7 +81,7 @@ export default function AthleteScreen() {
       title={athlete.data?.athlete.name ?? 'Athlete'}
       subtitle={
         athlete.data
-          ? [athlete.data.weight_class, athlete.data.competition_name ? `next comp: ${athlete.data.competition_name}${athlete.data.competition_date ? ` — ${dayMonth(athlete.data.competition_date)}` : ''}` : 'no competition scheduled']
+          ? [athlete.data.weight_class, athlete.data.competition_name ? `next comp: ${athlete.data.competition_name}${athlete.data.competition_date ? `, ${dayMonth(athlete.data.competition_date)}` : ''}` : 'no competition scheduled']
               .filter(Boolean)
               .join(' · ')
           : undefined
