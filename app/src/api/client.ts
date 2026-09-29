@@ -9,6 +9,13 @@
  *
  * The web app sends `X-Client: web` and its cookie: the server keeps the refresh token in
  * the cookie, and the body's `refresh` is null.
+ *
+ * On the web, a request that can't connect is tried again for up to a minute and a half,
+ * with `waking` set meanwhile (the root layout says "Starting up"): a server on a free host
+ * sleeps when it's quiet and takes about a minute to wake. Not when the browser knows it's
+ * offline, and not on a phone, where no connection is an everyday state the athlete trains in.
+ * Retrying is safe: the web app's requests are all preflighted, so one that couldn't connect
+ * never reached the server.
  */
 import createClient from 'openapi-fetch';
 
@@ -26,13 +33,30 @@ type Options = {
   store: TokenStore;
   web: boolean;
   fetch?: (request: Request) => Promise<Response>;
+  /** For tests: waiting between tries, and whether the browser thinks it's online. */
+  wait?: (ms: number) => Promise<void>;
+  online?: () => boolean;
 };
 
 const REFRESH_PATH = '/api/v1/auth/refresh';
+/** The pauses between tries while a server wakes (the last repeats), and the most in all. */
+const WAKE_PAUSES = [2_000, 4_000, 8_000];
+const WAKE_LIMIT = 90_000;
 
-export function makeApi({ baseUrl, store, web, fetch = (r) => globalThis.fetch(r) }: Options) {
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+const browserOnline = () => typeof navigator === 'undefined' || navigator.onLine !== false;
+
+export function makeApi({
+  baseUrl,
+  store,
+  web,
+  fetch = (r) => globalThis.fetch(r),
+  wait = sleep,
+  online = browserOnline,
+}: Options) {
   let tokens: Tokens | null = null;
   let state: AuthState = 'loading';
+  let waking = false;
   let refreshing: Promise<Tokens | null> | null = null;
   const listeners = new Set<() => void>();
 
@@ -40,6 +64,33 @@ export function makeApi({ baseUrl, store, web, fetch = (r) => globalThis.fetch(r
     if (next === state) return;
     state = next;
     listeners.forEach((listener) => listener());
+  }
+
+  function setWaking(next: boolean) {
+    if (next === waking) return;
+    waking = next;
+    listeners.forEach((listener) => listener());
+  }
+
+  /** fetch, waiting through a sleeping server's wake-up on the web (see the top). */
+  async function reach(make: () => Request): Promise<Response> {
+    let waited = 0;
+    for (let tries = 0; ; tries += 1) {
+      try {
+        const response = await fetch(make());
+        setWaking(false);
+        return response;
+      } catch (e) {
+        const pause = WAKE_PAUSES[Math.min(tries, WAKE_PAUSES.length - 1)];
+        if (!web || !online() || waited + pause > WAKE_LIMIT) {
+          setWaking(false);
+          throw e;
+        }
+        setWaking(true);
+        await wait(pause);
+        waited += pause;
+      }
+    }
   }
 
   async function keep(next: Tokens | null) {
@@ -53,13 +104,14 @@ export function makeApi({ baseUrl, store, web, fetch = (r) => globalThis.fetch(r
     if (web) headers['X-Client'] = 'web';
     if (access) headers.Authorization = `Bearer ${access}`;
     try {
-      return await fetch(
-        new Request(baseUrl + path, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(body),
-          credentials: web ? 'include' : 'omit',
-        }),
+      return await reach(
+        () =>
+          new Request(baseUrl + path, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body),
+            credentials: web ? 'include' : 'omit',
+          }),
       );
     } catch {
       throw ApiError.offline();
@@ -97,11 +149,11 @@ export function makeApi({ baseUrl, store, web, fetch = (r) => globalThis.fetch(r
 
   async function send(request: Request): Promise<Response> {
     const sentWith = tokens?.access;
-    const response = await fetch(authorised(request, sentWith));
+    const response = await reach(() => authorised(request, sentWith));
     if (response.status !== 401 || !sentWith || request.url.endsWith(REFRESH_PATH)) return response;
     // Another request may already have refreshed while this one was out.
     const fresh = tokens && tokens.access !== sentWith ? tokens : await refresh();
-    return fresh ? fetch(authorised(request, fresh.access)) : response;
+    return fresh ? reach(() => authorised(request, fresh.access)) : response;
   }
 
   const client = createClient<paths>({
@@ -122,6 +174,11 @@ export function makeApi({ baseUrl, store, web, fetch = (r) => globalThis.fetch(r
 
     get state() {
       return state;
+    },
+
+    /** True while a request waits for a sleeping server to wake (web only). */
+    get waking() {
+      return waking;
     },
 
     subscribe(listener: () => void) {

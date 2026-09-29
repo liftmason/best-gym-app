@@ -12,6 +12,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef } from 'react';
 
 import { api, makeQueryClient, useAuth } from '@/api';
+import { WakingNotice } from '@/api/waking-notice';
 import { handlePushes, pushTarget, registerForPush } from '@/push/register';
 import { syncNow } from '@/sync/session';
 import { colors } from '@/ui';
@@ -67,7 +68,8 @@ function RootLayout() {
     if (auth === 'signedIn') registerForPush(api).catch(() => {});
   }, [auth]);
 
-  if (!ready) return null;
+  // Checking the saved sign-in may be what's waking a sleeping server: say so meanwhile.
+  if (!ready) return <WakingNotice />;
   return (
     <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
@@ -85,6 +87,7 @@ function RootLayout() {
         <Stack.Screen name="terms" />
         <Stack.Screen name="kit" />
       </Stack>
+      <WakingNotice />
     </QueryClientProvider>
   );
 }

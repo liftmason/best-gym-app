@@ -154,6 +154,83 @@ test('a remembered access token the server refuses falls back to the cookie', as
   expect(store.saved).toEqual({ access: 'a2', refresh: null });
 });
 
+/** A server that's asleep for the first `failures` requests (Render's free tier waking up). */
+function sleepy(failures: number, fake = server()) {
+  let left = failures;
+  return {
+    fake,
+    fetch: jest.fn(async (request: Request) => {
+      if (left > 0) {
+        left -= 1;
+        throw new TypeError('Failed to fetch');
+      }
+      return fake.fetch(request);
+    }),
+  };
+}
+
+test('the web app waits for a sleeping server to wake, saying so meanwhile', async () => {
+  const { fetch } = sleepy(3);
+  const waits: number[] = [];
+  const seen: boolean[] = [];
+  const api = makeApi({
+    baseUrl: BASE,
+    store: memory({ access: 'a1', refresh: null }),
+    web: true,
+    fetch,
+    wait: async (ms) => {
+      waits.push(ms);
+      seen.push(api.waking);
+    },
+    online: () => true,
+  });
+  await api.restore();
+  expect(await ok(api.client.GET('/api/v1/me'))).toMatchObject({ name: 'Dana' });
+  expect(waits.length).toBe(3);
+  expect(seen).toEqual([true, true, true]);
+  expect(api.waking).toBe(false);
+});
+
+test('the web app gives up after about a minute and a half', async () => {
+  const { fetch } = sleepy(1000);
+  let waited = 0;
+  const api = makeApi({
+    baseUrl: BASE,
+    store: memory({ access: 'a1', refresh: null }),
+    web: true,
+    fetch,
+    wait: async (ms) => {
+      waited += ms;
+    },
+    online: () => true,
+  });
+  await api.restore();
+  const error: ApiError = await ok(api.client.GET('/api/v1/me')).catch((e) => e);
+  expect(error.offline).toBe(true);
+  expect(waited).toBeGreaterThanOrEqual(60_000);
+  expect(waited).toBeLessThanOrEqual(90_000);
+  expect(api.waking).toBe(false);
+});
+
+test("no waiting when the browser knows it's offline, or on a phone", async () => {
+  for (const [web, online] of [[true, false], [false, true]] as const) {
+    const { fetch } = sleepy(1);
+    const wait = jest.fn(async () => {});
+    const api = makeApi({ baseUrl: BASE, store: memory({ access: 'a1', refresh: 'r1' }), web, fetch, wait, online: () => online });
+    await api.restore();
+    const error: ApiError = await ok(api.client.GET('/api/v1/me')).catch((e) => e);
+    expect(error.offline).toBe(true);
+    expect(wait).not.toHaveBeenCalled();
+  }
+});
+
+test('signing in on a waking server waits too (the refresh at start-up)', async () => {
+  const { fetch } = sleepy(2);
+  const api = makeApi({ baseUrl: BASE, store: memory(), web: true, fetch, wait: async () => {}, online: () => true });
+  await api.restore();
+  expect(api.state).toBe('signedIn');
+});
+
 test('signing in keeps the tokens; signing out forgets them even offline', async () => {
   const { api, store, fake } = await phone(null);
   expect(api.state).toBe('signedOut');

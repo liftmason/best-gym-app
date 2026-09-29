@@ -25,3 +25,8 @@ export const api = makeApi({
 export function useAuth() {
   return useSyncExternalStore(api.subscribe, () => api.state);
 }
+
+/** True while a request waits for a sleeping server to wake (web only). */
+export function useWaking() {
+  return useSyncExternalStore(api.subscribe, () => api.waking);
+}
