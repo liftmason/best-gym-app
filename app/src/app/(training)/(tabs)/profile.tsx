@@ -95,6 +95,8 @@ export default function Profile() {
               router.replace(HOME.coaching);
             }}
           />
+        ) : me.data ? (
+          <Button title="Start coaching" variant="soft" block onPress={() => router.push('/start-coaching')} />
         ) : null}
         <Button title="Sign out" variant="ghost" block onPress={signOut} />
         <DeleteAccount />

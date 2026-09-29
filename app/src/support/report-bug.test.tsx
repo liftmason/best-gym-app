@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
 import { useFakeApi } from '@/coaching/testing/fake-api';
-import { api } from '@/api';
+import { api, ApiError } from '@/api';
 
 import { ReportBugIcon } from './report-bug';
 
@@ -23,7 +23,8 @@ test('a report says where it came from, and thanks you', async () => {
 });
 
 test('offline, it says so', async () => {
-  jest.spyOn(api.client, 'POST').mockRejectedValue(new TypeError('Network request failed'));
+  // What the client's fetch throws when it can't connect (src/api/client.ts).
+  jest.spyOn(api.client, 'POST').mockRejectedValue(ApiError.offline());
   await render(<ReportBugIcon side="coach" />);
   await fireEvent.press(screen.getByRole('button', { name: 'Report a bug' }));
   await fireEvent.changeText(screen.getByLabelText('What went wrong?'), 'Board is blank');

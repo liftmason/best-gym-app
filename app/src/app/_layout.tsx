@@ -77,6 +77,7 @@ function RootLayout() {
           <Stack.Screen name="index" />
           <Stack.Screen name="(training)" />
           <Stack.Screen name="(coaching)" />
+          <Stack.Screen name="start-coaching" />
         </Stack.Protected>
         <Stack.Protected guard={auth === 'signedOut'}>
           <Stack.Screen name="(auth)" />

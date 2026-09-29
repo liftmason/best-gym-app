@@ -5,6 +5,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { ApiError } from '@/api';
 import { SignInFrame } from '@/auth/frame';
 import { useMe } from '@/auth/me';
+import { NoCoachYet } from '@/auth/no-coach';
 import { signOut } from '@/auth/sign-out';
 import { HOME, lastMode, modeFor, type Mode } from '@/auth/mode';
 import { Button, colors, Text } from '@/ui';
@@ -44,17 +45,7 @@ export default function Index() {
   }
 
   const mode = modeFor(me.data, last);
-  if (!mode) {
-    return (
-      <SignInFrame>
-        <Text variant="h2">No coach yet</Text>
-        <Text variant="small" tone="muted">
-          Signed in as {me.data.email}. To train with a coach, open the invite link they sent you.
-        </Text>
-        <Button title="Sign out" variant="ghost" onPress={signOut} />
-      </SignInFrame>
-    );
-  }
+  if (!mode) return <NoCoachYet email={me.data.email} />;
   return <Redirect href={HOME[mode]} />;
 }
 

@@ -1701,6 +1701,26 @@ export interface paths {
         patch: operations["apps_accounts_api_update_profile"];
         trace?: never;
     };
+    "/api/v1/me/coach": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Coaching
+         * @description Start coaching with a new gym of one's own, as coach sign-up does for a new email.
+         */
+        post: operations["apps_accounts_me_api_start_coaching"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/delete": {
         parameters: {
             query?: never;
@@ -4311,6 +4331,28 @@ export interface components {
             kind: string;
             /** Name */
             name: string;
+        };
+        /** StartCoachingIn */
+        StartCoachingIn: {
+            /** Gym Name */
+            gym_name: string;
+            /** Name */
+            name: string;
+            /**
+             * Starter
+             * @default weightlifting
+             */
+            starter: string;
+            /**
+             * Timezone
+             * @default
+             */
+            timezone: string;
+            /**
+             * Units
+             * @default kg
+             */
+            units: string;
         };
         /** StarterAdded */
         StarterAdded: {
@@ -7190,6 +7232,28 @@ export interface operations {
         responses: {
             /** @description No Content */
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    apps_accounts_me_api_start_coaching: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartCoachingIn"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
