@@ -95,9 +95,22 @@ def pending(coach):
 
 def check_can_join(user):
     """Raise if this signed-in account can't join a coach: its athlete profile, if it has
-    one, must be without a coach (archived athletes join a new coach with their history)."""
-    if user.athlete_profile:
-        raise AlreadyAthlete()
+    one, must be without a coach (archived athletes join a new coach with their history).
+    An athlete has one coach at a time, so the refusal says who and what to do."""
+    athlete = user.athlete_profile
+    if not athlete:
+        return
+    coach, gym = athlete.coach, athlete.gym
+    if coach.user_id == user.pk:
+        raise AlreadyAthlete(
+            f"You already train with yourself at {gym}. An athlete has one coach at a time: "
+            "archive yourself from your roster, then open this link again."
+        )
+    name = coach.user.name or coach.user.email
+    raise AlreadyAthlete(
+        f"You already train with {name} at {gym}. An athlete has one coach at a time: "
+        f"ask {name} to archive you, then open this link again."
+    )
 
 
 @transaction.atomic

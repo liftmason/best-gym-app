@@ -153,6 +153,11 @@ def test_an_athlete_without_a_coach_joins_a_new_one(api, athlete, coach, mailout
     auth = f"Bearer {busy.access}"
     again = post(api, f"/join/{invites.create(coach).token}/accept", HTTP_AUTHORIZATION=auth)
     assert again.status_code == 409 and again.json()["error"]["code"] == "already_athlete"
+    # Say why and what to do: the default "That can't be done right now." said neither.
+    assert again.json()["error"]["message"] == (
+        "You already train with Dana Whitfield at Iron Ridge Weightlifting. An athlete has one coach"
+        " at a time: ask Dana Whitfield to archive you, then open this link again."
+    )
 
 
 def test_code_requests_are_rate_limited(api, mailoutbox):

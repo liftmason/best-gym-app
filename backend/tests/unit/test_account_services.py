@@ -142,3 +142,14 @@ def test_the_starting_template_arrives_as_an_unpublished_draft(coach, gym):
     assert program.source_template == template
     assert not program.weeks.filter(published=True).exists()
     assert program.start_date > athlete.today()  # from next week
+
+
+def test_a_coach_training_with_themselves_is_told_to_archive_themselves(coach):
+    # Dogfooding: a coach who joined their own invite, then opens another coach's link.
+    invites.accept(invites.create(coach).pk, user=coach.user)
+    with pytest.raises(invites.AlreadyAthlete) as refused:
+        invites.check_can_join(coach.user)
+    assert str(refused.value) == (
+        "You already train with yourself at Iron Ridge Weightlifting. An athlete has one coach at a"
+        " time: archive yourself from your roster, then open this link again."
+    )
