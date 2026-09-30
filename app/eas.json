@@ -17,7 +17,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.liftmason.com"
+        "EXPO_PUBLIC_API_URL": "https://gymtrainer-kqrl.onrender.com"
       }
     },
     "production": {
