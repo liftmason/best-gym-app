@@ -11,7 +11,10 @@ const { readFileSync } = require('node:fs') as { readFileSync: (file: string, en
 const BARE = /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+$/i;
 
 test('every build profile with an API address has a bare https one', () => {
-  const addresses = Object.values(eas.build).flatMap((profile) => ('env' in profile ? [profile.env.EXPO_PUBLIC_API_URL] : []));
+  const addresses = Object.values(eas.build).flatMap((profile) => {
+    const env: Record<string, string> = profile.env;
+    return env.EXPO_PUBLIC_API_URL ? [env.EXPO_PUBLIC_API_URL] : [];
+  });
   expect(addresses.length).toBeGreaterThan(0);
   for (const address of addresses) expect(address).toMatch(BARE);
 });
@@ -20,4 +23,9 @@ test('test builds use the web test run’s API', () => {
   const blueprint = readFileSync('../render.yaml', 'utf8');
   const web = /key: EXPO_PUBLIC_API_URL\s+value: (\S+)/.exec(blueprint)?.[1];
   expect(eas.build.preview.env.EXPO_PUBLIC_API_URL).toBe(web);
+});
+
+test('builds skip uploading debug files to Sentry until a Sentry project exists (docs/LAUNCH.md)', () => {
+  // Without it, every release build fails at "SentryUpload": there's no Sentry org or token yet.
+  for (const profile of Object.values(eas.build)) expect((profile.env as Record<string, string>).SENTRY_DISABLE_AUTO_UPLOAD).toBe('true');
 });
