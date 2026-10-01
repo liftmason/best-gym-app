@@ -9,6 +9,9 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     },
     "preview": {
@@ -17,13 +20,15 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.liftmason.com"
+        "EXPO_PUBLIC_API_URL": "https://gymtrainer-kqrl.onrender.com",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.liftmason.com"
+        "EXPO_PUBLIC_API_URL": "https://api.liftmason.com",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     }
   },

@@ -333,6 +333,11 @@ Apple's reviewers need to sign in and see real screens.
 From `app/`, signed in to the Expo team (`npx eas-cli@latest login`):
 
 1. **The app's crash reporting:** `npx eas-cli@latest env:create --name EXPO_PUBLIC_SENTRY_DSN --value <the app project's DSN> --environment production --environment preview`.
+   - **Optional, for readable crash reports:** phone builds skip uploading their debug files to Sentry (`SENTRY_DISABLE_AUTO_UPLOAD` in `app/eas.json`). Without that flag, a build with no Sentry project set up fails. To turn the upload on:
+     1. Create a Sentry auth token.
+     2. Add it as an EAS secret: `npx eas-cli@latest env:create --name SENTRY_AUTH_TOKEN --visibility secret …`.
+     3. Add `"organization"` and `"project"` to the `@sentry/react-native` plugin in `app/app.json`.
+     4. Remove the flag, and update `app/src/api/eas-config.test.ts`, which checks for it.
 2. **Push notifications:**
    - Android: create a Firebase project, add an Android app `com.liftmason.app`, and download its service-account key. Upload the key with `npx eas-cli@latest credentials` (Android → Google Service Account → FCM V1).
    - iOS push is set up by EAS during the first iOS build.
