@@ -1,19 +1,19 @@
 /** The frame of the session screens: a scrolling page under the safe area, no tabs. */
 import type { ReactNode } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors, space } from '@/ui';
+import { AvoidKeyboard, colors, space } from '@/ui';
 
 export function SessionScreen({ children, footer }: { children: ReactNode; footer?: ReactNode }) {
   return (
     <SafeAreaView style={styles.page} edges={['top', 'bottom']}>
-      <KeyboardAvoidingView style={styles.page} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <AvoidKeyboard style={styles.page}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
           {children}
         </ScrollView>
         {footer ? <View style={styles.footer}>{footer}</View> : null}
-      </KeyboardAvoidingView>
+      </AvoidKeyboard>
     </SafeAreaView>
   );
 }

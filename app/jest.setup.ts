@@ -11,3 +11,7 @@ jest.mock('expo-video', () => {
   const { View } = jest.requireActual('react-native');
   return { useVideoPlayer: () => ({}), VideoView: () => createElement(View, { accessibilityLabel: 'Video player' }) };
 });
+
+// Safe areas without a provider (screens rendered alone): the library's own mock, all insets 0.
+// Tests that mock it themselves still win.
+jest.mock('react-native-safe-area-context', () => require('react-native-safe-area-context/jest/mock').default);

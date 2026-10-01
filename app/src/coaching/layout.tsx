@@ -4,7 +4,7 @@ import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, useWindowDim
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError } from '@/api';
-import { Button, colors, space, Text } from '@/ui';
+import { AvoidKeyboard, Button, colors, space, Text } from '@/ui';
 
 /** At this width and wider, the sidebar and the desktop layout (the mockup's). */
 export const WIDE = 960;
@@ -40,12 +40,15 @@ export function CoachScreen({
         </View>
         {actions}
       </View>
-      <ScrollView
-        contentContainerStyle={[styles.body, wide && styles.bodyWide]}
-        refreshControl={onRefresh ? <RefreshControl refreshing={Boolean(refreshing)} onRefresh={onRefresh} /> : undefined}
-      >
-        {children}
-      </ScrollView>
+      <AvoidKeyboard style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={[styles.body, wide && styles.bodyWide]}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={onRefresh ? <RefreshControl refreshing={Boolean(refreshing)} onRefresh={onRefresh} /> : undefined}
+        >
+          {children}
+        </ScrollView>
+      </AvoidKeyboard>
     </SafeAreaView>
   );
 }

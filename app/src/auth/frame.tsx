@@ -4,10 +4,10 @@
  */
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors, radius, shadows, space, Text } from '@/ui';
+import { AvoidKeyboard, colors, radius, shadows, space, Text } from '@/ui';
 import { APP_NAME } from '@/name';
 
 const WIDE = 760;
@@ -31,7 +31,7 @@ export function SignInFrame({ children }: { children: ReactNode }) {
   const wide = useWindowDimensions().width >= WIDE;
   return (
     <SafeAreaView style={styles.page}>
-      <KeyboardAvoidingView style={styles.page} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <AvoidKeyboard style={styles.page}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={[styles.card, wide && styles.cardWide]}>
             {wide ? (
@@ -67,7 +67,7 @@ export function SignInFrame({ children }: { children: ReactNode }) {
             </Pressable>
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </AvoidKeyboard>
     </SafeAreaView>
   );
 }

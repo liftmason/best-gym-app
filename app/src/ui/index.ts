@@ -2,6 +2,7 @@ export { Avatar, initials } from './avatar';
 export { Button } from './button';
 export { Card } from './card';
 export { Field } from './field';
+export { AvoidKeyboard } from './keyboard';
 export { Chip, WeekPill } from './pill';
 export { FlowHead } from './flow-head';
 export { Scale } from './scale';

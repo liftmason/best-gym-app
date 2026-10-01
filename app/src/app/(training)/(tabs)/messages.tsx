@@ -1,6 +1,6 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { uuid7 } from '@/domain/ids';
@@ -11,7 +11,7 @@ import { SyncNotices } from '@/sync/status';
 import { sentAgo } from '@/training/format-time';
 import { TrainingHeader } from '@/training/header';
 import { useTraining } from '@/training/use-training';
-import { colors, enterSends, fonts, radius, space, Text } from '@/ui';
+import { AvoidKeyboard, colors, enterSends, fonts, radius, space, Text } from '@/ui';
 
 /** Messages with the coach (the mockup's #m-messages, the "Coach" tab), offline too. */
 export default function Messages() {
@@ -64,7 +64,7 @@ export default function Messages() {
     <SafeAreaView style={styles.page} edges={['top']}>
       <TrainingHeader />
       <SyncNotices />
-      <KeyboardAvoidingView style={styles.page} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <AvoidKeyboard style={styles.page}>
         <ScrollView ref={scroll} contentContainerStyle={styles.body} onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: false })}>
           <Text variant="h3">{profile.coachName ? `Coach ${coach}` : 'Coach'}</Text>
           {!world.coaching ? (
@@ -113,7 +113,7 @@ export default function Messages() {
             </Pressable>
           </View>
         ) : null}
-      </KeyboardAvoidingView>
+      </AvoidKeyboard>
     </SafeAreaView>
   );
 }
