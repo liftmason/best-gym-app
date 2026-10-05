@@ -1,7 +1,7 @@
 /**
- * The phone builds' API addresses (eas.json). Test builds ("preview") use the same API as the
- * web test run (render.yaml), so a phone and a browser see the same data; store builds use the
- * permanent address. Every address is bare https, like scripts/check-api-url.mjs wants.
+ * The phone builds' API addresses (eas.json). Test builds ("preview", and "testflight", a store
+ * build for TestFlight) use the same API as the web test run (render.yaml), so a phone and a
+ * browser see the same data; store builds use the permanent address. Every address is bare https, like scripts/check-api-url.mjs wants.
  */
 import eas from '../../eas.json';
 
@@ -23,6 +23,7 @@ test('test builds use the web test run’s API', () => {
   const blueprint = readFileSync('../render.yaml', 'utf8');
   const web = /key: EXPO_PUBLIC_API_URL\s+value: (\S+)/.exec(blueprint)?.[1];
   expect(eas.build.preview.env.EXPO_PUBLIC_API_URL).toBe(web);
+  expect(eas.build.testflight.env.EXPO_PUBLIC_API_URL).toBe(web);
 });
 
 test('builds skip uploading debug files to Sentry until a Sentry project exists (docs/LAUNCH.md)', () => {

@@ -30,6 +30,13 @@
         "EXPO_PUBLIC_API_URL": "https://api.liftmason.com",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
+    },
+    "testflight": {
+      "extends": "production",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://gymtrainer-kqrl.onrender.com",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      }
     }
   },
   "submit": {
@@ -39,6 +46,9 @@
         "releaseStatus": "draft"
       },
       "ios": {}
+    },
+    "testflight": {
+      "extends": "production"
     }
   }
 }
