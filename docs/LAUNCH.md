@@ -344,8 +344,13 @@ From `app/`, signed in to the Expo team (`npx eas-cli@latest login`):
 3. **Test builds:** `npx eas-cli@latest build --profile preview --platform all`.
    - EAS asks to create the iOS certificates and the Android keystore: let it (it keeps them).
    - Android testers install from the link it gives.
-   - iOS testers are added with `npx eas-cli@latest device:create` first, or use TestFlight (step 5).
-4. **The offline check on a real phone:** `docs/OFFLINE_CHECKLIST.md`, including closing the app completely while offline, which the web app can't do.
+   - iOS testers are added with `npx eas-cli@latest device:create` first, and turn on Developer Mode (Settings → Privacy & Security). Or use TestFlight, below.
+4. **TestFlight before the domain:** `npx eas-cli@latest build --profile testflight --platform ios --auto-submit`.
+   - It's a store build, like `production`, but it uses the test run's API, because `api.liftmason.com` arrives with Part 1b. Testers install Apple's TestFlight app; they need neither Developer Mode nor their device registered.
+   - Run it in your own terminal: EAS asks you to sign in to your Apple account (password and two-factor code) to make the certificates and the push key, and the first submit creates the app in App Store Connect if it isn't there yet.
+   - Once Apple has processed the build (about 10–30 minutes, and an email), add testers in App Store Connect → the app → **TestFlight**. Internal testers (people on your App Store Connect team, up to 100) can install it straight away. External testers (anyone, by email or a public link) wait for Apple's beta review of the first build, usually about a day.
+   - TestFlight builds expire after 90 days. The test run's free database is deleted sooner, on day 30, unless it's upgraded (Part 1).
+5. **The offline check on a real phone:** `docs/OFFLINE_CHECKLIST.md`, including closing the app completely while offline, which the web app can't do.
 
    The same check is automated for Android emulators in `app/.maestro` (see its README; it needs a development build: `--profile development`).
 
